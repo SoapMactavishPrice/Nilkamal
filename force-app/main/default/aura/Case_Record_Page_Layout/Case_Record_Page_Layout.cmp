@@ -1,0 +1,30 @@
+<aura:component implements="lightning:recordHomeTemplate"
+    description="Full-width header above three regions. On a tablet, some columns may stack to maintain usability when the device is rotated. On a phone, all regions stack vertically.">
+    <aura:attribute name="header" type="Aura.Component[]" description="Header" access="global" />
+    <aura:attribute name="left" type="Aura.Component[]" description="Left column" access="global" />
+    <aura:attribute name="center" type="Aura.Component[]" description="Center column" access="global" />
+    <aura:attribute name="right" type="Aura.Component[]" description="Right column" access="global" />
+    <aura:attribute name="footer" type="Aura.Component[]" description="Footer" access="global" />
+
+    <div>
+        <!-- <div>{!v.header}</div> -->
+        <lightning:layout class="columns" multipleRows="true">
+            <lightning:layoutItem size="12" smallDeviceSize="12" mediumDeviceSize="12" largeDeviceSize="12" class="header">
+                {!v.header}
+            </lightning:layoutItem>
+            <lightning:layoutItem size="12" smallDeviceSize="12" mediumDeviceSize="6" largeDeviceSize="3" class="left " padding="horizontal_small">
+                {!v.left}
+            </lightning:layoutItem>
+            <lightning:layoutItem size="12" smallDeviceSize="12" mediumDeviceSize="12" largeDeviceSize="6" class="middle">
+                {!v.center}
+            </lightning:layoutItem>
+            <lightning:layoutItem size="12" smallDeviceSize="12" mediumDeviceSize="6" largeDeviceSize="3" class="right" padding="horizontal_small">
+                {!v.right}
+            </lightning:layoutItem>
+            <lightning:layoutItem size="12" smallDeviceSize="12" mediumDeviceSize="12" largeDeviceSize="12" class="footer">
+                {!v.footer}
+            </lightning:layoutItem>
+        </lightning:layout>
+    </div>
+
+</aura:component>

@@ -1,0 +1,195 @@
+@import 'c/utilCSS';
+
+
+
+
+* {
+	user-select: none;
+}
+
+ul,
+li {
+	list-style: none;
+	padding: 0;
+}
+
+.timelines-container {
+	display: flex;
+}
+
+.timelines {
+	position: relative;
+	padding: 1rem 0.5rem 0rem 1rem;
+}
+
+li {
+	padding-bottom: 20px;
+	border-left: 1px solid var(--li-border-color, #4e5ed3);
+	position: relative;
+	padding-left: 15px;
+}
+
+.amc-warranty-case-timeline {
+	--li-border-color: #2E86C1;
+	--slds-c-icon-color-foreground: #2E86C1;
+
+	.li-header {
+		cursor: pointer;
+	}
+
+	.li-header[data-expanded="true"] {
+		font-weight: bold;
+		font-style: italic;
+
+		&[data-type="amc-warranty"] {
+			position: sticky;
+			top: 0;
+			z-index: 1;
+			min-height: 2em;
+			background-color: white;
+		}
+	}
+}
+
+.case-timeline {
+	--li-border-color: #28B463;
+	--slds-c-icon-color-foreground: #28B463;
+
+	.li-header {}
+
+	.li-header[data-expanded="true"] {
+		font-weight: bold;
+		font-style: italic;
+	}
+}
+
+.service-appointments-timeline {
+	--li-border-color: #F39C12;
+	--slds-c-icon-color-foreground: #F39C12;
+
+}
+
+.service-report-timeline {
+	--li-border-color: #8E44AD;
+	--slds-c-icon-color-foreground: #8E44AD;
+}
+
+.installation-report-timeline {
+	--li-border-color: #E74C3C;
+	--slds-c-icon-color-foreground: #E74C3C;
+}
+
+li:last-child {
+	border: 0px;
+	padding-bottom: 0;
+}
+
+li:before {
+	content: "";
+	width: 15px;
+	height: 15px;
+	background: white;
+	border: 1px solid var(--li-border-color, #4e5ed3);
+	box-shadow: 2px 2px 0px #bab5f8;
+	border-radius: 50%;
+	position: absolute;
+	left: -8px;
+	top: 3px;
+}
+
+.timeline-icon {
+	position: absolute;
+	left: -13px;
+	top: -3px;
+	cursor: pointer;
+	/* transition: transform 0.3s ease-in-out; */
+}
+
+
+
+
+
+.case-description {
+	white-space: pre-wrap;
+	text-wrap: auto;
+}
+
+
+
+.data-label {
+	font-weight: bold;
+}
+
+
+
+.documents {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	gap: 10px;
+
+	.document-item {
+		/* height: 75px; */
+		width: 125px;
+		justify-content: space-between;
+		cursor: pointer;
+
+		.document-preview {
+			height: 50px;
+			text-align: center;
+
+			img {
+				object-fit: contain;
+				max-height: 50px;
+			}
+
+			lightning-icon {}
+		}
+
+		.document-name {
+			word-wrap: break-word;
+		}
+	}
+}
+
+
+
+
+.case-subject {
+	cursor: pointer;
+}
+
+.case-description {
+	cursor: pointer;
+}
+
+.truncate {
+	/*
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-height: 4.5rem;
+    line-height: 1.5rem;
+    */
+
+	display: -webkit-box;
+	line-clamp: 3;
+	-webkit-line-clamp: 3;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: pre-wrap;
+	max-height: 5em;
+}
+
+.expanded {
+	/*
+    max-height: none;
+    overflow: visible;
+    height: auto;
+    */
+
+	line-clamp: unset;
+	-webkit-line-clamp: unset;
+	white-space: pre-wrap;
+}

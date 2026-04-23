@@ -1,0 +1,119 @@
+<template>
+
+    <template if:true={showSpinner}>
+        <lightning-spinner alternative-text="Loading" variant="brand" size="medium"></lightning-spinner>
+    </template>
+
+    <!-- <lightning-card title="Open Service Appointments" variant="narrow" hide-header label="Open Service Appointments"> -->
+    <!-- <div class="container slds-m-around_medium"> -->
+
+    <template lwc:if={serviceAppointmentsList}>
+        <div class="scrollable" onscroll={handleScroll}>
+            <table class="slds-table slds-no-row-hover slds-table_bordered">
+                <thead>
+                    <tr class="slds-text-title_caps">
+                        <template iterator:item={columns}>
+                            <th key={item.value.name} scope="col">
+                                <div class="horizontal-flex table-header-cell" style="justify-content: space-between" onclick={handleSort} data-field-name={item.value.name}
+                                    data-sort-direction={item.value.sortDir} data-sortable={item.value.isSortable}>
+                                    <span>{item.value.label}<template lwc:if={item.value.sortDir}> - {item.value.sortDir}</template></span>
+                                    <template lwc:if={item.value.isSortable}>
+                                        <template lwc:if={item.value.isAsc}><lightning-icon icon-name="utility:arrowup" size="xx-small"></lightning-icon></template>
+                                        <template lwc:elseif={item.value.isDesc}><lightning-icon icon-name="utility:arrowdown" size="xx-small"></lightning-icon></template>
+                                        <template lwc:else><lightning-icon icon-name="utility:sort" size="xx-small"></lightning-icon></template>
+                                    </template>
+                                </div>
+                            </th>
+                        </template>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template iterator:item={serviceAppointmentsList}>
+                        <tr key={item.value.id}>
+                            <td class="slds-truncate slds-cell-wrap">{item.value.index}</td>
+                            <td class="slds-truncate slds-cell-wrap">
+                                <lightning-formatted-date-time value={item.value.planDate} year="numeric" day="2-digit" month="short"></lightning-formatted-date-time>
+                            </td>
+                            <td class="slds-truncate slds-cell-wrap case-number-sa-number" data-checked={item.value.isCheckedIn}>
+                                <a onclick={handleServiceAppointmentPreviewClick} data-index={item.value.index} data-id={item.value.id}>
+                                    <div>
+                                        {item.value.caseNumber} {item.value.name}
+                                        <span if:true={item.value.remoteSupport}> (R)</span>
+                                        <span if:true={item.value.isAdditionalResource}> (AR)</span>
+                                    </div>
+                                </a>
+                            </td>
+                            <td class="slds-truncate slds-cell-wrap truncate" title={item.value.custName} onclick={toggleDescription}>{item.value.custName}</td>
+                            <td class="slds-truncate slds-cell-wrap user-select-all">{item.value.serialNumber}</td>
+                            <td class="slds-truncate slds-cell-wrap">{item.value.caseType}</td>
+                            <td class="slds-truncate slds-cell-wrap">{item.value.caseSubType}</td>
+                        </tr>
+                    </template>
+
+                    <template if:true={isLoading}>
+                        <tr>
+                            <td colspan="7" style="text-align: center; padding-top: 10px">
+                                <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
+                                <p>Loading...</p>
+                            </td>
+                        </tr>
+                    </template>
+
+                    <template if:false={isLoading}>
+                        <tr>
+                            <td colspan="7" class="button-container" style="text-align: center; padding-top: 10px">
+                                <div if:false={hasMoreRecords} class="all-loaded">
+                                    All service appointments loaded
+                                </div>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+    </template>
+
+
+    <template lwc:else>
+        <lightning-layout style="align-items: center; height: 60vh;">
+            <lightning-layout-item size="3" small-device-size="3" medium-device-size="4" large-device-size="4">
+            </lightning-layout-item>
+            <lightning-layout-item size="6" small-device-size="6" medium-device-size="4" large-device-size="4">
+                <img src="/img/chatter/OpenRoad.svg" class="slds-illustration__svg slds-var-p-around_large" />
+            </lightning-layout-item>
+            <lightning-layout-item size="3" small-device-size="3" medium-device-size="4" large-device-size="4">
+            </lightning-layout-item>
+        </lightning-layout>
+    </template>
+
+
+
+
+    <template if:true={showServiceAppointmentInfoModal}>
+        <div class="custom-modal">
+            <section role="dialog" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <span class="slds-modal__close">
+                            <lightning-icon icon-name="utility:close" alternative-text="close" onclick={handleCloseServiceAppointmentInfoModal}></lightning-icon>
+                        </span>
+                        <h2 class="slds-text-heading_small slds-hyphenate">
+                            <a onclick={handleOpenRecord} data-id={selectedServiceAppointment.caseId}>{selectedServiceAppointment.caseNumber}</a>
+                            &nbsp;&nbsp; - &nbsp;&nbsp;
+
+                            <a onclick={handleOpenRecord} data-id={selectedServiceAppointment.id}>{selectedServiceAppointment.name}</a>
+                        </h2>
+                    </header>
+                    <div class="slds-modal__content">
+                        <c-field-service-work-order-service-app-info record-id={selectedServiceAppointment.id} onclose={handleCloseServiceAppointmentInfoModal}>
+                        </c-field-service-work-order-service-app-info>
+                    </div>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </div>
+    </template>
+
+
+
+</template>

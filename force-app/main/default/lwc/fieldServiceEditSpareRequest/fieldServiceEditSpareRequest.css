@@ -1,0 +1,160 @@
+@import 'c/utilCSS';
+
+.slds-table_col-bordered td+td {
+    border-inline-start: none;
+}
+
+@media only screen and (max-width: 767px) {
+    .desktop-table-view {
+        display: none;
+    }
+
+    .mobile-accordion-view {
+        display: block;
+    }
+}
+
+@media only screen and (min-width: 768px) {
+    .desktop-table-view {
+        display: block;
+    }
+
+    .mobile-accordion-view {
+        display: none;
+    }
+}
+
+.slds-scrollable_x {
+    overflow-x: auto;
+}
+
+/* table {
+    width: 100%;
+    table-layout: fixed;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+} */
+
+td,
+th {
+    /*white-space: normal;*/
+    /* word-wrap: break-word; */
+    /* overflow-wrap: break-word; */
+    /* word-break: break-word; */
+}
+
+.table-container {
+    max-height: 50vh;
+    overflow-y: auto;
+    border: 1px solid #dddbda;
+}
+
+/* .fixed-table {
+    table-layout: fixed;
+    width: 100%;
+} */
+
+/* .fixed-table th,
+.fixed-table td {
+    text-align: center;
+    overflow: visible;
+    text-overflow: ellipsis;
+    word-break: break-all;
+} */
+
+/* .common-css-table-header {
+    background-color: #f3f2f2;
+    font-weight: bold;
+    white-space: normal !important;
+    overflow: visible;
+    text-overflow: unset;
+    word-break: break-word;
+} */
+
+.text-center {
+    text-align: center;
+}
+
+.quantity-container {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    justify-content: center;
+}
+
+.increment,
+.decrement {
+    background-color: #ff9900;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 4px;
+}
+
+.increment:hover,
+.decrement:hover {
+    background-color: #e68a00;
+}
+
+.div-scroll {
+    overflow-x: auto;
+}
+
+/* Mobile-optimized SLDS modal fallback */
+.slds-modal_mobile {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    z-index: 9001 !important;
+}
+
+.slds-modal__container {
+    max-height: 100vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100% !important;
+    min-width: 100% !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+}
+
+.slds-modal__footer_mobile {
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem;
+    position: sticky;
+    bottom: 0;
+    background: white;
+    gap: 0.5rem;
+}
+
+@media (max-width: 480px) {
+    .slds-modal__content {
+        padding: 1rem;
+    }
+
+    .slds-modal__footer_mobile lightning-button {
+        flex: 1;
+    }
+}
+
+
+.custom-delete-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: red;
+}
+
+.fixed-table-header {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background-color: #cccccc;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}

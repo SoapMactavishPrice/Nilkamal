@@ -1,0 +1,30 @@
+<template>
+    <lightning-card>
+        <template if:true={showSpinner}>
+            <lightning-spinner alternative-text="Loading" variant="brand" size="medium"></lightning-spinner>
+        </template>
+        <div class="form-container">
+            <lightning-layout multiple-rows>
+                <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-horizontal_small">
+                    <div class="slds-col">
+                        <lightning-input label="Leave From" name="LeaveFrom" type="date" value={formData.LeaveFrom} onchange={handleChange} min={todayDate}></lightning-input>
+                    </div>
+                </lightning-layout-item>
+                <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-horizontal_small">
+                    <div class="slds-col">
+                        <lightning-input label="Leave To" name="LeaveTo" type="date" value={formData.LeaveTo} onchange={handleChange} min={leaveToDate}></lightning-input>
+                    </div>
+                </lightning-layout-item>
+                <lightning-layout-item size="12" small-device-size="12" medium-device-size="12" large-device-size="12" class="slds-var-p-horizontal_small">
+                    <div class="slds-col">
+                        <lightning-textarea label="Remark" name="Remark" placeholder="Write here..." value={formData.Remark} onchange={handleChange} class="slds-m-bottom_medium"></lightning-textarea>
+                    </div>
+                </lightning-layout-item>
+            </lightning-layout>
+
+            <div class="button-container">
+                <lightning-button label="Apply" variant="brand" onclick={handleApply} class="slds-m-top_medium slds-var-p-around_small"></lightning-button>
+            </div>
+        </div>
+    </lightning-card>
+</template>

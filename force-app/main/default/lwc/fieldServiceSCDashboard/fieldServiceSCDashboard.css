@@ -1,0 +1,28 @@
+.full-width {
+    width: 100% !important;
+}
+
+.slds-scrollable_x {
+    overflow-x: auto;
+}
+
+/* table {
+    width: 100%;
+    table-layout: fixed;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+} */
+
+td,
+th {
+    white-space: normal;
+    /* word-wrap: break-word; */
+    /* overflow-wrap: break-word; */
+    /* word-break: break-word; */
+}
+
+.table-container {
+    max-height: 50vh;
+    overflow-y: auto;
+    border: 1px solid #dddbda;
+}

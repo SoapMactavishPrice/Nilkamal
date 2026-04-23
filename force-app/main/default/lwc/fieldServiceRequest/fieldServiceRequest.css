@@ -1,0 +1,185 @@
+@import 'c/utilCSS';
+
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+
+.row {
+    display: flex;
+    user-select: none;
+    pointer-events: none;
+    touch-action: none;
+}
+
+/* Sticky Search Bar */
+.searchinput {
+    width: 100%;
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 10;
+    padding: 10px;
+    /* Added padding for better visibility */
+    /*border-bottom: 1px solid #ccc; /* Added border for clarity */
+}
+
+/* Label Adjustments */
+.label {
+    width: 10%;
+
+}
+
+.input {
+    width: 20%;
+    color: #01060ae8;
+    font-size: 0.875rem;
+}
+
+.quantity-field-desk {
+    width: 20%;
+}
+
+/* Responsive Styles */
+@media only screen and (max-width: 480px) {
+    .container {
+        gap: 5px;
+        padding: 5px;
+    }
+
+    .row {
+        margin-bottom: -9px;
+        /*align-items: baseline;*/
+        margin: inherit;
+
+    }
+
+    .label {
+        width: 40%;
+
+    }
+
+    .input {
+        width: 60%;
+    }
+
+    .searchinput {
+        width: 100%;
+        position: sticky;
+        top: 0;
+        background: white;
+        z-index: 10;
+        padding: 10px;
+
+    }
+
+    /* Improved Spacing for Product Items */
+    .spare-part {
+        margin-bottom: 1rem;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background: #f9f9f9;
+        /* Light background for better visibility */
+    }
+
+    .custom-negative-margin {
+        margin-top: -14px;
+    }
+
+
+    .slds-box p {
+        font-size: 0.875rem;
+    }
+
+    body {
+        overscroll-behavior: none;
+        touch-action: manipulation;
+        /* Prevents unintended gestures */
+    }
+
+    /* Extra Fix: Prevents accidental scrolling on mobile */
+    html,
+    body {
+        touch-action: manipulation;
+    }
+
+    .quantity-field {
+        margin-top: 10px;
+        /* Space between price and quantity */
+        width: auto;
+        /* Adjust width as per your design */
+    }
+
+
+    .spare-part-fixed {
+        position: relative;
+        /* Ensures absolute positioning works within this div */
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+    }
+
+
+    .checkbox-container {
+        position: absolute;
+        top: 10px;
+        /* Adjust as needed */
+        right: 10px;
+        /* Adjust as needed */
+    }
+
+    .product-details {
+        display: flex;
+        flex-direction: column;
+        /* Stack items vertically */
+        flex-wrap: wrap;
+        /* Allow wrapping if necessary */
+        word-wrap: break-word;
+        /* Ensure long words wrap */
+        overflow-wrap: break-word;
+        /* Ensures proper text breaking */
+        /* max-width: 85%;  Ensure it does not overflow */
+    }
+
+}
+
+.quantity-container {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.quantity-field {
+    /* width: 50px; */
+    text-align: center;
+}
+
+.increment,
+.decrement {
+    background-color: #ff9900;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 4px;
+}
+
+.increment:hover,
+.decrement:hover {
+    background-color: #e68a00;
+}
+
+
+.fixed-table-header {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background-color: #cccccc;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}

@@ -1,0 +1,13 @@
+<template>
+
+    <template if:true={showSpinner}>
+        <lightning-spinner alternative-text="Loading" variant="brand" size="medium"></lightning-spinner>
+    </template>
+
+    <template if:true={recordId}>
+        <div class="file-upload-container">
+            <lightning-file-upload name="fileUploader" record-id={recordId} onuploadfinished={handleUploadFinished} multiple></lightning-file-upload>
+        </div>
+    </template>
+
+</template>

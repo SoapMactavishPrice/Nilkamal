@@ -1,0 +1,219 @@
+<template>
+
+    <template if:true={showSpinner}>
+        <lightning-spinner alternative-text="Loading" variant="brand" size="medium"></lightning-spinner>
+    </template>
+
+    <lightning-card class="desktop-table-view" variant="narrow">
+        <template if:false={hasNoServiceRequests}>
+
+            <lightning-button class="slds-p-vertical_large" label="Create Quote" title="Create Quote" slot="actions" onclick={handleCreateQuoteClick}></lightning-button>
+
+            <!-- Header with Back Icon -->
+            <!-- <div slot="header" class="slds-p-around_medium slds-grid slds-grid_align-spread">
+            <div class="slds-media slds-media_center slds-no-space">
+                <div class="slds-media__figure">
+                    <lightning-button-icon icon-name="utility:back" alternative-text="Back" variant="bare" onclick={handleBack} class="slds-m-right_x-small">
+                    </lightning-button-icon>
+                </div>
+                <div class="slds-media__body">
+                    <h2 class="slds-card__header-title slds-truncate">
+                        <span>Service Requests</span>
+                    </h2>
+                </div>
+            </div>
+        </div> -->
+            <div slot="title" class="slds-grid slds-align-center slds-p-vertical_medium">
+                <lightning-icon icon-name="utility:back" alternative-text="Back" variant="border-filled" size="medium" onclick={handleBack} class="slds-m-right_small">
+                </lightning-icon>
+                <h2 class="slds-text-heading_small slds-m-top_xx-small">Service Requests</h2>
+            </div>
+
+
+
+
+
+            <div class="slds-card__body">
+                <template if:true={showSpinner}>
+                    <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+                </template>
+
+
+                <div class="div-scroll">
+                    <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_col-bordered slds-border_left slds-border_right common-tablefont-size">
+                        <thead>
+                            <tr class="slds-line-height_reset">
+                                <th class="common-css-table-header text-center fixed-table-header" scope="col">
+                                    <div class="slds-truncate">Service Request Code</div>
+                                </th>
+                                <th class="common-css-table-header text-center fixed-table-header" scope="col">
+                                    <div class="slds-truncate">Description</div>
+                                </th>
+                                <th class="common-css-table-header text-center fixed-table-header" scope="col">
+                                    <div class="slds-truncate">SAC code</div>
+                                </th>
+                                <th class="common-css-table-header text-center fixed-table-header" scope="col">
+                                    <div class="slds-truncate">Basic Unit Price (INR)</div>
+                                </th>
+                                <th class="common-css-table-header text-center fixed-table-header" scope="col">
+                                    <div class="slds-truncate">Quantity</div>
+                                </th>
+                                <th class="common-css-table-header text-center fixed-table-header" scope="col">
+                                    <div class="slds-truncate">Total Value (INR)</div>
+                                </th>
+                                <th class="common-css-table-header text-center fixed-table-header" scope="col">
+                                    <div class="slds-truncate">Period In Months </div>
+                                </th>
+                                <th class="common-css-table-header text-center fixed-table-header" scope="col">
+                                    <div class="slds-truncate">No. of PM Visit</div>
+                                </th>
+                                <th class="common-css-table-header text-center fixed-table-header" scope="col">
+                                    <div class="slds-truncate">No. of Breakdown Visit</div>
+                                </th>
+                                <th class="common-css-table-header text-center fixed-table-header" scope="col">
+                                    <div class="slds-truncate">Action</div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template for:each={serviceRequests} for:item="service" for:index="index">
+                                <!-- <tr key={service.Id} class="slds-line-height_reset">
+                                    <td>
+                                        <span>{service.Name}</span>
+                                    </td>
+                                    <td>
+                                        <span>{service.Price__c}</span>
+                                    </td>
+                                    <td>
+                                        <span>{service.Quantity__c}</span>
+                                    </td>
+                                    <td>
+                                        <span>{service.Total_Value__c}</span>
+                                    </td>
+                                    <td class="slds-text-align_center">
+                                        <lightning-button-icon icon-name="utility:delete" alternative-text="Delete" variant="bare" class="slds-m-horizontal_xx-small slds-text-color_error"
+                                            data-id={service.Id} onclick={handleDeleteClick}>
+                                        </lightning-button-icon>
+                                    </td>
+                                </tr> -->
+                                <tr key={service.Id} class="slds-line-height_reset">
+                                    <!-- <td>
+                                        <lightning-input type="text" value={service.Name} data-index={index} data-field="Name" onchange={handleFieldChange}>
+                                        </lightning-input>
+                                    </td> -->
+                                    <td>
+                                        <span>{service.Name}</span>
+                                    </td>
+                                    <td>
+                                        <span>{service.Item_Description__c}</span>
+                                    </td>
+                                    <td>
+                                        <!-- <template if:true={service.Item_Master__r}> -->
+                                        <span if:true={service.Item_Master__r.HSN_Code__c}>{service.Item_Master__r.HSN_Code__r.Name}</span>
+                                        <!-- </template> -->
+                                    </td>
+                                    <td>
+                                        <lightning-input type="number" value={service.Price__c} data-index={index} data-field="Price__c" onchange={handleFieldChange} variant="label-hidden">
+                                        </lightning-input>
+                                    </td>
+                                    <!-- <td>
+                                        <lightning-input type="number" value={service.Quantity__c} data-index={index} data-field="Quantity__c" onchange={handleFieldChange}>
+                                        </lightning-input>
+                                    </td> -->
+                                    <td class="slds-text-align_center">
+                                        <div class="quantity-container">
+                                            <!-- <button class="decrement" alternative-text="Decrease" variant="bare" data-index={index} onclick={handleQuantityButtonClick} data-delta="-1">-
+                                            </button> -->
+
+                                            <lightning-input label="Quantity" variant="label-hidden" type="number" value={service.Quantity__c} min="0" step="1" data-index={index}
+                                                data-field="Quantity__c" onchange={handleFieldChange} onkeydown={handleKeyDown} class="quantity-input" disabled>
+                                            </lightning-input>
+
+                                            <!-- <button class="increment" alternative-text="Increase" variant="bare" data-index={index} onclick={handleQuantityButtonClick} data-delta="1">+
+                                            </button> -->
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <lightning-formatted-number value={service.Total_Value__c} style="display: block; text-align: center;">
+                                        </lightning-formatted-number>
+                                    </td>
+                                    <td style="width: 8%">
+                                        <div class="quantity-container">
+                                            <!-- <div style="text-wrap:auto" title={spare.warranty}>{spare.warranty}</div> -->
+                                            <template if:true={service.isEditable}>
+                                                <lightning-combobox name="warrantyperiod" variant="label-hidden" value={service.Warranty_Period__c} placeholder="Select Period"
+                                                    options={warrantyOptions} data-id={service.Id} data-index={index} onchange={handleChange}>
+                                                </lightning-combobox>
+                                            </template>
+                                        </div>
+                                    </td>
+                                    <td style="width: 8%">
+                                        <template if:true={service.isEditable}>
+                                            <lightning-input type="text" placeholder="Enter visits" variant="label-hidden" value={service.Number_of_PM_Visit__c} data-id={service.Id}
+                                                onchange={handlePmChange} data-index={index}>
+                                            </lightning-input>
+                                        </template>
+                                    </td>
+                                    <td style="width: 8%">
+                                        <template if:true={service.isEditable}>
+                                            <lightning-input type="text" placeholder="Enter visits" variant="label-hidden" value={service.Number_of_Breakdown_Visit__c} data-id={service.Id}
+                                                onchange={handlebreakChange} data-index={index}>
+                                            </lightning-input>
+                                        </template>
+
+                                    </td>
+                                    <td class="slds-text-align_center">
+                                        <lightning-button-icon icon-name="utility:delete" alternative-text="Delete" variant="bare" class="slds-text-color_error" data-id={service.Id}
+                                            onclick={handleDeleteClick}>
+                                        </lightning-button-icon>
+                                    </td>
+
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+                <div slot="footer" class="slds-p-around_medium slds-align_absolute-center">
+                    <lightning-button label="Cancel" variant="neutral" onclick={handleCancel} class="slds-m-right_medium">
+                    </lightning-button>
+                    <lightning-button label="Save" variant="brand" onclick={handleSave}>
+                    </lightning-button>
+                </div>
+            </div>
+        </template>
+
+
+        <template if:true={showDeleteModal}>
+            <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={closeDeleteModal}>
+                            <lightning-icon icon-name="utility:close" alternative-text="Close" size="small"></lightning-icon>
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                        <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Confirm Delete</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                        <p>Are you sure you want to delete this service request? This action cannot be undone.</p>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <lightning-button label="Cancel" variant="neutral" onclick={closeDeleteModal} class="slds-m-right_medium"></lightning-button>
+                        <lightning-button label="Delete" variant="destructive" onclick={confirmDelete}></lightning-button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </template>
+
+        <template if:true={hasNoServiceRequests}>
+            <lightning-layout>
+                <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3"></lightning-layout-item>
+                <lightning-layout-item size="8" small-device-size="8" medium-device-size="6" large-device-size="6">
+                    <img src="/img/chatter/OpenRoad.svg" class="slds-illustration__svg slds-var-p-around_large" />
+                    <p style="text-align: center; font-size: large;">No Service Requests Found.</p>
+                </lightning-layout-item>
+                <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3"></lightning-layout-item>
+            </lightning-layout>
+        </template>
+    </lightning-card>
+</template>

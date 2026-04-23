@@ -1,0 +1,25 @@
+<template>
+
+    <div class="signature_pad_flexbox">
+
+        <template if:true={enableNameSigning}>
+            <lightning-input class="slds-var-p-horizontal_small" label={nameInputLabel} variant="label-stacked" type="text" value={inputText} onchange={drawText}
+                required={isRemoteSupport}></lightning-input>
+        </template>
+
+        <template if:true={padLabel}>
+            <div>
+                <abbr class="slds-required" title="required" if:true={isRemoteSupport}>* </abbr>
+                {padLabel}
+            </div>
+        </template>
+
+        <canvas class="signature_pad_canvas"></canvas>
+
+        <div class="slds-text-align_center">
+            <lightning-button class="slds-var-p-horizontal_small" label="Clear" onclick={clearSignature}></lightning-button>
+        </div>
+
+    </div>
+
+</template>

@@ -1,0 +1,442 @@
+<template>
+
+    <template if:true={showSpinner}>
+        <lightning-spinner alternative-text="Loading" variant="brand" size="medium"></lightning-spinner>
+    </template>
+
+    <lightning-card variant="narrow" label="Service Appointment Info" hide-header>
+        <header slot="header">
+            <h2 class="slds-text-heading_medium slds-hyphenate slds-text-align_center">Service Appointment Info</h2>
+        </header>
+
+        <lightning-layout multiple-rows class="customer-details-table slds-var-p-horizontal_xx-small">
+
+            <lightning-layout-item size="12" class="slds-var-p-vertical_small">
+                <lightning-layout vertical-align="center" horizontal-align="spread" class="customer-details-header" multiple-rows="true">
+                    <lightning-layout-item flexibility="auto" class="slds-var-p-left_small" style="flex: 1">
+                        <div class=" slds-truncate slds-text-heading_small">Details</div>
+                    </lightning-layout-item>
+
+                    <lightning-layout-item lwc:if={isCheckedIn} flexibility="auto">
+                        <lightning-button variant="brand" label="Check Out" title="Check Out" onclick={handleCheckOutClick}></lightning-button>
+                    </lightning-layout-item>
+
+                    <template lwc:else>
+                        <lightning-layout-item flexibility="auto" class="horizontal-flex" style="align-items: flex-start">
+                            <template if:true={isAlreadyCheckin}>
+                                <div class="horizontal-flex">
+                                    <lightning-button if:false={isRescheduleDate} variant="brand" class="slds-var-p-right_x-small" label="Re-schedule" title="Re-schedule"
+                                        onclick={handleReschedule}></lightning-button>
+
+                                    <lightning-input if:true={isRescheduleDate} type="date" name="Scheduled_Start__c" value={rescheduleDate} min={today} label="Re-Scheduled Date"
+                                        onchange={handleChange} data-name="Scheduled_Start__c" variant="label-hidden" class="slds-var-p-right_x-small"></lightning-input>
+                                    <lightning-button if:true={isRescheduleDate} variant="brand" class="slds-var-p-right_x-small" label="Ok" title="Ok" onclick={updateReschedule}></lightning-button>
+                                    <lightning-button if:true={isRescheduleDate} variant="destructive" label="Cancel" title="Cancel" onclick={CancelClick}></lightning-button>
+                                </div>
+                            </template>
+                        </lightning-layout-item>
+
+                        <lightning-layout-item flexibility="auto" class="horizontal-flex">
+                            <lightning-button if:false={isRescheduleDate} variant="brand" label="Check In" title="Check In" onclick={handleCheckInClick}></lightning-button>
+                        </lightning-layout-item>
+                    </template>
+                </lightning-layout>
+            </lightning-layout-item>
+
+            <!--
+            <template if:true={isRescheduleDate}>
+                <div class="custom-modal">
+                    <section role="dialog" class="slds-modal slds-fade-in-open">
+                        <div class="slds-modal__container">
+                            <header class="slds-modal__header">
+                                <h2 class="slds-text-heading_medium slds-hyphenate slds-text-align_center">Re-schedule Date</h2>
+                            </header>
+                            <div class="slds-modal__content slds-var-p-horizontal_small">
+                                <lightning-input  type="date" name="Scheduled_Start__c" value={rescheduleDate} min={today} label="Re-Scheduled Date" onchange={handleChange}
+                                    data-name="Scheduled_Start__c" variant="label-hidden"></lightning-input>
+                            </div>
+                        </div>
+                    </section>
+                    <div class="slds-backdrop slds-backdrop_open"></div>
+                </div>
+            </template>
+            -->
+
+
+            <lightning-layout-item size="4" small-device-size="4" medium-device-size="2" large-device-size="2" class="slds-var-p-around_xx-small data-label">
+                <div>Ship to Customer Name</div>
+            </lightning-layout-item>
+            <lightning-layout-item size="8" small-device-size="8" medium-device-size="4" large-device-size="4" class="slds-var-p-around_xx-small">
+                <div class="slds-wrap">{serviceAppointment.customerName}</div>
+            </lightning-layout-item>
+
+            <lightning-layout-item size="4" small-device-size="4" medium-device-size="2" large-device-size="2" class="slds-var-p-around_xx-small data-label">
+                <div>Ship To Address</div>
+            </lightning-layout-item>
+            <lightning-layout-item size="8" small-device-size="8" medium-device-size="4" large-device-size="4" class="slds-var-p-around_xx-small">
+                <div class="slds-wrap">{serviceAppointment.address}</div>
+            </lightning-layout-item>
+
+
+            <lightning-layout-item size="4" small-device-size="4" medium-device-size="2" large-device-size="2" class="slds-var-p-around_xx-small data-label">
+                <div>Contact Name</div>
+            </lightning-layout-item>
+            <lightning-layout-item size="8" small-device-size="8" medium-device-size="4" large-device-size="4" class="slds-var-p-around_xx-small">
+                <div class="slds-wrap">{serviceAppointment.contactName}</div>
+            </lightning-layout-item>
+
+            <lightning-layout-item size="4" small-device-size="4" medium-device-size="2" large-device-size="2" class="slds-var-p-around_xx-small data-label">
+                <div>Email</div>
+            </lightning-layout-item>
+            <lightning-layout-item size="8" small-device-size="8" medium-device-size="4" large-device-size="4" class="slds-var-p-around_xx-small">
+                <lightning-formatted-email value={serviceAppointment.email}></lightning-formatted-email>
+            </lightning-layout-item>
+
+            <lightning-layout-item size="4" small-device-size="4" medium-device-size="2" large-device-size="2" class="slds-var-p-around_xx-small data-label">
+                <div>Phone</div>
+            </lightning-layout-item>
+            <lightning-layout-item size="8" small-device-size="8" medium-device-size="4" large-device-size="4" class="slds-var-p-around_xx-small">
+                <lightning-formatted-phone value={serviceAppointment.phone}></lightning-formatted-phone>
+            </lightning-layout-item>
+
+
+            <lightning-layout-item size="12"></lightning-layout-item>
+
+
+            <template if:true={serviceAppointment.caseNotifiedById}>
+                <lightning-layout-item size="4" small-device-size="4" medium-device-size="2" large-device-size="2" class="slds-var-p-around_xx-small data-label">
+                    <div>Notified By Name</div>
+                </lightning-layout-item>
+                <lightning-layout-item size="8" small-device-size="8" medium-device-size="4" large-device-size="4" class="slds-var-p-around_xx-small">
+                    <div class="slds-wrap">{serviceAppointment.caseNotifiedByName}</div>
+                </lightning-layout-item>
+
+                <lightning-layout-item size="4" small-device-size="4" medium-device-size="2" large-device-size="2" class="slds-var-p-around_xx-small data-label">
+                    <div>Notified By Email</div>
+                </lightning-layout-item>
+                <lightning-layout-item size="8" small-device-size="8" medium-device-size="4" large-device-size="4" class="slds-var-p-around_xx-small">
+                    <lightning-formatted-email value={serviceAppointment.caseNotifiedByEmail}></lightning-formatted-email>
+                </lightning-layout-item>
+
+                <lightning-layout-item size="4" small-device-size="4" medium-device-size="2" large-device-size="2" class="slds-var-p-around_xx-small data-label">
+                    <div>Notified By Phone</div>
+                </lightning-layout-item>
+                <lightning-layout-item size="8" small-device-size="8" medium-device-size="4" large-device-size="4" class="slds-var-p-around_xx-small">
+                    <lightning-formatted-phone value={serviceAppointment.caseNotifiedByPhone}></lightning-formatted-phone>
+                </lightning-layout-item>
+            </template>
+
+
+            <lightning-layout-item size="12"></lightning-layout-item>
+
+
+            <lightning-layout-item size="4" small-device-size="4" medium-device-size="2" large-device-size="2" class="slds-var-p-around_xx-small data-label">
+                <div>Case Type</div>
+            </lightning-layout-item>
+            <lightning-layout-item size="8" small-device-size="8" medium-device-size="4" large-device-size="4" class="slds-var-p-around_xx-small">
+                <div class="slds-wrap">{serviceAppointment.caseType}</div>
+            </lightning-layout-item>
+            <lightning-layout-item size="4" small-device-size="4" medium-device-size="2" large-device-size="2" class="slds-var-p-around_xx-small data-label">
+                <div>Case Sub Type</div>
+            </lightning-layout-item>
+            <lightning-layout-item size="8" small-device-size="8" medium-device-size="4" large-device-size="4" class="slds-var-p-around_xx-small">
+                <div class="slds-wrap">{serviceAppointment.caseSubType}</div>
+            </lightning-layout-item>
+
+
+            <lightning-layout-item size="4" small-device-size="4" medium-device-size="2" large-device-size="2" class="slds-var-p-around_xx-small data-label">
+                <div>Serial Number</div>
+            </lightning-layout-item>
+            <lightning-layout-item size="8" small-device-size="8" medium-device-size="4" large-device-size="4" class="slds-var-p-around_xx-small">
+                <div class="slds-wrap">{serviceAppointment.serialNumber}</div>
+            </lightning-layout-item>
+
+
+            <lightning-layout-item size="12"></lightning-layout-item>
+
+
+            <!-- <template if:true={serviceAppointment.subject}> -->
+            <template if:true={showCaseSubject}>
+                <lightning-layout-item size="12" small-device-size="12" medium-device-size="2" large-device-size="2" class="slds-var-p-around_xx-small data-label">
+                    <div>Case Subject</div>
+                </lightning-layout-item>
+                <lightning-layout-item size="12" small-device-size="12" medium-device-size="10" large-device-size="10" class="slds-var-p-around_xx-small">
+                    <div class="slds-wrap">{serviceAppointment.subject}</div>
+                </lightning-layout-item>
+            </template>
+
+
+            <lightning-layout-item size="12" small-device-size="12" medium-device-size="2" large-device-size="2" class="slds-var-p-around_xx-small data-label">
+                <div>Case Description</div>
+            </lightning-layout-item>
+            <lightning-layout-item size="12" small-device-size="12" medium-device-size="10" large-device-size="10" class="slds-var-p-around_xx-small">
+                <div class="slds-wrap">
+                    <p class="case-description truncate" onclick={toggleDescription} id="caseDescription">
+                        {serviceAppointment.description}</p>
+                </div>
+            </lightning-layout-item>
+
+        </lightning-layout>
+
+
+
+
+
+        <lightning-layout if:true={isCheckedIn} multiple-rows vertical-align="stretch" horizontal-align="center" class="slds-var-p-top_large">
+
+            <lightning-layout-item flexibility="auto" class="slds-var-p-horizontal_xx-small slds-var-p-horizontal_small" if:true={isAddContactVisible}>
+                <lightning-button variant="base" label="Add Contact" title="Add Contact" onclick={handleAddNewContactClick}></lightning-button>
+            </lightning-layout-item>
+
+            <lightning-layout-item flexibility="auto" class="slds-var-p-horizontal_xx-small slds-var-p-horizontal_small">
+                <lightning-button variant="base" label="Request Additional Resource" title="Request Additional Resource" onclick={handleRequestAdditionalResourceClick}></lightning-button>
+                <template if:true={serviceAppointment.isAdditionalResourceRequestRequested}>
+                    <lightning-helptext class="slds-var-p-left_x-small" content="Additional resource request is pending with RSM, please wait for approval"></lightning-helptext>
+                </template>
+            </lightning-layout-item>
+
+            <lightning-layout-item flexibility="auto" class="slds-var-p-horizontal_xx-small slds-var-p-horizontal_small">
+                <lightning-button variant="base" label="Request Re-Assignment" title="Request Re-Assignment" onclick={handleRequestReAssignmentClick}></lightning-button>
+                <template if:true={serviceAppointment.isReassignmentRequestRequested}>
+                    <lightning-helptext class="slds-var-p-left_x-small" content="Re-assignment request is pending with RSM, please wait for approval"></lightning-helptext>
+                </template>
+            </lightning-layout-item>
+
+            <lightning-layout-item flexibility="auto" class="slds-var-p-horizontal_xx-small slds-var-p-horizontal_small">
+                <lightning-button variant="base" label="Upload File" title="Upload File" onclick={handleUploadFileClick}></lightning-button>
+            </lightning-layout-item>
+
+            <lightning-layout-item size="12">
+                <hr />
+            </lightning-layout-item>
+
+            <lightning-layout-item flexibility="auto" class="slds-var-p-horizontal_xx-small slds-var-p-horizontal_small" if:true={isChecklistVisible}>
+                <lightning-button variant="base" label="Activity Checklist" title="Activity Checklist" onclick={handleActivityChecklistClick}></lightning-button>
+            </lightning-layout-item>
+
+            <lightning-layout-item flexibility="auto" class="slds-var-p-horizontal_xx-small slds-var-p-horizontal_small" if:true={isPMChecklistVisible}>
+                <lightning-button variant="base" label="PM Checklist" title="PM Checklist" onclick={handlePMChecklistClick}></lightning-button>
+            </lightning-layout-item>
+
+            <lightning-layout-item flexibility="auto" class="slds-var-p-horizontal_xx-small slds-var-p-horizontal_small" if:true={isTroubleshootingVisible}>
+                <lightning-button variant="base" label="Troubleshooting" title="Troubleshooting" onclick={handleTroubleshootingClick}></lightning-button>
+            </lightning-layout-item>
+
+            <lightning-layout-item flexibility="auto" class="slds-var-p-horizontal_xx-small slds-var-p-horizontal_small">
+                <lightning-button variant="base" label="Technical Support" title="Technical Support" onclick={handleTechnicalSupportClick}></lightning-button>
+            </lightning-layout-item>
+
+
+            <lightning-layout-item flexibility="auto" class="slds-var-p-horizontal_xx-small slds-var-p-horizontal_small" if:true={isInstallationReportVisible}>
+                <lightning-button variant="base" label="Installation Report" title="Installation Report" onclick={handleInstallationReportClick}></lightning-button>
+            </lightning-layout-item>
+            <lightning-layout-item flexibility="auto" class="slds-var-p-horizontal_xx-small slds-var-p-horizontal_small" if:true={isServiceReportVisible}>
+                <lightning-button variant="base" label="Service Report" title="Service Report" onclick={handleServiceReportClick}></lightning-button>
+            </lightning-layout-item>
+
+            <lightning-layout-item flexibility="auto" class="slds-var-p-horizontal_xx-small slds-var-p-horizontal_small" if:true={isHistoryVisible}>
+                <lightning-button variant="base" label="Asset History" title="Asset History" onclick={handleAssetHistoryClick}></lightning-button>
+            </lightning-layout-item>
+
+
+            <!--
+            <lightning-layout-item flexibility="auto" class="slds-var-p-horizontal_xx-small slds-var-p-horizontal_small">
+                <lightning-button variant="base" label="Activity Logging" title="Activity Logging" onclick={handleActivityLoggingClick}></lightning-button>
+            </lightning-layout-item>
+            -->
+
+            <lightning-layout-item flexibility="auto" class="slds-var-p-horizontal_xx-small slds-var-p-horizontal_small" if:true={isSpareRequestVisible}>
+                <lightning-button variant="base" label="Spare Request" title="Spare Request" onclick={handleSpareRequestClick}></lightning-button>
+            </lightning-layout-item>
+
+            <!--
+            <lightning-layout-item flexibility="auto" class="slds-var-p-horizontal_xx-small slds-var-p-horizontal_small">
+                <lightning-button variant="base" label="View Spare Requests" title="View Spare Requests" onclick={handleEditSpareClick}></lightning-button>
+            </lightning-layout-item>
+            <lightning-layout-item flexibility="auto" class="slds-var-p-horizontal_xx-small slds-var-p-horizontal_small">
+                <lightning-button variant="base" label="Create Quotation" title="Create Quotation" onclick={handleCreateEnquiryClick}></lightning-button>
+            </lightning-layout-item>
+            <lightning-layout-item flexibility="auto" class="slds-var-p-horizontal_xx-small slds-var-p-horizontal_small" if:false={isInstallationCase}>
+                <lightning-button variant="base" label="Spare Return" title="Spare Return" onclick={handleSpareReturnClick}></lightning-button>
+            </lightning-layout-item>
+            -->
+
+            <lightning-layout-item flexibility="auto" class="slds-var-p-horizontal_xx-small slds-var-p-horizontal_small" if:true={isServiceRequestVisible}>
+                <lightning-button variant="base" label="Service Request" title="Service Request" onclick={handleServiceRequestClick}></lightning-button>
+            </lightning-layout-item>
+
+            <lightning-layout-item if:true={serviceAppointment.isCaseOwnerAndUserSame} flexibility="auto" class="slds-var-p-horizontal_xx-small slds-var-p-horizontal_small">
+                <lightning-button variant="base" label="Close Case" title="Close Case" onclick={handleCloseCaseClick}></lightning-button>
+            </lightning-layout-item>
+
+        </lightning-layout>
+
+        <lightning-layout if:false={isCheckedIn} multiple-rows vertical-align="stretch" horizontal-align="center" class="slds-var-p-top_large">
+            <lightning-layout-item flexibility="auto" class="slds-var-p-horizontal_xx-small slds-var-p-horizontal_small" if:true={isServiceRequestVisible}>
+                <lightning-button variant="base" label="Service Request" title="Service Request" onclick={handleServiceRequestClick}></lightning-button>
+            </lightning-layout-item>
+        </lightning-layout>
+
+    </lightning-card>
+
+
+
+    <template if:true={isRequestAdditionalResourceModalOpen}>
+        <div class="custom-modal">
+            <section role="dialog" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <template if:true={showSpinner}>
+                        <lightning-spinner alternative-text="Loading" variant="brand" size="medium"></lightning-spinner>
+                    </template>
+                    <header class="slds-modal__header">
+                        <span class="slds-modal__close">
+                            <lightning-icon icon-name="utility:close" alternative-text="close" onclick={handleCloseModal}></lightning-icon>
+                        </span>
+                        <h2 class="slds-text-heading_medium slds-hyphenate">Additional Resource Request</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium">
+                        <!-- <lightning-textarea name="requestAdditionResourceComment" label="Comments" class="additional-resource-request-comment" value={requestAdditionResourceComment} max-length="255"
+                            onchange={handleCommentsChange} required></lightning-textarea> -->
+                        <lightning-combobox name="requestAdditionResourceComment" label="Comments" class="additional-resource-request-comment" value={requestAdditionResourceComment}
+                            placeholder="Select a comment" options={commentOptions} onchange={handleCommentsChange} required>
+                        </lightning-combobox>
+                        <lightning-input type="date" label="Proposed Date" name="proposedDate" value={proposedDate} min={minDate} onchange={handleDateChange}>
+                        </lightning-input>
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <lightning-button variant="brand" class="slds-var-p-right_x-small" label="Save" title="Save" onclick={handleAdditionalResourceRequestSubmit}></lightning-button>
+                        <lightning-button label="Cancel" class="slds-var-p-left_x-small" title="Cancel" onclick={handleCloseModal}></lightning-button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </div>
+    </template>
+
+
+    <template if:true={isRequestReAssignmentModalOpen}>
+        <div class="custom-modal">
+            <section role="dialog" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <template if:true={showSpinner}>
+                        <lightning-spinner alternative-text="Loading" variant="brand" size="medium"></lightning-spinner>
+                    </template>
+                    <header class="slds-modal__header">
+                        <span class="slds-modal__close">
+                            <lightning-icon icon-name="utility:close" alternative-text="close" onclick={handleCloseModal}></lightning-icon>
+                        </span>
+                        <h2 class="slds-text-heading_medium slds-hyphenate">Re-Assignment Request</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium">
+                        <!-- <lightning-textarea name="requestReAssignmentComment" label="Comments" class="request-re-assignment-comment" value={requestReAssignmentComment} onchange={handleCommentsChange}
+                            required></lightning-textarea> -->
+                        <lightning-combobox name="requestReAssignmentComment" label="Comments" class="request-re-assignment-comment" value={requestReAssignmentComment} placeholder="Select a comment"
+                            options={reAssignmentCommentOptions} onchange={handleCommentsChange} required>
+                        </lightning-combobox>
+
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <lightning-button variant="brand" class="slds-var-p-right_x-small" label="Save" title="Save" onclick={handleRequestReAssignmentSubmit}></lightning-button>
+                        <lightning-button label="Cancel" class="slds-var-p-left_x-small" title="Cancel" onclick={handleCloseModal}></lightning-button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </div>
+    </template>
+
+
+    <template if:true={isFileUploadModalOpen}>
+        <div class="custom-modal">
+            <section role="dialog" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <span class="slds-modal__close">
+                            <lightning-icon icon-name="utility:close" alternative-text="close" onclick={handleCloseFileUploadModal}></lightning-icon>
+                        </span>
+                        <h2 class="slds-text-heading_medium slds-hyphenate">Upload File</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium">
+                        <lightning-layout multiple-rows>
+                            <template for:each={serviceAppointment.contentDocumentLinks} for:item="contentDocumentLink">
+                                <lightning-layout-item key={contentDocumentLink.id} size="12" small-device-size="12" medium-device-size="6" large-device-size="6"
+                                    class="slds-var-p-around_small slds-text-align_center">
+                                    <div class="vertical-flex">
+                                        <!-- data-id={contentDocumentLink.ContentDocumentId} onclick={handleNavigateToFilePreview} -->
+                                        <div>
+                                            <img style="max-height: 200px; object-fit: contain" src={contentDocumentLink.url} />
+                                        </div>
+                                        <div class="slds-truncate">{contentDocumentLink.title}</div>
+                                        <lightning-button variant="destructive-text" label="Delete" title="Delete" class="slds-var-m-top_small" onclick={handleDeleteFile}
+                                            data-id={contentDocumentLink.ContentDocumentId}></lightning-button>
+                                    </div>
+                                </lightning-layout-item>
+                            </template>
+                        </lightning-layout>
+
+                        <div class="slds-text-align_center">
+                            <!-- <lightning-file-upload record-id={serviceAppointment.id} name="fileUploader" accept={acceptedFormats} variant="brand"
+                                onuploadfinished={handleGetServiceAppointmentDetails}></lightning-file-upload> -->
+                            <div class="slds-p-around_medium">
+                                <lightning-input type="file" label="" accept={acceptedFormats} multiple onchange={handleFileSelect}></lightning-input>
+
+                                <div class="slds-text-body_small slds-text-color_weak slds-m-top_xx-small">
+                                    <!-- (Maximum 2MB)  -->
+                                    (Please ensure the file size is no larger than 2MB.)
+                                </div>
+
+                                <template if:true={fileError}>
+                                    <div class="slds-text-color_error slds-m-top_small">{fileError}</div>
+                                </template>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </div>
+    </template>
+    <!--  -->
+    <template if:true={isTechSupportModalOpen}>
+        <div class="custom-modal">
+            <section role="dialog" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <!-- Modal Header -->
+                    <template if:true={showSpinner}>
+                        <lightning-spinner alternative-text="Loading" variant="brand" size="medium"></lightning-spinner>
+                    </template>
+                    <header class="slds-modal__header">
+                        <span class="slds-modal__close">
+                            <lightning-icon icon-name="utility:close" alternative-text="close" onclick={closeTechSupportModal}></lightning-icon>
+                        </span>
+                        <h2 class="slds-text-heading_medium slds-hyphenate">Technical Support</h2>
+                    </header>
+
+                    <!-- Modal Body -->
+                    <div class="slds-modal__content slds-p-around_medium">
+                        <!-- <lightning-textarea label="Comments / Description" value={technicalSupportComments} onchange={handleTechSupportCommentChange}> -->
+                        <lightning-textarea class="technical-support-comment" label="Comments / Description" value={technicalSupportComments} onchange={handleTechSupportCommentChange}
+                            max-length="254">
+                        </lightning-textarea>
+                        <div class="slds-text-body_small slds-text-color_weak slds-m-top_xx-small">
+                            {charCount}/{maxCharCount} characters
+                        </div>
+                        <!-- </lightning-textarea> -->
+                    </div>
+
+                    <!-- Modal Footer -->
+                    <footer class="slds-modal__footer">
+                        <lightning-button label="Cancel" title="Cancel" class="slds-var-m-right_small" onclick={closeTechSupportModal}></lightning-button>
+                        <lightning-button variant="brand" label="Submit" title="Submit" onclick={submitTechSupport}></lightning-button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </div>
+    </template>
+
+    <!--  -->
+
+
+</template>

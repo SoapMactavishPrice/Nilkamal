@@ -1,0 +1,12 @@
+.full-width {
+    width: 100% !important;
+}
+
+.slds-scrollable_x {
+    overflow-x: auto;
+}
+
+.full-width table {
+    width: 100%;
+    min-width: 800px;
+}

@@ -1,0 +1,1515 @@
+<apex:page standardStylesheets="false" renderAs="pdf" applyHtmlTag="false" applyBodyTag="false" showHeader="false" docType="html-5.0" controller="InstallationReportPdfController">
+
+    <!-- Printer Installation Report – based on existing InstallationReportPDF layout -->
+
+    <head>
+        <style type="text/css" media="print">
+            @page {
+                padding-top: 60px;
+                margin-bottom:70px;
+                @top-center {
+                    content: element(header);
+                }
+                @bottom-right {
+                    content: element(footer);
+                }
+            }
+            div.header {
+                padding: 10px;
+                display: block;
+                position: running(header);
+            }
+            div.footer {
+                width: 98%;
+                padding: 5px;
+                display: block;
+                text-align: right;
+                position: running(footer);
+            }
+            .pagenumber:before {
+                content: counter(page);
+            }
+            .pagecount:before {
+                content: counter(pages);
+            }
+
+            body {
+                padding-top: 20px;
+                /* Align base font with Service Report PDF */
+                font-size: 12px;
+            }
+
+            .pdf-table-input{
+                width: 100%;
+                border: 1px solid #000;
+                border-top: 1px solid #000;
+                border-bottom: 1px solid #000;
+            }
+            .table-container {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 5px 0;
+                /* Match Service Report table font size */
+                font-size: 12px;
+                /* Prevent table from breaking across pages */
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            .table-container td {
+                border: 1px solid #000;
+                padding: 8px;
+            }
+            /* Prevent table rows from breaking */
+            .table-container tr {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            .table-container td.label {
+                font-weight: bold;
+                /* Left-align labels like Service Report */
+                text-align: left;
+            }
+            /* General styling for text alignment and table borders */
+            .main-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 20px 0;
+                /* Slightly smaller for dense parameter tables, as in Service Report */
+                font-size: 9px;
+                /* Prevent table from breaking across pages */
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            .main-table td {
+                border: 1px solid #000;
+                padding: 8px;
+                text-align: left;
+            }
+            /* Prevent table rows from breaking */
+            .main-table tr {
+                page-break-inside: avoid;
+                break-inside: avoid;
+            }
+            .maintenance-schedule {
+                text-align: center;
+                font-weight: bold;
+                margin-top: 10px;
+            }
+            .schedule-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 10px 0;
+            }
+            .schedule-table td {
+                border: 1px solid #000;
+                padding: 5px;
+                text-align: center;
+            }
+            .signature-section {
+                display: flex;
+                justify-content: space-between;
+                margin-top: 20px;
+            }
+            .signature-box {
+                width: 48%;
+                border: 1px solid black;
+                padding: 10px;
+                text-align: left;
+            }
+            .signature-title {
+                font-weight: bold;
+                margin-bottom: 10px;
+            }
+            .report-table{
+                width: 100%;
+                border-collapse: collapse;
+                border-spacing: 0;
+                -fs-table-paginate: paginate;
+            }
+
+            /* Long text wrapping similar to Service Report (for remarks etc.) */
+            .wrap-text {
+                white-space: pre-wrap;
+                word-wrap: break-word;
+                overflow-wrap: break-word;
+                word-break: break-word;
+                line-height: 1.3;
+                font-size: 11px;
+                text-align: left;
+            }
+
+            .header-cell {
+                text-align: left;
+                font-weight: bold;
+                padding: 3px 5px;
+                margin-top: 9px !important;
+            }
+
+            /* Section containers to prevent page breaks */
+            .section-container {
+                page-break-inside: avoid;
+                break-inside: avoid;
+                margin-bottom: 10px;
+                orphans: 3;
+                widows: 3;
+            }
+
+            /* Photo section specific styling */
+            .photo-section {
+                page-break-inside: avoid;
+                break-inside: avoid;
+                orphans: 2;
+                widows: 2;
+            }
+
+            ol li {
+                padding: 8px 0px 8px 0px;
+            }
+            ol li ol li {
+                padding: 4px 0px 4px 0px;
+            }
+        </style>
+    </head>
+
+    <body>
+
+        <!-- <apex:outputPanel rendered="{!isPreview}">
+            <img src="{!URLFOR($Resource.Watermark)}" width="100%" height="100%" style="position: fixed;background-repeat:repeat;left: 0cm; top:0cm; z-index:0" />
+        </apex:outputPanel> -->
+
+        <div class="header">
+            <table style=" width:100%;border:none;margin-top:10px; border-collapse: collapse; ">
+                <tr>
+                    <td style="padding-left:90px;border-collapse:collapse;text-align:center;">
+                        <strong style="width:100%; font-size:15px; font-family:Times New Roman;"><i>Nilkamal Limited</i></strong>
+                        <strong>
+                            <p style="margin:0px;font-size:10px;">SERVICE DIVISION</p>
+                        </strong>
+                    </td>
+                    <td style="padding:5px 5px;font-size:16px;border-collapse: collapse;width:10%;">
+                        <img style="width:100px;height:50px" alt="logo" src="{!$Resource.NilkamalLogo}"/>
+                    </td>
+                </tr>
+                <h6 style="font-family : Microsoft Sans Serif; text-align:center; font-size: 10px;margin:0px;padding:0px;">Regd. / Administrative Office : Nilkamal Houce, Plot No. 77/78, Street No.14, M.I.D.C., Andheri (E) , Mumbai - 93.
+                    <br/>Tel: (022) 4235 8825 Mobile : 80077 73280 Fax : 98230 38284 E-mail : mhe.services@nilkamal.com
+                </h6>
+            </table>
+        </div>
+
+        <div class="footer">
+            <div>Page <span class="pagenumber"/> of <span class="pagecount"/></div>
+        </div>
+
+        <div class="content">
+
+            <!-- Header: Sr. No / Commissioning Report / Date -->
+            <table style="width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 10px; font-size: 12px;">
+                <tr>
+                    <td style="text-align: left; width: 33%; border: 1px solid #000; padding: 6px;">
+                        <b>Sr. No.</b> {!record.Name}
+                    </td>
+                    <td style="text-align: center; width: 34%; border: 1px solid #000; padding: 6px;">
+                        <b>INSTALLATION REPORT</b>
+                    </td>
+                    <td style="text-align: right; width: 33%; border: 1px solid #000; padding: 6px;">
+                        <b>Date:</b>
+                        <apex:outputText value="{0, date, dd/MM/yyyy}">
+                            <apex:param value="{!today}" />
+                        </apex:outputText>
+                    </td>
+                </tr>
+            </table>
+
+            <!-- Customer / Header block - CIJ only -->
+            <apex:outputPanel rendered="{!record.Case__r.Asset.Product2.Material_Group_5__c = 'P01'}">
+                <div class="section-container">
+                <table class="table-container" style="width: 100%;border-collapse: collapse;margin: 5px 0;font-size: 12px;">
+                    <tr>
+                        <td class="label" style="padding: 6px;">Customer Name</td>
+                        <td colspan="3" style="padding: 6px;">{!IF(ISBLANK(record.Customer_Name__c), record.Case__r.Account.Name, record.Customer_Name__c)}</td>
+                        <td class="label" style="padding: 6px;">Party Code</td>
+                        <td style="padding: 6px;">{!IF(ISBLANK(record.Party_Code__c), record.Case__r.Account.SAP_Customer_code__c, record.Party_Code__c)}</td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="padding: 6px;">Contact Person Name &amp; No</td>
+                        <td colspan="2" style="padding: 6px;">{!record.Case__r.Contact.Name}</td>
+                        <td colspan="3" style="padding: 6px;">{!record.Case__r.ContactMobile}</td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="padding: 6px;">Location</td>
+                        <td colspan="5" style="padding: 6px;">{!record.Location__c}</td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="padding: 6px;">Printer Model</td>
+                        <td colspan="2" style="padding: 6px;">{!record.Printer_Model__c}</td>
+                        <td class="label" style="padding: 6px;">Printer Sr. No.</td>
+                        <td colspan="2" style="padding: 6px;">{!record.Printer_Serial_Number__c}</td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="padding: 6px;">Ink Part No</td>
+                        <td colspan="2" style="padding: 6px;">{!record.Ink_Part_No__c}</td>
+                        <td class="label" style="padding: 6px;">Ink EXP Date</td>
+                        <td colspan="2" style="padding: 6px;">
+                            <apex:outputText value="{0,date,dd MMM yyyy}" rendered="{!NOT(ISNULL(record.Ink_Exp_Date__c))}">
+                                <apex:param value="{!record.Ink_Exp_Date__c}"/>
+                            </apex:outputText>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="padding: 6px;">Make up Part No</td>
+                        <td colspan="2" style="padding: 6px;">{!record.Make_Up_Part_No__c}</td>
+                        <td class="label" style="padding: 6px;">Make EXP Date</td>
+                        <td colspan="2" style="padding: 6px;">
+                            <apex:outputText value="{0,date,dd MMM yyyy}" rendered="{!NOT(ISNULL(record.Make_Up_Exp_Date__c))}">
+                                <apex:param value="{!record.Make_Up_Exp_Date__c}"/>
+                            </apex:outputText>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="padding: 6px;">Software No</td>
+                        <td colspan="2" style="padding: 6px;">{!record.Software_No__c}</td>
+                        <td class="label" style="padding: 6px;">Nozzle Sr. No</td>
+                        <td colspan="2" style="padding: 6px;">{!record.Nozzle_Serial_No__c}</td>
+                    </tr>
+                </table>
+                </div>
+            </apex:outputPanel>
+
+            <!-- TIJ specific header - matching sheet layout -->
+            <apex:outputPanel rendered="{!record.Case__r.Asset.Product2.Material_Group_5__c = 'P03'}">
+                <!-- Basic Information and Printer Details -->
+                <div class="section-container">
+                <table class="table-container" style="width: 100%;border-collapse: collapse;margin: 5px 0;font-size: 12px;">
+                    <tr>
+                        <td class="label" style="padding: 6px;">Customer Name :</td>
+                        <td style="padding: 6px;">{!IF(ISBLANK(record.Customer_Name__c), record.Case__r.Account.Name, record.Customer_Name__c)}</td>
+                        <td class="label" style="padding: 6px;">Party Code</td>
+                        <td style="padding: 6px;">{!IF(ISBLANK(record.Party_Code__c), record.Case__r.Account.SAP_Customer_code__c, record.Party_Code__c)}</td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="padding: 6px;">Contact Person Name</td>
+                        <td style="padding: 6px;">{!record.Case__r.Contact.Name}</td>
+                        <td class="label" style="padding: 6px;">Contact No.:</td>
+                        <td style="padding: 6px;">{!record.Case__r.ContactMobile}</td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="padding: 6px;">TIJ Model No:</td>
+                        <td style="padding: 6px;">{!record.TIJ_Model_No__c}</td>
+                        <td class="label" style="padding: 6px;">Number of head :</td>
+                        <td style="padding: 6px;">{!record.Number_of_head__c}</td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="padding: 6px;">Software No</td>
+                        <td style="padding: 6px;">{!record.Software_No__c}</td>
+                        <td class="label" style="padding: 6px;">Next Visit Proposed Date:</td>
+                        <td style="padding: 6px;">
+                            <apex:outputText value="{0,date,dd/MM/yyyy}" rendered="{!NOT(ISNULL(record.Next_Visit_Proposed_Date__c))}">
+                                <apex:param value="{!record.Next_Visit_Proposed_Date__c}"/>
+                            </apex:outputText>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="padding: 6px;">Customer Application :</td>
+                        <td style="padding: 6px;">{!record.Customer_Application__c}</td>
+                        <!-- <td class="label" style="padding: 6px;">Firmware Number</td>
+                        <td style="padding: 6px;">{!record.Firmware_Number__c}</td> -->
+                    </tr>
+                    <tr>
+                        <td class="label" style="padding: 6px;">Product Counter :-</td>
+                        <td style="padding: 6px;">{!record.Product_Counter__c}</td>
+                        <td class="label" style="padding: 6px;">Used ink cartridge :</td>
+                        <td style="padding: 6px;">{!record.Used_ink_cartridge__c}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="2"></td>
+                        <td class="label" style="padding: 6px;">Cartridge Exp Date :-</td>
+                        <td style="padding: 6px;">
+                            <apex:outputText value="{0,date,dd MMM yyyy}" rendered="{!NOT(ISNULL(record.Cartridge_Exp_Date__c))}">
+                                <apex:param value="{!record.Cartridge_Exp_Date__c}"/>
+                            </apex:outputText>
+                        </td>
+                    </tr>
+                </table>
+                </div>
+                
+                <!-- Production Environment Section for TIJ -->
+                <div class="section-container">
+                <table class="table-container" style="width: 100%;border-collapse: collapse;margin: 5px 0;font-size: 12px;">
+                    <tr>
+                        <td class="label" style="padding: 6px; width: 16.66%;">Industry Type:</td>
+                        <td style="padding: 6px; width: 16.66%;">{!record.Industry_Type__c}</td>
+                        <td class="label" style="padding: 6px; width: 16.66%;">Substrate Type:</td>
+                        <td style="padding: 6px; width: 16.66%;">{!record.Substrate_Type__c}</td>
+                        <td class="label" style="padding: 6px; width: 16.66%;">Customer Product Name</td>
+                        <td style="padding: 6px; width: 16.66%;">{!record.Customer_Product_Name__c}</td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="padding: 6px;">Line Speed meter per/Min</td>
+                        <td style="padding: 6px;">{!record.Line_Speed_meter_per_Min__c}</td>
+                        <td class="label" style="padding: 6px;">Customer Requirement</td>
+                        <td style="padding: 6px;"></td>
+                        <td colspan="2"></td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="padding: 6px;">Work Load</td>
+                        <td style="padding: 6px;">{!record.Work_Load_Hrs_Day__c} Hrs Per Day</td>
+                        <td style="padding: 6px;">{!record.Work_Load_Days_Wk__c} Days Per Week</td>
+                        <td class="label" style="padding: 6px;">Shift</td>
+                        <td style="padding: 6px;">{!record.Shift__c}</td>
+                        <td></td>
+                    </tr>
+                </table>
+                </div>
+                
+                <!-- TIJ Parameter Settings - Full Table Format -->
+                <div class="section-container">
+                <table class="table-container" style="width: 100%;border-collapse: collapse;margin: 5px 0;font-size: 11px;">
+                    <thead>
+                        <tr>
+                            <td class="label" style="padding: 6px; font-weight: bold; text-align: center; border: 1px solid #000;">Parameter</td>
+                            <td class="label" style="padding: 6px; font-weight: bold; text-align: center; border: 1px solid #000;">Selection Options list</td>
+                            <td class="label" style="padding: 6px; font-weight: bold; text-align: center; border: 1px solid #000;">If Selected type</td>
+                            <td class="label" style="padding: 6px; font-weight: bold; text-align: center; border: 1px solid #000;">Selection Value</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <apex:repeat value="{!installationReportParameters}" var="param">
+                            <tr>
+                                <td class="label" style="padding: 6px; border: 1px solid #000;">{!param.Name}</td>
+                                <td style="padding: 6px; border: 1px solid #000;">{!param.Selection_Options_List__c}</td>
+                                <td style="padding: 6px; border: 1px solid #000;">{!param.Selected_Type__c}</td>
+                                <td style="padding: 6px; border: 1px solid #000;">{!param.Selection_Value__c}</td>
+                            </tr>
+                        </apex:repeat>
+                        <apex:outputPanel rendered="{!installationReportParameters.size == 0}">
+                            <tr>
+                                <td style="padding: 6px; border: 1px solid #000;"></td>
+                                <td style="padding: 6px; border: 1px solid #000;"></td>
+                                <td style="padding: 6px; border: 1px solid #000;"></td>
+                                <td style="padding: 6px; border: 1px solid #000;"></td>
+                            </tr>
+                        </apex:outputPanel>
+                    </tbody>
+                </table>
+                </div>
+                
+                <!-- Photo Sections for TIJ -->
+                <div class="section-container photo-section">
+                <table class="table-container" style="width: 100%;border-collapse: collapse;margin: 5px 0;font-size: 12px;">
+                    <tr>
+                        <td class="label" style="padding: 6px; text-align: center; width: 33.33%;">Photo 01 print head direction Photo</td>
+                        <td class="label" style="padding: 6px; text-align: center; width: 33.33%;">Photo 2 Printing message Photo / Quality</td>
+                        <td class="label" style="padding: 6px; text-align: center; width: 33.33%;">Photo 03 Packing / check list validation photo with signature</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px; text-align: center; vertical-align: top;">
+                            <apex:outputPanel rendered="{!printHeadDirectionImages.size > 0}">
+                                <apex:repeat value="{!printHeadDirectionImages}" var="imgWrapper">
+                                    <div style="text-align: center; margin-bottom: 5px;">
+                                        <apex:image url="{!imgWrapper.imageUrl}" width="150" height="150" style="max-width: 150px; max-height: 150px; border: 1px solid #ccc;"/>
+                                        <br/>
+                                        <span style="font-size: 10px; word-wrap: break-word;">{!imgWrapper.title}</span>
+                                    </div>
+                                </apex:repeat>
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!printHeadDirectionImages.size == 0}">
+                                <div style="padding: 20px; height: 80px;"></div>
+                            </apex:outputPanel>
+                        </td>
+                        <td style="padding: 6px; text-align: center; vertical-align: top;">
+                            <apex:outputPanel rendered="{!printingMessageImages.size > 0}">
+                                <apex:repeat value="{!printingMessageImages}" var="imgWrapper">
+                                    <div style="text-align: center; margin-bottom: 5px;">
+                                        <apex:image url="{!imgWrapper.imageUrl}" width="150" height="150" style="max-width: 150px; max-height: 150px; border: 1px solid #ccc;"/>
+                                        <br/>
+                                        <span style="font-size: 10px; word-wrap: break-word;">{!imgWrapper.title}</span>
+                                    </div>
+                                </apex:repeat>
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!printingMessageImages.size == 0}">
+                                <div style="padding: 20px; height: 80px;"></div>
+                            </apex:outputPanel>
+                        </td>
+                        <td style="padding: 6px; text-align: center; vertical-align: top;">
+                            <apex:outputPanel rendered="{!packingChecklistImages.size > 0}">
+                                <apex:repeat value="{!packingChecklistImages}" var="imgWrapper">
+                                    <div style="text-align: center; margin-bottom: 5px;">
+                                        <apex:image url="{!imgWrapper.imageUrl}" width="150" height="150" style="max-width: 150px; max-height: 150px; border: 1px solid #ccc;"/>
+                                        <br/>
+                                        <span style="font-size: 10px; word-wrap: break-word;">{!imgWrapper.title}</span>
+                                    </div>
+                                </apex:repeat>
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!packingChecklistImages.size == 0}">
+                                <div style="padding: 20px; height: 80px;"></div>
+                            </apex:outputPanel>
+                        </td>
+                    </tr>
+                </table>
+                </div>
+                
+                <!-- Repair Times and Service Rating - TIJ -->
+                <div class="section-container">
+                <table class="table-container" style="width: 100%;border-collapse: collapse;margin: 5px 0;font-size: 12px;border: 1px solid #000;">
+                    <tr>
+                        <td style="border: 1px solid #000;padding: 8px;"><b>Repair Start Time</b></td>
+                        <td style="border: 1px solid #000;padding: 8px;">{!record.Repair_Start_Time__c}</td>
+                        <td style="border: 1px solid #000;padding: 8px;"><b>Repair End Time</b></td>
+                        <td style="border: 1px solid #000;padding: 8px;">{!record.Repair_End_Time__c}</td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #000;padding: 8px;"><b>Service Rating:</b></td>
+                        <td style="border: 1px solid #000;padding: 8px;" colspan="3">{!record.Service_Rating__c}</td>
+                    </tr>
+                </table>
+                </div>
+                
+                <!-- Customer's Comments Section for TIJ -->
+                <div class="section-container">
+                <table class="table-container" style="width: 100%;border-collapse: collapse;margin: 5px 0;font-size: 12px;">
+                    <tr>
+                        <td class="label" style="padding: 6px; width: 20%;">Customer's Comments :</td>
+                        <td colspan="3" style="padding: 6px; height: 40px;" class="wrap-text">{!record.Customer_Remark__c}</td>
+                    </tr>
+                </table>
+                </div>
+                
+                <!-- Engineer Remarks Section for TIJ -->
+                <div class="section-container">
+                <table class="table-container" style="width: 100%;border-collapse: collapse;margin: 5px 0;font-size: 12px;">
+                    <tr>
+                        <td class="label" style="padding: 6px; width: 20%;">Engineer Remarks :</td>
+                        <td colspan="3" style="padding: 6px; height: 40px;" class="wrap-text">{!record.Engineer_Remarks__c}</td>
+                    </tr>
+                </table>
+                </div>
+                
+                <!-- M/C Status and Complaint Status Section for TIJ -->
+                <div class="section-container">
+                <table class="table-container" style="width: 100%;border-collapse: collapse;margin: 5px 0;font-size: 12px;">
+                    <tr>
+                        <td class="label" style="padding: 6px; width: 20%;">M/C Breakdown (Y/N)</td>
+                        <td style="padding: 6px; width: 20%;">
+                            <apex:outputText value="Y" rendered="{!record.M_C_Breakdown__c == true}"/>
+                            <apex:outputText value="N" rendered="{!record.M_C_Breakdown__c == false}"/>
+                        </td>
+                        <td class="label" style="padding: 6px; width: 20%;">M/C Temporary Down (Y/N)</td>
+                        <td style="padding: 6px; width: 20%;">
+                            <apex:outputText value="Y" rendered="{!record.M_C_Temporary_Down__c == true}"/>
+                            <apex:outputText value="N" rendered="{!record.M_C_Temporary_Down__c == false}"/>
+                        </td>
+                        <td class="label" style="padding: 6px; width: 20%;">M/C Running (Y/N)</td>
+                        <td style="padding: 6px; width: 20%;">
+                            <apex:outputText value="Y" rendered="{!record.M_C_Running__c == true}"/>
+                            <apex:outputText value="N" rendered="{!record.M_C_Running__c == false}"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="padding: 6px; width: 20%;">Complaint Status:</td>
+                        <td style="padding: 6px; width: 30%;">{!record.Complaint_Status__c}</td>
+                        <td class="label" style="padding: 6px; width: 20%;">Next Visit Proposed Date:</td>
+                        <td style="padding: 6px; width: 30%;">
+                            <apex:outputText value="{0,date,dd/MM/yyyy}" rendered="{!NOT(ISNULL(record.Next_Visit_Proposed_Date__c))}">
+                                <apex:param value="{!record.Next_Visit_Proposed_Date__c}"/>
+                            </apex:outputText>
+                        </td>
+                    </tr>
+                </table>
+                </div>
+                
+                <!-- Common Contact Information -->
+                <h3 style="text-align: center; font-size: 12px; margin: 20px 0;">
+                    E-mail : 
+                    <a href="mailto:printer.service1@nilkamal.com" style="color: #0000EE; text-decoration: none;">
+                        printer.service1@nilkamal.com
+                    </a>
+                    <span style="margin: 0 10px;">Toll Free No:</span>
+                    <a href="tel:18008909115" style="color: #0000EE; text-decoration: none;">
+                        1800 890 9115
+                    </a>
+                </h3>
+                
+                <!-- Customer Comments -->
+                <div class="section-container">
+                <table class="table-container" style="width: 100%;border-collapse: collapse;margin: 5px 0;font-size: 12px;">
+                    <tr>
+                        <td class="label" style="padding: 6px; width: 20%;">Customer's Comments :</td>
+                        <td colspan="3" style="padding: 6px; height: 40px;" class="wrap-text">{!record.Customer_Remark__c}</td>
+                    </tr>
+                </table>
+                </div>
+            </apex:outputPanel>
+
+            <!-- TTO specific header - matching sheet layout -->
+            <apex:outputPanel rendered="{!record.Case__r.Asset.Product2.Material_Group_5__c = 'P02'}">
+                <!-- Basic Information and Printer Details -->
+                <div class="section-container">
+                <table class="table-container" style="width: 100%;border-collapse: collapse;margin: 5px 0;font-size: 12px;">
+                    <tr>
+                        <td class="label" style="padding: 6px; width: 20%;">Customer Name</td>
+                        <td colspan="3" style="padding: 6px;">{!IF(ISBLANK(record.Customer_Name__c), record.Case__r.Account.Name, record.Customer_Name__c)}</td>
+                        <td class="label" style="padding: 6px; width: 20%;">Party Code</td>
+                        <td style="padding: 6px;">{!IF(ISBLANK(record.Party_Code__c), record.Case__r.Account.SAP_Customer_code__c, record.Party_Code__c)}</td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="padding: 6px;">Contact Person Name &amp; No</td>
+                        <td colspan="2" style="padding: 6px;">{!record.Case__r.Contact.Name}</td>
+                        <td colspan="3" style="padding: 6px;">{!record.Case__r.ContactMobile}</td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="padding: 6px;">Location</td>
+                        <td colspan="2" style="padding: 6px;">{!record.Location__c}</td>
+                        <td colspan="3"></td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="padding: 6px;">Printer Model</td>
+                        <td colspan="2" style="padding: 6px;">{!record.Printer_Model__c}</td>
+                        <td class="label" style="padding: 6px;">Printer Sr.No.</td>
+                        <td colspan="2" style="padding: 6px;">{!record.Printer_Serial_Number__c}</td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="padding: 6px;">Ribbon Part No</td>
+                        <td colspan="2" style="padding: 6px;">{!record.Ribbon_Part_No__c}</td>
+                        <td class="label" style="padding: 6px;">Ribbon Expiration Date</td>
+                        <td colspan="2" style="padding: 6px;">
+                            <apex:outputText value="{0,date,dd MMM yyyy}" rendered="{!NOT(ISNULL(record.Ribbon_EXP_date__c))}">
+                                <apex:param value="{!record.Ribbon_EXP_date__c}"/>
+                            </apex:outputText>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="padding: 6px;">Software NO :-</td>
+                        <td colspan="2" style="padding: 6px;">{!record.Software_No__c}</td>
+                        <td class="label" style="padding: 6px;">Print head serial Number</td>
+                        <td colspan="2" style="padding: 6px;">{!record.Print_head_serial_Number__c}</td>
+                    </tr>
+                </table>
+                </div>
+
+                <!-- Physical check - TTO specific -->
+                <div class="section-container">
+                <table class="table-container" style="width: 100%;border-collapse: collapse;margin: 5px 0;font-size: 12px;">
+                    <tr>
+                        <td class="label" rowspan="8" style="padding: 6px; vertical-align: top;">Physical Check /If Missing /Damage - Mention. -</td>
+                        <td class="label" style="padding: 6px;">Packing foam intact</td>
+                        <td style="padding: 6px;">{!record.Packing_foam_intact__c}</td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="padding: 6px;">Print head position lifted?</td>
+                        <td style="padding: 6px;">
+                            {!record.Print_head_position_lifted__c}
+                            <apex:outputPanel rendered="{!printHeadPositionLiftedImages.size > 0}">
+                                <br/>
+                                <apex:repeat value="{!printHeadPositionLiftedImages}" var="imgWrapper">
+                                    <div style="text-align: center; margin-bottom: 5px; display: inline-block; margin-right: 10px;">
+                                        <apex:image url="{!imgWrapper.imageUrl}" width="150" height="150" style="max-width: 150px; max-height: 150px; border: 1px solid #ccc;"/>
+                                        <br/>
+                                        <span style="font-size: 10px; word-wrap: break-word;">{!imgWrapper.title}</span>
+                                    </div>
+                                </apex:repeat>
+                            </apex:outputPanel>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="padding: 6px;">BOM Check list verified</td>
+                        <td style="padding: 6px;">
+                            {!record.BOM_Check_list_verified__c}
+                            <apex:outputPanel rendered="{!bomCheckListImages.size > 0}">
+                                <br/>
+                                <apex:repeat value="{!bomCheckListImages}" var="imgWrapper">
+                                    <div style="text-align: center; margin-bottom: 5px; display: inline-block; margin-right: 10px;">
+                                        <apex:image url="{!imgWrapper.imageUrl}" width="150" height="150" style="max-width: 150px; max-height: 150px; border: 1px solid #ccc;"/>
+                                        <br/>
+                                        <span style="font-size: 10px; word-wrap: break-word;">{!imgWrapper.title}</span>
+                                    </div>
+                                </apex:repeat>
+                            </apex:outputPanel>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="padding: 6px;">Printer Manual Included</td>
+                        <td style="padding: 6px;">{!record.Printer_Manual_Included__c}</td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="padding: 6px;">Sensor</td>
+                        <td style="padding: 6px;">
+                            {!record.Sensor__c}
+                            <apex:outputPanel rendered="{!sensorTTOImages.size > 0}">
+                                <br/>
+                                <apex:repeat value="{!sensorTTOImages}" var="imgWrapper">
+                                    <div style="text-align: center; margin-bottom: 5px; display: inline-block; margin-right: 10px;">
+                                        <apex:image url="{!imgWrapper.imageUrl}" width="150" height="150" style="max-width: 150px; max-height: 150px; border: 1px solid #ccc;"/>
+                                        <br/>
+                                        <span style="font-size: 10px; word-wrap: break-word;">{!imgWrapper.title}</span>
+                                    </div>
+                                </apex:repeat>
+                            </apex:outputPanel>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="padding: 6px;">Encoder</td>
+                        <td style="padding: 6px;">
+                            {!record.Encoder__c}
+                            <apex:outputPanel rendered="{!encoderTTOImages.size > 0}">
+                                <br/>
+                                <apex:repeat value="{!encoderTTOImages}" var="imgWrapper">
+                                    <div style="text-align: center; margin-bottom: 5px; display: inline-block; margin-right: 10px;">
+                                        <apex:image url="{!imgWrapper.imageUrl}" width="150" height="150" style="max-width: 150px; max-height: 150px; border: 1px solid #ccc;"/>
+                                        <br/>
+                                        <span style="font-size: 10px; word-wrap: break-word;">{!imgWrapper.title}</span>
+                                    </div>
+                                </apex:repeat>
+                            </apex:outputPanel>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="padding: 6px;">Sensor &amp; Encoder</td>
+                        <td style="padding: 6px;">{!record.Sensor_Encoder__c}</td>
+                    </tr>
+                    
+                    <tr>
+                        <td class="label" style="padding: 6px;">FRL</td>
+                        <td style="padding: 6px;">{!record.FRL__c}</td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="padding: 6px;">Bracket received as per CRM quote?</td>
+                        <td style="padding: 6px;">{!record.Bracket_received_as_per_CRM_quopte__c}</td>
+                    </tr>
+                    <apex:outputPanel rendered="{!(record.Bracket_received_as_per_CRM_quopte__c == 'No' || record.Bracket_received_as_per_CRM_quopte__c == 'NO') && record.Bracket_received_as_per_CRM_quopte_Text__c != null && record.Bracket_received_as_per_CRM_quopte_Text__c != ''}">
+                        <tr>
+                            <td class="label" style="padding: 6px;">Bracket received as per CRM quote Text:</td>
+                            <td colspan="3" style="padding: 6px;">{!record.Bracket_received_as_per_CRM_quopte_Text__c}</td>
+                        </tr>
+                    </apex:outputPanel>
+                </table>
+                </div>
+            </apex:outputPanel>
+
+            <!-- Physical check - CIJ only -->
+            <apex:outputPanel rendered="{!record.Case__r.Asset.Product2.Material_Group_5__c = 'P01'}">
+                <div class="section-container">
+                <table class="table-container" style="width: 100%;border-collapse: collapse;margin: 5px 0;font-size: 12px;">
+                    <tr>
+                        <td class="label" style="padding: 6px;">Physical Check / If Missing / Damage - Mention</td>
+                        <td style="padding: 6px;">Print Head Stand<br/>{!record.Print_Head_Stand__c}</td>
+                        <td style="padding: 6px;">Printer Stand<br/>{!record.Printer_Stand__c}</td>
+                        <td style="padding: 6px;">Tool Box<br/>{!record.Tool_Box__c}</td>
+                        <td style="padding: 6px;">Printer Manual<br/>{!record.Printer_Manual__c}</td>
+                        <td style="padding: 6px;">Sensor / Encoder<br/>{!IF(NOT(ISBLANK(record.Sensor__c)), record.Sensor__c, '')} {!IF(AND(NOT(ISBLANK(record.Sensor__c)), NOT(ISBLANK(record.Encoder__c))), '/ ', '')} {!IF(NOT(ISBLANK(record.Encoder__c)), record.Encoder__c, '')}</td>
+                    </tr>
+                </table>
+                </div>
+            </apex:outputPanel>
+
+            <!-- Input AC Voltage & UPS / Earthing (shared CIJ/TIJ/TTO) -->
+            <div class="section-container">
+            <table class="table-container" style="width: 100%;border-collapse: collapse;margin: 5px 0;font-size: 12px;">
+                <tr>
+                    <td class="label" style="padding: 6px; width: 20%;">Input AC Voltage</td>
+                    <td style="padding: 6px; width: 20%;">
+                        <div style="font-weight: bold;">L &amp; N, volt.</div>
+                        <div>{!record.L_N_volt__c}</div>
+                    </td>
+                    <td style="padding: 6px; width: 20%;">
+                        <div style="font-weight: bold;">N &amp; G, volt.</div>
+                        <div>{!record.N_G_volt__c}</div>
+                    </td>
+                    <td style="padding: 6px; width: 20%;">
+                        <div style="font-weight: bold;">G &amp; L, volt.</div>
+                        <div>{!record.G_L_volt__c}</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="label" style="padding: 6px;">UPS</td>
+                    <td colspan="1" style="padding: 6px;">{!record.UPS__c}</td>
+                    <td class="label" style="padding: 6px;">Earthing</td>
+                    <td style="padding: 6px;">{!record.Earthing__c}</td>
+                </tr>
+            </table>
+            </div>
+
+            <!-- Earthing Images (shown when Earthing is not OK) -->
+            <apex:outputPanel rendered="{!record.Earthing__c != 'OK' && earthingImages.size > 0}">
+                <div class="section-container photo-section">
+                    <table class="table-container" style="width: 100%;border-collapse: collapse;margin: 5px 0;font-size: 12px;">
+                        <tr>
+                            <td class="label" colspan="3" style="padding: 6px; text-align: center;">Earthing Images (Not OK)</td>
+                        </tr>
+                        <tr>
+                            <apex:repeat value="{!earthingImages}" var="imgWrapper">
+                                <td style="padding: 6px; text-align: center; vertical-align: top;">
+                                    <apex:image url="{!imgWrapper.imageUrl}" 
+                                                width="150" height="150" 
+                                                style="max-width: 150px; max-height: 150px; border: 1px solid #ccc;"/>
+                                    <br/>
+                                    <span style="font-size: 10px; word-wrap: break-word;">{!imgWrapper.title}</span>
+                                </td>
+                            </apex:repeat>
+                        </tr>
+                    </table>
+                </div>
+            </apex:outputPanel>
+
+            <!-- Physical Check Images (shown when values are Not OK) -->
+            <!-- Print Head Stand Images -->
+            <apex:outputPanel rendered="{!(record.Print_Head_Stand__c == 'Not OK' || record.Print_Head_Stand__c == 'NOK') && printHeadStandImages.size > 0}">
+                <div class="section-container photo-section">
+                    <table class="table-container" style="width: 100%;border-collapse: collapse;margin: 5px 0;font-size: 12px;">
+                        <tr>
+                            <td class="label" colspan="3" style="padding: 6px; text-align: center;">Print Head Stand Images (Not OK)</td>
+                        </tr>
+                        <tr>
+                            <apex:repeat value="{!printHeadStandImages}" var="imgWrapper">
+                                <td style="padding: 6px; text-align: center; vertical-align: top;">
+                                    <apex:image url="{!imgWrapper.imageUrl}" 
+                                                width="150" height="150" 
+                                                style="max-width: 150px; max-height: 150px; border: 1px solid #ccc;"/>
+                                    <br/>
+                                    <span style="font-size: 10px; word-wrap: break-word;">{!imgWrapper.title}</span>
+                                </td>
+                            </apex:repeat>
+                        </tr>
+                    </table>
+                </div>
+            </apex:outputPanel>
+
+            <!-- Printer Stand Images -->
+            <apex:outputPanel rendered="{!(record.Printer_Stand__c == 'Not OK' || record.Printer_Stand__c == 'NOK') && printerStandImages.size > 0}">
+                <div class="section-container photo-section">
+                    <table class="table-container" style="width: 100%;border-collapse: collapse;margin: 5px 0;font-size: 12px;">
+                        <tr>
+                            <td class="label" colspan="3" style="padding: 6px; text-align: center;">Printer Stand Images (Not OK)</td>
+                        </tr>
+                        <tr>
+                            <apex:repeat value="{!printerStandImages}" var="imgWrapper">
+                                <td style="padding: 6px; text-align: center; vertical-align: top;">
+                                    <apex:image url="{!imgWrapper.imageUrl}" 
+                                                width="150" height="150" 
+                                                style="max-width: 150px; max-height: 150px; border: 1px solid #ccc;"/>
+                                    <br/>
+                                    <span style="font-size: 10px; word-wrap: break-word;">{!imgWrapper.title}</span>
+                                </td>
+                            </apex:repeat>
+                        </tr>
+                    </table>
+                </div>
+            </apex:outputPanel>
+
+            <!-- Tool Box Images -->
+            <apex:outputPanel rendered="{!(record.Tool_Box__c == 'Not OK' || record.Tool_Box__c == 'NOK') && toolBoxImages.size > 0}">
+                <div class="section-container photo-section">
+                    <table class="table-container" style="width: 100%;border-collapse: collapse;margin: 5px 0;font-size: 12px;">
+                        <tr>
+                            <td class="label" colspan="3" style="padding: 6px; text-align: center;">Tool Box Images (Not OK)</td>
+                        </tr>
+                        <tr>
+                            <apex:repeat value="{!toolBoxImages}" var="imgWrapper">
+                                <td style="padding: 6px; text-align: center; vertical-align: top;">
+                                    <apex:image url="{!imgWrapper.imageUrl}" 
+                                                width="150" height="150" 
+                                                style="max-width: 150px; max-height: 150px; border: 1px solid #ccc;"/>
+                                    <br/>
+                                    <span style="font-size: 10px; word-wrap: break-word;">{!imgWrapper.title}</span>
+                                </td>
+                            </apex:repeat>
+                        </tr>
+                    </table>
+                </div>
+            </apex:outputPanel>
+
+            <!-- Printer Manual Images -->
+            <apex:outputPanel rendered="{!(record.Printer_Manual__c == 'Not OK' || record.Printer_Manual__c == 'NOK') && printerManualImages.size > 0}">
+                <div class="section-container photo-section">
+                    <table class="table-container" style="width: 100%;border-collapse: collapse;margin: 5px 0;font-size: 12px;">
+                        <tr>
+                            <td class="label" colspan="3" style="padding: 6px; text-align: center;">Printer Manual Images (Not OK)</td>
+                        </tr>
+                        <tr>
+                            <apex:repeat value="{!printerManualImages}" var="imgWrapper">
+                                <td style="padding: 6px; text-align: center; vertical-align: top;">
+                                    <apex:image url="{!imgWrapper.imageUrl}" 
+                                                width="150" height="150" 
+                                                style="max-width: 150px; max-height: 150px; border: 1px solid #ccc;"/>
+                                    <br/>
+                                    <span style="font-size: 10px; word-wrap: break-word;">{!imgWrapper.title}</span>
+                                </td>
+                            </apex:repeat>
+                        </tr>
+                    </table>
+                </div>
+            </apex:outputPanel>
+
+            <!-- Sensor Images -->
+            <apex:outputPanel rendered="{!(record.Sensor__c == 'Not OK' || record.Sensor__c == 'NOK') && sensorImages.size > 0}">
+                <div class="section-container photo-section">
+                    <table class="table-container" style="width: 100%;border-collapse: collapse;margin: 5px 0;font-size: 12px;">
+                        <tr>
+                            <td class="label" colspan="3" style="padding: 6px; text-align: center;">Sensor Images (Not OK)</td>
+                        </tr>
+                        <tr>
+                            <apex:repeat value="{!sensorImages}" var="imgWrapper">
+                                <td style="padding: 6px; text-align: center; vertical-align: top;">
+                                    <apex:image url="{!imgWrapper.imageUrl}" 
+                                                width="150" height="150" 
+                                                style="max-width: 150px; max-height: 150px; border: 1px solid #ccc;"/>
+                                    <br/>
+                                    <span style="font-size: 10px; word-wrap: break-word;">{!imgWrapper.title}</span>
+                                </td>
+                            </apex:repeat>
+                        </tr>
+                    </table>
+                </div>
+            </apex:outputPanel>
+
+            <!-- Equipment status (Mixer / Pumps / Fans) - CIJ only -->
+            <apex:outputPanel rendered="{!record.Case__r.Asset.Product2.Material_Group_5__c = 'P01'}">
+                <div class="section-container">
+                <table class="table-container" style="width: 100%;border-collapse: collapse;margin: 5px 0;font-size: 12px;">
+                    <tr>
+                        <td class="label" style="padding: 6px;">Mixer OK</td>
+                        <td style="padding: 6px;">{!record.Mixer_OK__c}</td>
+                        <td class="label" style="padding: 6px;">Mixer Low</td>
+                        <td style="padding: 6px;">{!record.Mixer_Low__c}</td>
+                        <td class="label" style="padding: 6px;">Mixer High</td>
+                        <td style="padding: 6px;">{!record.Mixer_High__c}</td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="padding: 6px;">Detection mode</td>
+                        <td style="padding: 6px;">{!record.Detection__c}</td>
+                        <td class="label" style="padding: 6px;">Chamber Low</td>
+                        <td style="padding: 6px;">{!record.Chamber_Low__c}</td>
+                        <td class="label" style="padding: 6px;">Chamber High</td>
+                        <td style="padding: 6px;">{!record.Chamber_High__c}</td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="padding: 6px;">Main Pump</td>
+                        <td style="padding: 6px;">{!record.Main_Pump__c}</td>
+                        <td class="label" style="padding: 6px;">FAN 01</td>
+                        <td style="padding: 6px;">{!record.Fan_01__c}</td>
+                        <td class="label" style="padding: 6px;">FAN 02</td>
+                        <td style="padding: 6px;">{!record.Fan_02__c}</td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="padding: 6px;">Gutter Pump</td>
+                        <td style="padding: 6px;">{!record.Gutter_Pump__c}</td>
+                        <td class="label" style="padding: 6px;">Flush Pump</td>
+                        <td style="padding: 6px;">{!record.Flush_Pump__c}</td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </table>
+                </div>
+            </apex:outputPanel>
+
+            <!-- Customer & Production (Industry / Line / Product / Shift / Work Load) - TTO -->
+            <apex:outputPanel rendered="{!record.Case__r.Asset.Product2.Material_Group_5__c = 'P02'}">
+                <div class="section-container">
+                <table class="table-container" style="width: 100%;border-collapse: collapse;margin: 5px 0;font-size: 12px;">
+                    <tr>
+                        <td class="label" style="padding: 6px; width: 16.66%;">Industry Type:</td>
+                        <td style="padding: 6px; width: 16.66%;">
+                            {!record.Industry_Type__c}
+                            <apex:outputPanel rendered="{!industryTypeImages.size > 0}">
+                                <br/>
+                                <apex:repeat value="{!industryTypeImages}" var="imgWrapper">
+                                    <div style="text-align: center; margin-bottom: 5px; display: inline-block; margin-right: 10px;">
+                                        <apex:image url="{!imgWrapper.imageUrl}" width="150" height="150" style="max-width: 150px; max-height: 150px; border: 1px solid #ccc;"/>
+                                        <br/>
+                                        <span style="font-size: 10px; word-wrap: break-word;">{!imgWrapper.title}</span>
+                                    </div>
+                                </apex:repeat>
+                            </apex:outputPanel>
+                        </td>
+                        <td class="label" style="padding: 6px; width: 16.66%;">Substrate Type:</td>
+                        <td style="padding: 6px; width: 16.66%;">{!record.Substrate_Type__c}</td>
+                        <td colspan="2"></td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="padding: 6px;">Line Speed mm/sec</td>
+                        <td style="padding: 6px;">{!record.Line_Speed_mm_per_Sec__c}</td>
+                        <td class="label" style="padding: 6px;">Customer Product Name</td>
+                        <td style="padding: 6px;">{!record.Customer_Product_Name__c}</td>
+                        <td colspan="2"></td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="padding: 6px;">Work Load</td>
+                        <td style="padding: 6px;">{!record.Work_Load_Hrs_Day__c} Hrs Per Day</td>
+                        <td style="padding: 6px;">{!record.Work_Load_Days_Wk__c} Days Per Week</td>
+                        <td class="label" style="padding: 6px;">Shift</td>
+                        <td style="padding: 6px;">{!record.Shift__c}</td>
+                        <td></td>
+                    </tr>
+                </table>
+                </div>
+
+                <!-- MESSAGE block - TTO -->
+                <div class="section-container">
+                <table class="table-container" style="width: 100%;border-collapse: collapse;margin: 5px 0;font-size: 12px;">
+                    <tr>
+                        <td class="label" rowspan="2" style="padding: 6px;">MESSAGE</td>
+                        <td class="label" style="padding: 6px;">Width</td>
+                        <td style="padding: 6px;">{!record.Width__c}</td>
+                        <td class="label" style="padding: 6px;">Length</td>
+                        <td style="padding: 6px;">{!record.Height__c}</td>
+                        <td class="label" style="padding: 6px;">Gap between prints</td>
+                        <td style="padding: 6px;">
+                            {!record.Gap_between_prints__c}
+                            <apex:outputPanel rendered="{!gapBetweenPrintsImages.size > 0}">
+                                <br/>
+                                <apex:repeat value="{!gapBetweenPrintsImages}" var="imgWrapper">
+                                    <div style="text-align: center; margin-bottom: 5px; display: inline-block; margin-right: 10px;">
+                                        <apex:image url="{!imgWrapper.imageUrl}" width="150" height="150" style="max-width: 150px; max-height: 150px; border: 1px solid #ccc;"/>
+                                        <br/>
+                                        <span style="font-size: 10px; word-wrap: break-word;">{!imgWrapper.title}</span>
+                                    </div>
+                                </apex:repeat>
+                            </apex:outputPanel>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px;">mm</td>
+                        <td></td>
+                        <td style="padding: 6px;">mm</td>
+                        <td></td>
+                        <td style="padding: 6px;">mm</td>
+                        <td></td>
+                    </tr>
+                </table>
+                </div>
+
+                <!-- Ribbon Part # Details - TTO -->
+                <div class="section-container">
+                <table class="table-container" style="width: 100%;border-collapse: collapse;margin: 5px 0;font-size: 12px;">
+                    <tr>
+                        <td class="label" style="padding: 6px;">Ribbon Part #</td>
+                        <td style="padding: 6px;">{!record.Ribbon_Part_No__c}</td>
+                        <td class="label" style="padding: 6px;">Ribbon Customer Stock</td>
+                        <td style="padding: 6px;">{!record.Ribbon_Customer_Stock__c}</td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="padding: 6px;">Ribbon Expiration Date</td>
+                        <td style="padding: 6px;">
+                            <apex:outputText value="{0,date,dd MMM yyyy}" rendered="{!NOT(ISNULL(record.Ribbon_EXP_date__c))}">
+                                <apex:param value="{!record.Ribbon_EXP_date__c}"/>
+                            </apex:outputText>
+                        </td>
+                        <td class="label" style="padding: 6px;">Input Air pressure</td>
+                        <td style="padding: 6px;">{!record.Input_Air_pressure__c}</td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="padding: 6px;">Ribbon Pic with Scale</td>
+                        <td colspan="3" style="padding: 6px;">
+                            <apex:outputPanel rendered="{!ribbonImages.size > 0}">
+                                <apex:repeat value="{!ribbonImages}" var="imgWrapper">
+                                    <div style="text-align: center; margin-bottom: 5px; display: inline-block; margin-right: 10px;">
+                                        <apex:image url="{!imgWrapper.imageUrl}" width="150" height="150" style="max-width: 150px; max-height: 150px; border: 1px solid #ccc;"/>
+                                        <br/>
+                                        <span style="font-size: 10px; word-wrap: break-word;">{!imgWrapper.title}</span>
+                                    </div>
+                                </apex:repeat>
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!ribbonImages.size == 0}">
+                                <span style="color: #999;">No ribbon image uploaded</span>
+                            </apex:outputPanel>
+                        </td>
+                    </tr>
+                </table>
+                </div>
+
+                <!-- Product Counter and Parameter Settings - TTO -->
+                <div class="section-container">
+                <table class="table-container" style="width: 100%;border-collapse: collapse;margin: 5px 0;font-size: 11px;">
+                    <tr>
+                        <td class="label" style="padding: 6px; font-weight: bold;">Product Counter :-</td>
+                        <td style="padding: 6px;">{!record.Product_Counter__c}</td>
+                        <td class="label" style="padding: 6px; font-weight: bold;">Print head Resistance</td>
+                        <td style="padding: 6px;">{!record.Print_head_Resistance__c}</td>
+                        <td class="label" style="padding: 6px; font-weight: bold;">Ribbon Dia D1</td>
+                        <td style="padding: 6px;">{!record.Ribbon_Dia_D1__c}</td>
+                        <td class="label" style="padding: 6px; font-weight: bold;">Ribbon Dia D2</td>
+                        <td style="padding: 6px;">{!record.Ribbon_Dia_D2__c}</td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="padding: 6px; font-weight: bold;">Print speed mm/sec</td>
+                        <td style="padding: 6px;">{!record.Print_speed__c}</td>
+                        <td class="label" style="padding: 6px; font-weight: bold;">Ribbon fail count</td>
+                        <td style="padding: 6px;">{!record.Ribbon_fail_count__c}</td>
+                        <td class="label" style="padding: 6px; font-weight: bold;">Registration Dot</td>
+                        <td style="padding: 6px;">{!record.Registration_Dot__c}</td>
+                        <td colspan="2"></td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="padding: 6px; font-weight: bold;">Debounce time (ms)</td>
+                        <td style="padding: 6px;">{!record.Debounce_time_ms__c}</td>
+                        <td class="label" style="padding: 6px; font-weight: bold;">Print Delay</td>
+                        <td style="padding: 6px;">{!record.Print_Delay__c}</td>
+                        <td class="label" style="padding: 6px; font-weight: bold;">Pr-GO Ignore</td>
+                        <td style="padding: 6px;">{!record.Pr_GO_Ignore__c}</td>
+                        <td class="label" style="padding: 6px; font-weight: bold;">PR-GO Edge</td>
+                        <td style="padding: 6px;">{!record.PR_GO_Edge__c}</td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="padding: 6px; font-weight: bold;">Heating mode</td>
+                        <td style="padding: 6px;">{!record.Heating_mode__c}</td>
+                        <td class="label" style="padding: 6px; font-weight: bold;">Ribbon Gap</td>
+                        <td style="padding: 6px;">{!record.Ribbon_Gap__c}</td>
+                        <td class="label" style="padding: 6px; font-weight: bold;">Output Air Pressure</td>
+                        <td style="padding: 6px;">{!record.Output_Air_Pressure__c}</td>
+                        <td class="label" style="padding: 6px; font-weight: bold;">Head out time (ms)</td>
+                        <td style="padding: 6px;">{!record.Head_out_time_ms__c}</td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="padding: 6px; font-weight: bold;">Head in Time (ms)</td>
+                        <td style="padding: 6px;">{!record.Head_In_Time__c}</td>
+                        <td class="label" style="padding: 6px; font-weight: bold;">Start border trim (mm)</td>
+                        <td style="padding: 6px;">{!record.Start_Border_Trim__c}</td>
+                        <td class="label" style="padding: 6px; font-weight: bold;">End border trim (mm)</td>
+                        <td style="padding: 6px;">{!record.End_Border_Trim__c}</td>
+                        <td class="label" style="padding: 6px; font-weight: bold;">Darkness</td>
+                        <td style="padding: 6px;">{!record.Darkness__c}</td>
+                    </tr>
+                </table>
+                </div>
+
+                <!-- Installation Check Reference Diagrams - TTO -->
+                <div class="section-container photo-section">
+                <table class="table-container" style="width: 100%;border-collapse: collapse;margin: 5px 0;font-size: 12px;">
+                    <tr>
+                        <td class="label" colspan="2" style="padding: 6px; text-align: center; font-weight: bold;">Installation Check Reference Diagrams</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 6px; text-align: center; vertical-align: top; width: 50%;">
+                            <div style="font-weight: bold; margin-bottom: 5px;">Intermittent Installation Check</div>
+                            <apex:image url="{!URLFOR($Resource.IntermittentInstallationCheck)}" 
+                                        style="max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 4px;"/>
+                        </td>
+                        <td style="padding: 6px; text-align: center; vertical-align: top; width: 50%;">
+                            <div style="font-weight: bold; margin-bottom: 5px;">Continuous Installation Check</div>
+                            <apex:image url="{!URLFOR($Resource.ContinuousInstallationCheck)}" 
+                                        style="max-width: 100%; height: auto; border: 1px solid #ddd; border-radius: 4px;"/>
+                        </td>
+                    </tr>
+                </table>
+                </div>
+
+                <!-- Installation Check - TTO -->
+                <div class="section-container">
+                <table class="table-container" style="width: 100%;border-collapse: collapse;margin: 5px 0;font-size: 12px;">
+                    <tr>
+                        <td class="label" style="padding: 6px; width: 20%;">installation check:</td>
+                        <td style="padding: 6px; width: 30%;">{!record.Intermittent_installation_check__c}</td>
+                        
+                    </tr>
+                </table>
+                </div>
+
+                <!-- Installation Status - TTO -->
+                <div class="section-container">
+                <table class="table-container" style="width: 100%;border-collapse: collapse;margin: 5px 0;font-size: 12px;">
+                    <tr>
+                        <td class="label" style="padding: 6px; width: 20%;">Installation Status:</td>
+                        <td style="padding: 6px; width: 30%;">{!record.Installation_Status__c}</td>
+                        <td colspan="2"></td>
+                    </tr>
+                </table>
+                </div>
+            </apex:outputPanel>
+
+            <!-- Valve Test Values - CIJ only (moved before General Information) -->
+            <apex:outputPanel rendered="{!record.Case__r.Asset.Product2.Material_Group_5__c = 'P01'}">
+                <div class="section-container">
+                <table class="table-container" style="width: 100%;border-collapse: collapse;margin: 5px 0;font-size: 12px;">
+                    <tr>
+                        <td class="label" style="padding: 6px; text-align: center;" colspan="4"><b>VALVE TEST</b></td>
+                    </tr>
+                    <!-- Row 1: V1, V2, V3, V4 -->
+                    <tr>
+                        <td style="padding: 6px; width: 25%; text-align: center; vertical-align: middle;">
+                            <div style="font-weight: bold;">*V1</div>
+                            <div style="margin-top: 5px;">{!record.V1__c}</div>
+                        </td>
+                        <td style="padding: 6px; width: 25%; text-align: center; vertical-align: middle;">
+                            <div style="font-weight: bold;">*V2</div>
+                            <div style="margin-top: 5px;">{!record.V2__c}</div>
+                        </td>
+                        <td style="padding: 6px; width: 25%; text-align: center; vertical-align: middle;">
+                            <div style="font-weight: bold;">*V3</div>
+                            <div style="margin-top: 5px;">{!record.V3__c}</div>
+                        </td>
+                        <td style="padding: 6px; width: 25%; text-align: center; vertical-align: middle;">
+                            <div style="font-weight: bold;">*V4</div>
+                            <div style="margin-top: 5px;">{!record.V4__c}</div>
+                        </td>
+                    </tr>
+                    <!-- Row 2: V5, V6, V7, V8 -->
+                    <tr>
+                        <td style="padding: 6px; text-align: center; vertical-align: middle;">
+                            <div style="font-weight: bold;">*V5</div>
+                            <div style="margin-top: 5px;">{!record.V5__c}</div>
+                        </td>
+                        <td style="padding: 6px; text-align: center; vertical-align: middle;">
+                            <div style="font-weight: bold;">*V6</div>
+                            <div style="margin-top: 5px;">{!record.V6__c}</div>
+                        </td>
+                        <td style="padding: 6px; text-align: center; vertical-align: middle;">
+                            <div style="font-weight: bold;">*V7</div>
+                            <div style="margin-top: 5px;">{!record.V7__c}</div>
+                        </td>
+                        <td style="padding: 6px; text-align: center; vertical-align: middle;">
+                            <div style="font-weight: bold;">*V8</div>
+                            <div style="margin-top: 5px;">{!record.V8__c}</div>
+                        </td>
+                    </tr>
+                    <!-- Row 3: V9, V11, V12, V13 (V10 is skipped) -->
+                    <tr>
+                        <td style="padding: 6px; text-align: center; vertical-align: middle;">
+                            <div style="font-weight: bold;">*V9</div>
+                            <div style="margin-top: 5px;">{!record.V9__c}</div>
+                        </td>
+                        <td style="padding: 6px; text-align: center; vertical-align: middle;">
+                            <div style="font-weight: bold;">*V11</div>
+                            <div style="margin-top: 5px;">{!record.V11__c}</div>
+                        </td>
+                        <td style="padding: 6px; text-align: center; vertical-align: middle;">
+                            <div style="font-weight: bold;">*V12</div>
+                            <div style="margin-top: 5px;">{!record.V12__c}</div>
+                        </td>
+                        <td style="padding: 6px; text-align: center; vertical-align: middle;">
+                            <div style="font-weight: bold;">*V13</div>
+                            <div style="margin-top: 5px;">{!record.V13__c}</div>
+                        </td>
+                    </tr>
+                </table>
+                </div>
+            </apex:outputPanel>
+
+            <!-- Customer & Production (Industry / Line / Product / Shift / Work Load) - CIJ only -->
+            <apex:outputPanel rendered="{!record.Case__r.Asset.Product2.Material_Group_5__c = 'P01'}">
+                <div class="section-container">
+                <table class="table-container" style="width: 100%;border-collapse: collapse;margin: 5px 0;font-size: 12px;">
+                    <tr>
+                        <td class="label" style="padding: 6px; width: 16.66%;">Industry Type</td>
+                        <td style="padding: 6px; width: 16.66%;">{!record.Industry_Type__c}</td>
+                        <td class="label" style="padding: 6px; width: 16.66%;">Substrate Type</td>
+                        <td style="padding: 6px; width: 16.66%;">{!record.Substrate_Type__c}</td>
+                        <td class="label" style="padding: 6px; width: 16.66%;">Customer Product Name</td>
+                        <td style="padding: 6px; width: 16.66%;">{!record.Customer_Product_Name__c}</td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="padding: 6px;">Line Speed meter per/Min</td>
+                        <td style="padding: 6px;">{!record.Line_Speed_meter_per_Min__c}</td>
+                        
+                        <td colspan="2"></td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="padding: 6px;">Work Load</td>
+                        <td style="padding: 6px;">{!record.Work_Load_Hrs_Day__c} Hrs Per Day</td>
+                        <td style="padding: 6px;">{!record.Work_Load_Days_Wk__c} Days Per Week</td>
+                        <td class="label" style="padding: 6px;">Shift</td>
+                        <td style="padding: 6px;">{!record.Shift__c}</td>
+                        <td></td>
+                    </tr>
+                </table>
+                </div>
+            </apex:outputPanel>
+
+            <!-- MESSAGE block - CIJ only (Image Display) -->
+            <apex:outputPanel rendered="{!record.Case__r.Asset.Product2.Material_Group_5__c = 'P01'}">
+                <apex:outputPanel rendered="{!messageImages.size > 0}">
+                    <div class="section-container photo-section">
+                <table class="table-container" style="width: 100%;border-collapse: collapse;margin: 5px 0;font-size: 12px;">
+                    <tr>
+                                <td class="label" colspan="3" style="padding: 6px; text-align: center;">Message F3 Screen pic</td>
+                    </tr>
+                    <tr>
+                                <apex:repeat value="{!messageImages}" var="imgWrapper">
+                                    <td style="padding: 6px; text-align: center; vertical-align: top;">
+                                        <apex:image url="{!imgWrapper.imageUrl}" 
+                                                    width="150" height="150" 
+                                                    style="max-width: 150px; max-height: 150px; border: 1px solid #ccc;"/>
+                                        <br/>
+                                        <span style="font-size: 10px; word-wrap: break-word;">{!imgWrapper.title}</span>
+                                    </td>
+                                </apex:repeat>
+                    </tr>
+                </table>
+                </div>
+                </apex:outputPanel>
+            </apex:outputPanel>
+
+            <!-- Photocell 1 set / shaft encoder / print mode / viscosity / VMS / head set - CIJ only -->
+            <apex:outputPanel rendered="{!record.Case__r.Asset.Product2.Material_Group_5__c = 'P01'}">
+                <div class="section-container">
+                <table class="table-container" style="width: 100%;border-collapse: collapse;margin: 5px 0;font-size: 12px;">
+                    <tr>
+                        <td class="label" rowspan="2" style="padding: 6px;">PHOTOCELL 1 SET</td>
+                        <td class="label" style="padding: 6px;">LEVEL</td>
+                        <td style="padding: 6px;">{!record.LEVEL__c}</td>
+                        <td class="label" style="padding: 6px;">TRIGGER MODE</td>
+                        <td style="padding: 6px;">{!record.Trigger_Mode__c}</td>
+                        <td class="label" style="padding: 6px;">BLOCKING TIME</td>
+                        <td style="padding: 6px;">{!record.Blocking_Time__c}</td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="padding: 6px;">MODE</td>
+                        <td style="padding: 6px;">{!record.Mode__c}</td>
+                        <td class="label" style="padding: 6px;">SECOND SENSING</td>
+                        <td style="padding: 6px;">{!record.Second_Sensing__c}</td>
+                        <td class="label" style="padding: 6px;">SIGNAL TIME</td>
+                        <td style="padding: 6px;">{!record.Signal_Time__c}</td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="padding: 6px;">SHAFT ENCODER</td>
+                        <td colspan="2" style="padding: 6px;">{!record.Shaft_Encoder__c}</td>
+                        <td class="label" style="padding: 6px;">PRINT MODE</td>
+                        <td colspan="3" style="padding: 6px;">{!record.Print_Mode__c}</td>
+                    </tr>
+                </table>
+                </div>
+            </apex:outputPanel>
+
+            <!-- Machine set - CIJ only -->
+            <apex:outputPanel rendered="{!record.Case__r.Asset.Product2.Material_Group_5__c = 'P01'}">
+                <div class="section-container">
+                <table class="table-container" style="width: 100%;border-collapse: collapse;margin: 5px 0;font-size: 12px;">
+                    <tr>
+                        <td class="label" style="padding: 6px;">VISC SET POINT</td>
+                        <td colspan="2" style="padding: 6px;">{!record.Visc_Set_Point__c}</td>
+                        <td class="label" style="padding: 6px;">VISC ACTUAL</td>
+                        <td colspan="2" style="padding: 6px;">{!record.Visc_Actual__c}</td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="padding: 6px;">INK TEMP</td>
+                        <td colspan="2" style="padding: 6px;">{!record.Ink_Temp__c}</td>
+                        <td class="label" style="padding: 6px;">CABINET TEMP</td>
+                        <td colspan="2" style="padding: 6px;">{!record.Cabinet_Temp__c}</td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="padding: 6px;">HEAD TEMP</td>
+                        <td colspan="2" style="padding: 6px;">{!record.Head_Temp__c}</td>
+                        <td class="label" style="padding: 6px;">INK PRESSURE</td>
+                        <td colspan="2" style="padding: 6px;">{!record.Ink_Pressure__c}</td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="padding: 6px;">HEATER POINT</td>
+                        <td colspan="2" style="padding: 6px;">{!record.Heater_Point__c}</td>
+                        <td class="label" style="padding: 6px;">MODULATION</td>
+                        <td colspan="2" style="padding: 6px;">{!record.Modulation__c}</td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="padding: 6px;">CHARGE VALUE</td>
+                        <td colspan="2" style="padding: 6px;">{!record.Charge_Value__c}</td>
+                        <td class="label" style="padding: 6px;">EHT GRADE</td>
+                        <td colspan="2" style="padding: 6px;">{!record.EHT_Grade__c}</td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="padding: 6px;">GUTTER MODE</td>
+                        <td colspan="2" style="padding: 6px;">{!record.Gutter_Mode__c}</td>
+                        <td class="label" style="padding: 6px;">PRINT QUALITY</td>
+                        <td colspan="2" style="padding: 6px;">{!record.Print_Quality__c}</td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="padding: 6px;">PRINT HEAD SET</td>
+                        <td colspan="2" style="padding: 6px;">{!record.Print_Head_Set__c}</td>
+                        <td class="label" style="padding: 6px;">INK TYPE</td>
+                        <td colspan="2" style="padding: 6px;">{!record.Ink_type__c}</td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="padding: 6px;">VMC CALIBRATION</td>
+                        <td colspan="2" style="padding: 6px;">{!record.VMS_Calibration__c}</td>
+                        <td class="label" style="padding: 6px;">EHT RANGE</td>
+                        <td colspan="2" style="padding: 6px;">{!IF(NOT(ISBLANK(record.EHT_Range_Min__c)), record.EHT_Range_Min__c, '')} {!IF(AND(NOT(ISBLANK(record.EHT_Range_Min__c)), NOT(ISBLANK(record.EHT_Range_Max__c))), '-', '')} {!IF(NOT(ISBLANK(record.EHT_Range_Max__c)), record.EHT_Range_Max__c, '')}</td>
+                    </tr>
+                </table>
+                </div>
+            </apex:outputPanel>
+
+            <!-- Software / Password / Diagnostic / Modulation - CIJ only -->
+            <apex:outputPanel rendered="{!record.Case__r.Asset.Product2.Material_Group_5__c = 'P01'}">
+                <div class="section-container">
+                <table class="table-container" style="width: 100%;border-collapse: collapse;margin: 5px 0;font-size: 12px;">
+                    <tr>
+                        <td class="label" style="padding: 6px;">SOFTWARE NO.</td>
+                        <td colspan="2" style="padding: 6px;">{!record.Software_No__c}</td>
+                        <td class="label" style="padding: 6px;">LEVEL 1 PASSWORD</td>
+                        <td colspan="2" style="padding: 6px;">{!record.Level_1_Password__c}</td>
+                    </tr>
+                    <tr>
+                        <td colspan="3"></td>
+                        <td class="label" style="padding: 6px;">LEVEL 2 PASSWORD</td>
+                        <td colspan="2" style="padding: 6px;">{!record.Level_2_Password__c}</td>
+                    </tr>
+                    <tr>
+                        <td class="label" style="padding: 6px;">Diagnostic screen</td>
+                        <td colspan="2" style="padding: 6px;">
+                            <apex:outputPanel rendered="{!diagnosticImages.size > 0}">
+                                <apex:repeat value="{!diagnosticImages}" var="imgWrapper">
+                                    <div style="display: inline-block; margin: 5px; text-align: center;">
+                                        <apex:image url="{!imgWrapper.imageUrl}" 
+                                                    width="150" height="150" 
+                                                    style="max-width: 150px; max-height: 150px; border: 1px solid #ccc; display: block; margin: 0 auto;"/>
+                                        <br/>
+                                        <span style="font-size: 10px; word-wrap: break-word;">{!imgWrapper.title}</span>
+                                    </div>
+                                </apex:repeat>
+                            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!diagnosticImages.size == 0}">
+                                Image attach option
+                            </apex:outputPanel>
+                        </td>
+                        <td class="label" style="padding: 6px;">Modulation test/ angle test report</td>
+                        <td colspan="2" style="padding: 6px;">
+                            <apex:outputPanel rendered="{!modulationImages.size > 0}">
+                                <apex:repeat value="{!modulationImages}" var="imgWrapper">
+                                    <div style="display: inline-block; margin: 5px; text-align: center;">
+                                        <apex:image url="{!imgWrapper.imageUrl}" 
+                                                    width="150" height="150" 
+                                                    style="max-width: 150px; max-height: 150px; border: 1px solid #ccc; display: block; margin: 0 auto;"/>
+                                        <br/>
+                                        <span style="font-size: 10px; word-wrap: break-word;">{!imgWrapper.title}</span>
+                </div>
+                                </apex:repeat>
+            </apex:outputPanel>
+                            <apex:outputPanel rendered="{!modulationImages.size == 0}">
+                                Image attach option
+                            </apex:outputPanel>
+                        </td>
+                    </tr>
+                </table>
+                </div>
+            </apex:outputPanel>
+
+            <!-- Engineer & Customer Remarks -->
+            <div class="section-container">
+            <table class="table-container" style="width: 100%;border-collapse: collapse;margin: 5px 0;font-size: 12px;">
+                <tr>
+                    <td class="label" style="padding: 6px;">Engineer Remarks</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; min-height: 40px;" class="wrap-text">{!record.Engineer_Remarks__c}</td>
+                </tr>
+            </table>
+
+            <table class="table-container" style="width: 100%;border-collapse: collapse;margin: 5px 0;font-size: 12px;">
+                <tr>
+                    <td class="label" style="padding: 6px;">Customer Remarks</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; min-height: 40px;" class="wrap-text">{!record.Customer_Remark__c}</td>
+                </tr>
+            </table>
+            </div>
+
+            <!-- Warranty policy text (unchanged from base report) -->
+            <!-- COMMENTED OUT - Warranty policy section removed per user request
+            <div style="clear: both">
+                <div style="text-align: justify; font-size: 12px; margin-top: 20px; page-break-inside: avoid">
+                    <div style="text-align: center; font-size: 16px"><strong><u>STANDARD WARRANTY POLICY</u></strong></div>
+                    <ol>
+                        <li><strong>WARRANTY PERIOD &amp; ACTIVATION:</strong> Material Handling Equipments manufactured or imparted by NILKAMAL Ltd is warranted to be free from defects in material and workmanship under normal use and service, provided it is still owned and operated by the original purchaser, for the period as mentioned below:
+                            <ol>
+                                <li><strong>For equipments which have hour meters-Electric Stackers/Battery Operated Pallet truck's / Reach trucks/Forklifts</strong>: Standard warranty of twelve months or 2000 (two thousand) hours whichever is earlier for manufacturing defects only. The warranty period start from the date of commissioning or fifteen days from the date of invoice, whichever is earlier, subject to our standard warranty policy.</li>
+                                <li><strong>For equipments which do not have hour meters - Aerial work platforms / Manual range-excluding Pallet Trucks:</strong> Standard warranty of twelve months for manufacturing defects only. The warranty period start from the date of commissioning or fifteen days from the date of invoice, whichever is earlier, subject to our standard warranty policy.</li>
+                                <li><strong>For pallet trucks</strong>: Standard warranty of six months for manufacturing defects only. The warranty period start from fifteen days from the date of invoice.</li>
+                            </ol>
+                        </li>
+                        <li><strong>WARRANTY INCLUSION:</strong> During the warranty period as specified above NILKAMAL LTD. will replace/repair the component within reasonable time which is having manufacturing defect, at NILKAMAL's sole discretion.</li>
+                        <li><strong>WARRANTY EXCLUSION</strong>:
+                            <ol>
+                                <li>Parts which are subjected to normal wear and tear like seals, filters, brake shoe, belts, rollers, bearings, valves, switches, wheels, tyres, consumables like hydraulic oil, electrolyte etc, and all rubber and electrical items including horns, electric switches, fuses, electric motor brushes, bulbs, spark plugs etc.</li>
+                                <li>Any plastic parts affected by discoloration.</li>
+                                <li>Any failure due to the external voltage fluctuations.</li>
+                                <li>Any damage caused by the failure of any supporting hardware not supplied by NILKAMAL LTD.</li>
+                                <li>Parts or components damaged in transit where NILKAMAL is not involved in transportation of goods to purchaser's site. This warranty does not apply to any failure of product due to alterations, modifications, misuse, abuse, neglect, accident, improper maintenance ordo installation, use of parts not supplied by NILKAMAL LTD, failure to operate and use the product in accordance with the instructions provided in the operation's Manual supplied with the product or failure to otherwise meet manufacturer's specifications, or if the serial number has been removed, altered or defaced.</li>
+                            </ol>
+                        </li>
+                        <li><strong>PROCEDURE FOR REQUESTING WARRANTY:</strong> In the event of a problem covered under standard warranty policy, the customer must first contact NILKAMAL LTD through a written email (<a href="mailto:mhe.services@nlikamal.com">services@nlikamal.com</a>)</li>
+                        <li><strong>RIGHT TO MODIFY:</strong> NILKAMAL LTD. reserves the right to make changes or improvements in its products without any notice or obligations.</li>
+                        <li><strong>LIMITATION OF LIABILITY: </strong>NILKAMAL LTD. shall not be liable for any loss, damages, or penalty resulting from failure to perform any of its obligations under this Agreement due to force majeure or any cause beyond its reasonable control. The warranty shall be void in case of any breach of commercial obligations by the purchaser under the contract / sale. NILKAMAL liability under or for breach of this agreement shall not exceed the refund of the purchase price less reasonable value for past use. In no event shall NILKAMAL be liable for costs of procurement of substitute goods by the purchaser or for unauthorized repairs undertaken by the purchaser without NILKAMAL'S previous written approval. In no event shall NILKAMAL be liable for any special, consequential, or incidental damages, however caused, whether for breach of warranty, negligence, or otherwise. NILKAMAL disclaims any obligation or liability for loss of use of the product warranted, loss of time, inconvenience, rental or substitute products, loss of business, loss of income, commercial loss or any other direct, consequential, special or incidental damages.</li>
+                        <li><strong>GOVERNING LAW:</strong> Any dispute arising out of this contract shall be governed by the court having jurisdiction only at Silvassa &amp; Mumbai.</li>
+                    </ol>
+                </div>
+            </div>
+            -->
+
+            <!-- Acceptance & signatures -->
+            <div class="section-container" style="page-break-inside: avoid; margin-top: 20px">
+                <table class="table-container" style="width: 100%; border-collapse: collapse; font-size: 12px; clear: both">
+                    <tbody>
+                        <tr style="border-collapse: collapse; border: 1px solid #000">
+                            <td colspan="2" class="label" style="border: 1px solid #000;padding: 8px; text-align:center;">
+                                Equipment Commissioned, Necessary Training Pertaining Safety, Operation and Maintenance is given to Customer.
+                                Please Refer Operation and Maintenance Manual For Better Operational Efficiency and Safety.
+                                Procure recommended spare parts for schedule maintenance.
+                                <!-- COMMENTED OUT: For Standard Warranty Policy please read overleaf. -->
+                            </td>
+                        </tr>
+                        <tr style="border-collapse: collapse; border: 1px solid #000">
+                            <td colspan="2" class="label" style="border: 1px solid #000;padding: 8px; text-align:center; width:100%">
+                                E-mail : mhe.services@nilkamal.com / Toll Free No.: 8007773280
+                            </td>
+                        </tr>
+                        <tr style="border-collapse: collapse; border: 1px solid #000">
+                            <td style="border: 1px solid #000;padding: 8px; width:50%; height:25px;vertical-align:baseline;">
+                                <div style="line-height: 1; margin: 0; padding: 0;">
+                                    <p style="text-align:center; margin-top: 5px; padding: 2px;">Customer's Acceptance</p>
+                                    <p style="text-align:left; margin: 0; padding: 2px;">Name : {!record.Signature_by__c}</p>
+                                    <p style="text-align:left; margin: 0; padding: 2px;">Designation : {!record.Customer_Designation__c}</p>
+                                    <p style="text-align:left; margin: 0; padding: 2px;">Mobile No : {!record.Customer_Contact_Number__c}</p>
+                                    <p style="text-align:left; margin: 0; padding: 2px;">Email : {!record.Customer_Email__c}</p>
+                                    <p style="text-align:left; margin: 0; padding: 2px;">Sign :</p>
+                                    <apex:outputText value="{!record.Signature__c}" escape="false" />
+                                </div>
+                            </td>
+                            <td style="border: 1px solid #000;padding: 8px; width:50%; height:50px;">
+                                Service Engineer<br/><br/>
+                                <apex:outputText value="{!serviceResource.Signature__c}" escape="false" />
+                                <br/>Sign
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Contact block -->
+            <div style="page-break-inside:avoid; padding-top:20px">
+                Yours faithfully,
+                <br/>
+                <strong>NILKAMAL LIMITED</strong>
+                <br/>
+                <br/>
+
+                <table style="width:100%; border-collapse:collapse; font-size:14px; text-align:left;">
+                    <tr>
+                        <td style="border:1px solid #000; padding:8px;">
+                            <br/>
+                            <strong>{!record.Case__r.Owner.Name}</strong>
+                            <br/> {!record.Case__r.Division__c} - SERVICE DIVISION
+                            <br/>
+                            <a href="mailto:{!record.Case__r.Owner.Email}" style="color:blue; text-decoration:none;">{!record.Case__r.Owner.Email}</a>
+                            <br/> {!record.Case__r.Owner.Phone}
+                        </td>
+                        <td style="border:1px solid #000; padding:8px;">
+                            <br/>
+                            <strong>{!serviceResource.RSM__r.Name}</strong>
+                            <br/> Regional Service Manager
+                            <br/>
+                            <a href="mailto:{!serviceResource.RSM__r.Email}" style="color:blue; text-decoration:none;">{!serviceResource.RSM__r.Email}</a>
+                            <br/> {!serviceResource.RSM__r.MobilePhone}
+                        </td>
+                        <td style="border:1px solid #000; padding:8px;">
+                            <br/>
+                            <strong>{!serviceResource.Coordinator__r.Name}</strong>
+                            <br/> Service Coordinator
+                            <br/>
+                            <a href="mailto:{!serviceResource.Coordinator__r.Email}" style="color:blue; text-decoration:none;">{!serviceResource.Coordinator__r.Email}</a>
+                            <br/> {!serviceResource.Coordinator__r.MobilePhone}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+    </body>
+
+</apex:page>

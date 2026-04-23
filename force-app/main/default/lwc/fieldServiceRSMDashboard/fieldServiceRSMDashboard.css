@@ -1,0 +1,51 @@
+:host {
+    display: block;
+    padding: 10px;
+}
+
+lightning-card {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.slds-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: center;
+}
+
+.slds-table th,
+.slds-table td {
+    padding: 10px;
+    border: 1px solid #d1d1d1;
+    text-align: center;
+}
+
+.slds-table thead {
+    background-color: #f3f3f3;
+    font-weight: bold;
+}
+
+.slds-table tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+    max-height: 50vh;
+    overflow-y: auto;
+}
+
+/* h2 {
+    font-size: 18px;
+    margin-top: 20px;
+    color: #333;
+} */
+.slds-scrollable_x {
+    overflow-x: auto;
+}
+
+.bold-row {
+    font-weight: bold;
+}

@@ -1,0 +1,305 @@
+<template>
+
+    <template if:true={showSpinner}>
+        <lightning-spinner alternative-text="Loading" variant="brand" size="medium"></lightning-spinner>
+    </template>
+
+
+
+    <lightning-tabset variant="scoped">
+
+
+        <!-- Non-Reassigned Cases Tab -->
+        <lightning-tab label="Assign Cases" onactive={handleTabChange}>
+            <template if:true={nonReassignedCases}>
+
+                <div class="slds-var-p-horizontal_small" style="position: sticky; top: 0; z-index: 1; background: white">
+                    <lightning-input type="search" variant="label-hidden" onchange={handleSearch} placeholder="Search by Case Number" data-type="nonReassignedCases"
+                        is-loading={isSearching}></lightning-input>
+                </div>
+
+                <lightning-layout multiple-rows class="slds-grid_gray" vertical-align="stretch">
+                    <template for:each={paginatedNonReassignedCases} for:item="caseRecord">
+                        <lightning-layout-item key={caseRecord.Id} size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-around_small" style="display: flex">
+                            <div class="case-card">
+                                <div>
+                                    <div class="custom-font custom-padding" style="font-size: 110%"><b><a data-id={caseRecord.Id} onclick={handleCaseClick}>{caseRecord.CaseNumber}</a></b></div>
+                                    <div class="custom-font custom-padding"><b>Customer Name:</b> {caseRecord.clientName}</div>
+                                    <div class="custom-font custom-padding"><b>Serial Number:</b> {caseRecord.serialNumber}</b></div>
+                                    <div class="custom-font custom-padding"><b>PinCode:</b> {caseRecord.pincode}</div>
+                                    <div if:true={caseRecord.Subject} class="custom-font custom-padding"><b>Subject:</b> {caseRecord.Subject}</div>
+                                    <div class="custom-font custom-padding"><b>Description:</b>
+                                        <br />
+                                        <span class="truncate" onclick={handleToggleDescription}>{caseRecord.Description}</span>
+                                    </div>
+                                </div>
+
+                                <div class="slds-var-p-top_small">
+                                    <lightning-combobox class="user-combobox" name="userSelection" data-id={caseRecord.Id} label="Assign User" variant="label-hidden"
+                                        placeholder="Select Service Engineer" value={caseRecord.selectedUserId} options={userOptions} onchange={handleUserSelection}></lightning-combobox>
+                                </div>
+                            </div>
+                        </lightning-layout-item>
+                    </template>
+                </lightning-layout>
+            </template>
+
+            <div class="slds-grid slds-grid_align-center slds-var-m-top_medium">
+                <lightning-button label="Previous" onclick={handlePreviousPageNonReassigned} disabled={isFirstPageNonReassigned} class="slds-m-right_small"></lightning-button>
+                <span class="slds-text-body_regular slds-m-horizontal_small">Page {currentPageNonReassigned} of {totalPagesNonReassigned}</span>
+                <lightning-button label="Next" onclick={handleNextPageNonReassigned} disabled={isLastPageNonReassigned} class="slds-m-left_small"></lightning-button>
+            </div>
+
+            <div class="slds-grid slds-grid_align-center slds-var-m-top_medium">
+                <lightning-button label="Save" variant="brand" onclick={handleSave}></lightning-button>
+            </div>
+        </lightning-tab>
+
+        <!-- Reassigned Cases Tab -->
+        <lightning-tab label="Reassign Request" onactive={handleTabChange}>
+            <template if:true={reassignedCases}>
+
+                <div class="slds-var-p-horizontal_small" style="position: sticky; top: 0; z-index: 1; background: white">
+                    <lightning-input type="search" variant="label-hidden" onchange={handleSearch} placeholder="Search by Case Number" data-type="reassignedCases"
+                        is-loading={isSearching}></lightning-input>
+                </div>
+
+                <lightning-layout multiple-rows class="slds-grid_gray" vertical-align="stretch">
+                    <template for:each={paginatedReassignedCases} for:item="caseRecord">
+                        <lightning-layout-item key={caseRecord.Id} size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-around_small" style="display: flex">
+                            <div class="case-card">
+                                <div>
+                                    <div class="custom-font custom-padding" style="font-size: 110%"><b><a data-id={caseRecord.Id} onclick={handleCaseClick}>{caseRecord.CaseNumber}</a></b></div>
+                                    <div class="custom-font custom-padding"><b>Customer Name:</b> {caseRecord.clientName}</div>
+                                    <div class="custom-font custom-padding"><b>Serial Number:</b> {caseRecord.serialNumber}</b></div>
+                                    <div class="custom-font custom-padding"><b>Assigned To:</b> {caseRecord.ownerName}</div>
+                                    <div class="custom-font custom-padding"><b>PinCode:</b> {caseRecord.pincode}</div>
+                                    <div class="custom-font custom-padding" if:true={caseRecord.Subject}><b>Subject:</b> {caseRecord.Subject}</div>
+                                    <div class="custom-font custom-padding"><b>Description:</b>
+                                        <br />
+                                        <span class="truncate" onclick={handleToggleDescription}>{caseRecord.Description}</span>
+                                    </div>
+                                    <div class="custom-font custom-padding"><b>SE Comment:</b>
+                                        <br />
+                                        <span class="truncate" onclick={handleToggleDescription}>{caseRecord.comment}</span>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <lightning-layout multiple-rows>
+                                        <template if:true={caseRecord.isButtonVisible}>
+                                            <lightning-layout-item flexibility="auto" class="slds-var-p-around_xx-small">
+                                                <div class="slds-text-align_right">
+                                                    <lightning-button class="slds-var-p-around_x-small" label="Accept" variant="brand" data-id={caseRecord.Id} data-action="accept"
+                                                        onclick={handleReassignAction}></lightning-button>
+                                                    <lightning-button class="slds-var-p-around_x-small" label="Reject" variant="brand-outline" data-id={caseRecord.Id} data-action="reject"
+                                                        onclick={handleReassignAction}></lightning-button>
+                                                </div>
+                                            </lightning-layout-item>
+                                        </template>
+                                        <template if:false={caseRecord.isButtonVisible}>
+                                            <template if:true={caseRecord.isReassignRequestApproved}>
+                                                <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-around_xx-small">
+                                                    <lightning-combobox class="user-combobox" name="userSelection" data-id={caseRecord.Id} label="Service Engineer"
+                                                        placeholder="Select Service Engineer" variant="label-hidden" value={caseRecord.selectedUserId} options={caseRecord.userOptions}
+                                                        onchange={handleReassignUserSelect}>
+                                                    </lightning-combobox>
+                                                </lightning-layout-item>
+                                            </template>
+                                            <lightning-layout-item flexibility="auto" class="slds-var-p-around_xx-small">
+                                                <lightning-textarea data-id={caseRecord.Id} label="Comments" placeholder="Comments" variant="label-hidden"
+                                                    value={caseRecord.Reassignment_Request_RSM_Comment__c} onchange={handleCommentChange} max-length="255"></lightning-textarea>
+                                            </lightning-layout-item>
+                                            <lightning-layout-item size="12" small-device-size="12" medium-device-size="12" large-device-size="12" class="slds-var-p-around_xx-small">
+                                                <div class="horizontal-flex" style="justify-content: right">
+                                                    <lightning-button class="slds-var-p-right_small" label="Save" variant="brand" onclick={handleReassignSave}
+                                                        data-id={caseRecord.Id}></lightning-button>
+                                                    <lightning-button class="slds-var-p-left_small" label="Cancel" variant="brand-outline" onclick={handleReassignCancel}
+                                                        data-id={caseRecord.Id}></lightning-button>
+                                                </div>
+                                            </lightning-layout-item>
+                                        </template>
+                                    </lightning-layout>
+                                </div>
+                            </div>
+                        </lightning-layout-item>
+                    </template>
+                </lightning-layout>
+            </template>
+
+            <div class="slds-grid slds-grid_align-center slds-var-m-top_medium">
+                <lightning-button label="Previous" onclick={handlePreviousPageReassigned} disabled={isFirstPageReassigned} class="slds-var-m-right_small"></lightning-button>
+                <span class="slds-text-body_regular slds-m-horizontal_small">Page {currentPageReassigned} of {totalPagesReassigned}</span>
+                <lightning-button label="Next" onclick={handleNextPageReassigned} disabled={isLastPageReassigned} class="slds-var-m-left_small"></lightning-button>
+            </div>
+
+            <div class="slds-grid slds-grid_align-center slds-var-m-top_medium">
+                <lightning-button label="Save" variant="brand" onclick={handleSave}></lightning-button>
+            </div>
+        </lightning-tab>
+
+
+
+
+
+        <!-- Additional Tabs -->
+        <lightning-tab label="Additional Resource Request" onactive={handleTabChange}>
+            <template if:true={additionalResourceCases}>
+
+                <div class="slds-var-p-horizontal_small" style="position: sticky; top: 0; z-index: 1; background: white">
+                    <lightning-input type="search" variant="label-hidden" onchange={handleSearch} placeholder="Search by Case Number" data-type="additionalResourceCases"
+                        is-loading={isSearching}></lightning-input>
+                </div>
+
+                <lightning-layout multiple-rows class="slds-grid_gray" vertical-align="stretch">
+                    <template for:each={paginatedAdditionalResourceCases} for:item="caseRecord">
+                        <lightning-layout-item key={caseRecord.Id} size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-around_small" style="display: flex">
+                            <div class="case-card">
+                                <div>
+                                    <div class="custom-font custom-padding" style="font-size: 110%"><b><a data-id={caseRecord.Id} onclick={handleCaseClick}>{caseRecord.CaseNumber}</a></b></div>
+                                    <div class="custom-font custom-padding"><strong>Customer Name:</strong> {caseRecord.clientName}</div>
+                                    <div class="custom-font custom-padding"><b>Serial Number:</b> {caseRecord.serialNumber}</b></div>
+                                    <div class="custom-font custom-padding"><b>Assigned To:</b> {caseRecord.ownerName}</div>
+                                    <div class="custom-font custom-padding"><b>PinCode:</b> {caseRecord.pincode}</div>
+                                    <div if:true={caseRecord.Subject} class="custom-font custom-padding"><b>Subject:</b> {caseRecord.Subject}</div>
+                                    <div class="custom-font custom-padding"><strong>Description:</strong>
+                                        <br />
+                                        <span class="truncate" onclick={handleToggleDescription}>{caseRecord.Description}</span>
+                                    </div>
+                                    <div class="custom-font custom-padding"><b>SE Comment:</b>
+                                        <br />
+                                        <span class="truncate" onclick={handleToggleDescription}>{caseRecord.comment}</span>
+                                    </div>
+                                </div>
+
+
+                                <div>
+                                    <lightning-layout multiple-rows>
+                                        <template if:true={caseRecord.isButtonVisible}>
+                                            <lightning-layout-item flexibility="auto" class="slds-var-p-around_xx-small">
+                                                <div class="slds-text-align_right">
+                                                    <lightning-button class="slds-var-p-around_x-small" label="Accept" variant="brand" data-id={caseRecord.Id} data-action="accept"
+                                                        onclick={handleAdditionalResourceAction}></lightning-button>
+                                                    <lightning-button class="slds-var-p-around_x-small" label="Reject" variant="brand-outline" data-id={caseRecord.Id} data-action="reject"
+                                                        onclick={handleAdditionalResourceAction}></lightning-button>
+                                                </div>
+                                            </lightning-layout-item>
+                                        </template>
+
+                                        <template if:false={caseRecord.isButtonVisible}>
+                                            <template if:true={caseRecord.isAdditionalResourceStatusAccepted} iterator:item={caseRecord.caseTeamRecords}>
+                                                <lightning-layout-item key={item.value.id} size="8" small-device-size="8" medium-device-size="9" large-device-size="9"
+                                                    class="slds-var-p-around_xx-small">
+                                                    <lightning-combobox name="Member__c" value={item.value.Member__c} label="Member" options={userOptions} variant="label-hidden"
+                                                        placeholder="Select Member" onchange={handleChange} data-name="Member__c" data-id={item.value.id}
+                                                        data-case={caseRecord.Id}></lightning-combobox>
+                                                </lightning-layout-item>
+                                                <lightning-layout-item key={item.value.id} size="4" small-device-size="4" medium-device-size="3" large-device-size="3"
+                                                    class="slds-var-p-around_xx-small slds-text-align_right">
+                                                    <lightning-button-icon if:true={item.last} class="slds-var-p-around_x-small" icon-name="utility:add" variant="border" size="small"
+                                                        onclick={handleAddFields} data-id={caseRecord.Id} title="Add Fields"></lightning-button-icon>
+                                                    <lightning-button-icon class="slds-var-p-around_x-small" icon-name="utility:dash" variant="border" size="small" onclick={handleRemoveFields}
+                                                        data-id={item.value.id} data-case={caseRecord.Id} title="Remove Fields"></lightning-button-icon>
+                                                </lightning-layout-item>
+                                            </template>
+
+                                            <lightning-layout-item if:true={caseRecord.isAdditionalResourceCommentVisible} size="12" small-device-size="12" medium-device-size="12"
+                                                large-device-size="12" class="slds-var-p-around_xx-small">
+                                                <lightning-textarea name="Additional_Resource_Request_RSM_Comment__c" class="additional-resource-request-comment" label="Comments"
+                                                    placeholder="Comments" variant="label-hidden" onchange={handleCommentChangeAdditionResource} data-id={caseRecord.Id}
+                                                    value={caseRecord.Additional_Resource_Request_RSM_Comment__c}></lightning-textarea>
+                                            </lightning-layout-item>
+
+                                            <template if:true={caseRecord.isAdditionalResourceStatusAccepted}>
+                                                <lightning-layout-item if:true={caseRecord.isAdditionalResourceCommentVisible} size="8" small-device-size="8" medium-device-size="9"
+                                                    large-device-size="9">
+                                                    <lightning-input value={caseRecord.acceptedDate} class="accepted-date" type="date" data-case={caseRecord.Id} min={today}
+                                                        onchange={handleAcceptedDate} if:true={caseRecord.isAdditionalResourceStatusAccepted}></lightning-input>
+                                                </lightning-layout-item>
+                                            </template>
+
+                                            <lightning-layout-item size="12" small-device-size="12" medium-device-size="12" large-device-size="12" class="slds-var-p-around_xx-small">
+                                                <div class="horizontal-flex" style="justify-content: right">
+                                                    <lightning-button class="slds-var-p-right_small" label="Save" variant="brand" onclick={handleSave2} data-id={caseRecord.Id}></lightning-button>
+                                                    <lightning-button class="slds-var-p-left_small" label="Cancel" variant="brand-outline" onclick={handleAdditionalResourceCancel}
+                                                        data-id={caseRecord.Id}></lightning-button>
+                                                </div>
+                                            </lightning-layout-item>
+                                        </template>
+                                    </lightning-layout>
+                                </div>
+
+                                <!--
+                                    <template iterator:item={caseRecord.caseTeamRecords}>
+                                        <lightning-layout multiple-rows vertical-align="center" key={item.value.id} class="slds-var-p-top_small" style="justify-content: center">
+                                            <lightning-layout-item size="12" small-device-size="12" medium-device-size="3" large-device-size="3" class="slds-var-p-around_xx-small">
+                                                <lightning-record-picker name="Member__c" object-api-name="User" label="Member" onchange={handleChange} filter={memberFilter} variant="label-hidden"
+                                                    display-info={memberDisplayInfo} placeholder="Search People" matching-info={memberMatchingInfo} data-name="Member__c" data-type="RecordPicker"
+                                                    data-id={item.value.id} data-case={caseRecord.Id}></lightning-record-picker>
+                                            </lightning-layout-item>
+                                            <lightning-layout-item size="4" small-device-size="4" medium-device-size="3" large-device-size="3" class="slds-var-p-around_xx-small">
+                                                <lightning-combobox name="Case_Team_Role__c" value={item.value.Case_Team_Role__c} label="Case Team Role" options={caseTeamRolesOptions}
+                                                    placeholder="Select Case Team Role" onchange={handleChange} variant="label-hidden" data-name="Case_Team_Role__c" data-id={item.value.id}
+                                                    data-case={caseRecord.Id}></lightning-combobox>
+                                            </lightning-layout-item>
+                                            <lightning-layout-item size="4" small-device-size="4" medium-device-size="3" large-device-size="3" class="slds-var-p-around_xx-small">
+                                                <lightning-combobox name="Access Level" value={item.value.Access_Level__c} label="Access Level" options={caseTeamAccessLevelOptions}
+                                                    placeholder="Select Access Level" onchange={handleChange} variant="label-hidden" data-name="Access_Level__c" data-id={item.value.id} read-only
+                                                    data-case={caseRecord.Id}></lightning-combobox>
+                                            </lightning-layout-item>
+
+                                            <lightning-layout-item size="4" small-device-size="4" medium-device-size="3" large-device-size="3"
+                                                class="slds-var-p-around_xx-small slds-text-align_center">
+                                                <lightning-button-icon if:true={item.last} class="slds-var-p-around_xx-small" icon-name="utility:add" variant="border" size="small"
+                                                    onclick={handleAddFields} data-id={caseRecord.Id} title="Add Fields"></lightning-button-icon>
+                                                <lightning-button-icon class="slds-var-p-around_xx-small" icon-name="utility:dash" variant="border" size="small" onclick={handleRemoveFields}
+                                                    data-id={item.value.id} data-case={caseRecord.Id} title="Remove Fields"></lightning-button-icon>
+                                            </lightning-layout-item>
+                                        </lightning-layout>
+                                    </template>
+                                    -->
+
+                            </div>
+                        </lightning-layout-item>
+                    </template>
+                </lightning-layout>
+            </template>
+
+            <!-- </template> -->
+            <div class="slds-grid slds-grid_align-center slds-m-top_medium">
+                <lightning-button label="Previous" onclick={handlePreviousPageAdditionalResource} disabled={isFirstPageAdditionalResource} class="slds-m-right_small"></lightning-button>
+                <span class="slds-text-body_regular slds-m-horizontal_small">Page {currentPageAdditionalResource} of {totalPagesAdditionalResource}</span>
+                <lightning-button label="Next" onclick={handleNextPageAdditionalResource} disabled={isLastPageAdditionalResource} class="slds-m-left_small"></lightning-button>
+            </div>
+        </lightning-tab>
+
+    </lightning-tabset>
+
+
+
+    <!-- Modal for Case Details -->
+    <template if:true={isModalOpen}>
+        <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <h2 class="slds-text-heading_medium">Case Details</h2>
+                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={closeModal}>
+                        <lightning-icon icon-name="utility:close" alternative-text="close" size="small"></lightning-icon>
+                    </button>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium">
+                    <p class="custom-font custom-padding"><strong>Customer Name:</strong> {modalData.clientName}</p>
+                    <p class="custom-font custom-padding"><strong>Email:</strong> {modalData.clientEmail}</p>
+                    <p class="custom-font custom-padding"><strong>Phone:</strong> {modalData.clientPhone}</p>
+                    <p class="custom-font custom-padding"><strong>Description:</strong> {modalData.description}</p>
+                    <!-- <p><strong>Division:</strong> {modalData.Division}</p>-->
+                </div>
+                <footer class="slds-modal__footer">
+                    <!-- Footer buttons -->
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+
+</template>

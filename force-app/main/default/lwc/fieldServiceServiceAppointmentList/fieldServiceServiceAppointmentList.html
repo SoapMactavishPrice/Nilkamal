@@ -1,0 +1,124 @@
+<template>
+
+    <template if:true={showSpinner}>
+        <lightning-spinner alternative-text="Loading" variant="brand" size="medium"></lightning-spinner>
+    </template>
+
+    <lightning-card variant="narrow" label="Service Appointments" hide-header>
+
+        <lightning-layout horizontal-align="spread">
+
+            <lightning-layout-item if:false={isMobile} size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-around_xx-small">
+                <div lwc:dom="manual" class="calendar-container">
+                    <!--
+                    <div class="calendar-view">
+                        <div class="calendar-header-container">
+                            <lightning-button-icon icon-name="utility:chevronleft" variant="container" onclick={handlePreviousMonthClick} alternative-text="Prev" title="Previous Month">
+                                <div>Prev</div>
+                            </lightning-button-icon>
+                            <div lwc:dom="manual" class="calendar-month-label"></div>
+                            <lightning-button-icon icon-name="utility:chevronright" variant="container" onclick={handleNextMonthClick} alternative-text="Next" title="Next Month">
+                                <div>Next</div>
+                            </lightning-button-icon>
+                        </div>
+                        <div class="calendar-week-header">
+                            <div class="ellipsis"><span>Mon</span></div>
+                            <div class="ellipsis"><span>Tue</span></div>
+                            <div class="ellipsis"><span>Wed</span></div>
+                            <div class="ellipsis"><span>Thu</span></div>
+                            <div class="ellipsis"><span>Fri</span></div>
+                            <div class="ellipsis"><span>Sat</span></div>
+                            <div class="ellipsis"><span>Sun</span></div>
+                        </div>
+                        <div class="calendar-days-view">
+                            <div lwc:dom="manual" class="calendar-days-container drop-target-parent"></div>
+                        </div>
+                    </div>
+                    -->
+                </div>
+            </lightning-layout-item>
+
+
+            <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-around_xx-small">
+
+                <template if:true={isMobile}>
+                    <div class="calendar-header-container" style="padding-top: 10px; padding-bottom: 10px">
+                        <lightning-button-icon icon-name="utility:chevronleft" variant="container" onclick={handlePreviousDayClick} alternative-text="Prev" title="Previous Day">
+                            <div>Prev</div>
+                        </lightning-button-icon>
+                        <div class="day-label" onclick={handleDateClick}>
+                            <div>{selectedDate}</div>
+                            <div>
+                                <lightning-button-icon icon-name="utility:date_input" variant="container" alternative-text="Calendar" title="Calendar"></lightning-button-icon>
+                            </div>
+                        </div>
+                        <lightning-button-icon icon-name="utility:chevronright" variant="container" onclick={handleNextDayClick} alternative-text="Next" title="Next Day">
+                            <div>Next</div>
+                        </lightning-button-icon>
+                    </div>
+
+                    <template if:true={showCalendarOverlay}>
+                        <div class="slds-is-relative">
+                            <div class={calendarOverlayClass}>
+                                <button class="calendar-close-btn" onclick={handleCloseCalendar}>X</button>
+                                <div lwc:dom="manual" class="calendar-container"></div>
+                            </div>
+                        </div>
+                        <div class="slds-backdrop slds-backdrop_open"></div>
+                    </template>
+                </template>
+
+                <div class="slds-scrollable service-appointment-table-container">
+                    <template lwc:if={visibleServiceAppointmentsList.length}>
+                        <table class="slds-table slds-table_bordered slds-no-row-hover">
+                            <thead class="slds-line-height_reset">
+                                <tr class="slds-hint-parent">
+                                    <th class="slds-text-title_caps">Case No</th>
+                                    <th class="slds-text-title_caps">Customer</th>
+                                    <th class="slds-text-title_caps">Contact</th>
+                                    <th class="slds-text-title_caps">Serial No</th>
+                                    <th class="slds-text-title_caps">Type</th>
+                                    <!-- <th class="slds-text-title_caps">Address</th> -->
+                                    <th class="slds-text-title_caps small-col"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template iterator:item={visibleServiceAppointmentsList}>
+                                    <tr key={item.value.id} class="slds-hint-parent">
+                                        <td class="slds-cell-wrap">
+                                            <a onclick={handleServiceAppointmentClick} data-index={item.index} data-id={item.value.id}>{item.value.caseNumber} {item.value.name}</a>
+                                        </td>
+                                        <td class="slds-cell-wrap">{item.value.custName}</td>
+                                        <td class="slds-cell-wrap">{item.value.contactName}</td>
+                                        <td class="slds-cell-wrap">{item.value.serialNumber}</td>
+                                        <td class="slds-cell-wrap">{item.value.woType}</td>
+                                        <!-- <td class="slds-cell-wrap">{item.value.addressString}</td> -->
+                                        <td class="slds-cell-wrap">
+                                            <lightning-icon icon-name="utility:preview" title="Preview Service Appointment" label="Preview Service Appointment" size="small"
+                                                onclick={handleServiceAppointmentClick} data-index={item.index} data-id={item.value.id}></lightning-icon>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </template>
+                    <template lwc:else>
+                        <lightning-layout>
+                            <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3">
+                            </lightning-layout-item>
+                            <lightning-layout-item size="8" small-device-size="8" medium-device-size="6" large-device-size="6">
+                                <img src="/img/chatter/OpenRoad.svg" class="slds-illustration__svg slds-var-p-around_large" />
+                            </lightning-layout-item>
+                            <lightning-layout-item size="2" small-device-size="2" medium-device-size="6" large-device-size="3">
+                            </lightning-layout-item>
+                        </lightning-layout>
+                    </template>
+                </div>
+
+            </lightning-layout-item>
+
+        </lightning-layout>
+
+    </lightning-card>
+
+</template>

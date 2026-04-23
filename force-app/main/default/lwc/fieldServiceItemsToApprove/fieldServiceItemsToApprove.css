@@ -1,0 +1,28 @@
+@import 'c/utilCSS';
+
+
+.datatable-container {
+	height: 90vh;
+}
+
+
+
+
+.mobile-card-container {
+	padding: 0.25rem 0.5rem;
+}
+
+.mobile-card {
+	margin-bottom: 0.5rem;
+	/* border-radius: 0.5rem; */
+	border-bottom: 1px solid gray;
+}
+
+
+
+
+
+.mobile-scroll-container {
+	height: 80vh;
+	overflow-y: auto;
+}

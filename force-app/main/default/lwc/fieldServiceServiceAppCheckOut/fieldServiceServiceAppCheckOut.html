@@ -1,0 +1,57 @@
+<template>
+
+    <template if:true={showSpinner}>
+        <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+    </template>
+
+
+    <lightning-card variant="narrow" label="Checkout" hide-header>
+
+        <lightning-layout multiple-rows horizontal-align="center" class="body-container">
+
+            <lightning-layout-item size="12" small-device-size="12" medium-device-size="12" large-device-size="12">
+                <lightning-map map-markers={mapMarkers} list-view="visible" zoom-level={zoomLevel}></lightning-map>
+
+                <template if:true={checkInOutDistance}>
+                    <div class="slds-var-p-around_small">Distance between Check In and Check Out is : <b>{checkInOutDistance}</b></div>
+                </template>
+            </lightning-layout-item>
+
+            <lightning-layout-item size="12" class="slds-var-p-around_xx-small"></lightning-layout-item>
+
+            <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-around_xx-small">
+                <lightning-combobox label="Do you want to Extend this Case?" name="doYouWantToScheduleOneMoreVisit" value={scheduleNewVisitRecord.doYouWantToScheduleOneMoreVisit}
+                    options={doYouWantToScheduleOneMoreVisitOptions} onchange={handleChange}></lightning-combobox>
+            </lightning-layout-item>
+
+            <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-around_xx-small">
+                <lightning-input type="date" label="Scheduled Start" name="Scheduled_Start__c" value={scheduleNewVisitRecord.Scheduled_Start__c} onchange={handleChange}
+                    min={scheduleNewVisitRecord.minDate} disabled={scheduleNewVisitRecord.isDateDisabled} data-name="Scheduled_Start__c"></lightning-input>
+            </lightning-layout-item>
+
+            <lightning-layout-item size="12" class="slds-align_absolute-center slds-var-p-around_xx-small">
+                <div class="horizontal-flex slds-var-p-top_large slds-var-p-bottom_small">
+                    <template lwc:if={scheduleNewVisitRecord.isCheckout}>
+                        <lightning-button label="Checkout" variant="brand" class="slds-var-p-right_xx-small" title="Checkout" onclick={handleSave} data-action="checkout"></lightning-button>
+                        <template if:true={serviceAppointment}>
+                            <lightning-button if:true={serviceAppointment.isCaseOwnerAndUserSame} label="Checkout and Close Case" variant="brand" class="slds-var-p-right_xx-small"
+                                title="Checkout and Close Case" onclick={handleSave} data-action="checkout-and-close-case"></lightning-button>
+                        </template>
+                    </template>
+
+                    <template lwc:elseif={scheduleNewVisitRecord.isCheckoutAndSchedule}>
+                        <lightning-button label="Checkout and Schedule" variant="brand" class="slds-var-p-right_xx-small" title="Checkout and Schedule" onclick={handleSave}
+                            data-action="checkout-and-schedule"></lightning-button>
+                    </template>
+
+                    <lightning-button label="Cancel" variant="brand-outline" class="slds-var-p-left_xx-small" title="Cancel" onclick={handleCancel}></lightning-button>
+                </div>
+            </lightning-layout-item>
+
+        </lightning-layout>
+
+        <c-toast-message></c-toast-message>
+
+    </lightning-card>
+
+</template>

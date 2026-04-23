@@ -1,0 +1,123 @@
+<template>
+    <template if:true={showActionPopup}>
+        <section class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <span class="slds-modal__close">
+                        <button class="slds-button slds-button_icon slds-button_icon-inverse slds-m-left_auto" title="Close" onclick={handleClose}>
+                            <lightning-icon icon-name="utility:close" size="small" alternative-text="close" class="slds-button__icon slds-button__icon_large"></lightning-icon>
+                            <span class="slds-assistive-text">Close</span>
+                        </button>
+                    </span>
+                    <h2 class="slds-text-heading_medium">Choose an Action</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium" style="text-align: center;">
+                    <lightning-button label="New Task" data-action="New Task" onclick={handleActionSelection} variant="brand"></lightning-button>
+                    <lightning-button label="Log a Call" data-action="Log a Call" onclick={handleActionSelection} class="slds-m-left_small" variant="brand"></lightning-button>
+                </div>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+
+    <template if:true={isNewTask}>
+        <lightning-card title="New Task" icon-name="standard:task">
+
+            <lightning-layout multiple-rows>
+                <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="4" class="slds-var-p-horizontal_small">
+                    <lightning-input label="Subject" data-field="Subject" onchange={handleChange}>
+                    </lightning-input>
+                </lightning-layout-item>
+                <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="4" class="slds-var-p-horizontal_small">
+                    <lightning-combobox label="Task Subtype" data-field="Task Subtype" options={taskSubtypeOptions} onchange={handleChange}>
+                    </lightning-combobox>
+                </lightning-layout-item>
+                <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="4" class="slds-var-p-horizontal_small">
+                    <lightning-record-picker label="Name" placeholder="Search Contact..." object-api-name="Contact" data-field="Name" onchange={handleChange} value={selectedRecordId} name="Name">
+                    </lightning-record-picker>
+                </lightning-layout-item>
+                <!-- <lightning-layout-item size="12">
+                    <lightning-input label="Name" placeholder="Search Contacts" data-field="Name"
+                        onchange={handleChange} value={selectedContactName}>
+                    </lightning-input>
+                    <template if:true={contacts.length}>
+                        <div class="slds-box slds-theme_default">
+                            <template for:each={contacts} for:item="contact">
+                                <div key={contact.Id} onclick={selectContact} data-id={contact.Id}
+                                    data-name={contact.Name} class="slds-p-around_x-small">
+                                    {contact.Name}
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </lightning-layout-item> -->
+                <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="4" class="slds-var-p-horizontal_small">
+                    <lightning-input label="Related To" data-field="Related To" onchange={handleChange} value={relatedToName} disabled=""></lightning-input>
+                </lightning-layout-item>
+                <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="4" class="slds-var-p-horizontal_small">
+                    <lightning-input type="date" label="Due Date" data-field="Due Date" onchange={handleChange}></lightning-input>
+                </lightning-layout-item>
+                <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="4" class="slds-var-p-horizontal_small">
+                    <lightning-input type="text" label="Assigned To" value={currentUser.Name} disabled>
+                    </lightning-input>
+                </lightning-layout-item>
+                <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="4" class="slds-var-p-horizontal_small">
+                    <lightning-textarea label="Comments" data-field="Comments" onchange={handleChange} placeholder="Comments"></lightning-textarea>
+                </lightning-layout-item>
+            </lightning-layout>
+            <lightning-layout horizontal-align="spread" class="slds-p-around_medium">
+                <lightning-layout-item size="6" small-device-size="6" medium-device-size="6" large-device-size="6" class="slds-var-p-horizontal_small" style="text-align: end;">
+                    <lightning-button label="Cancel" variant="brand-outline" onclick={handleCancel} class="slds-button_neutral"></lightning-button>
+                </lightning-layout-item>
+                <lightning-layout-item size="6" small-device-size="6" medium-device-size="6" large-device-size="6" class="slds-var-p-horizontal_small">
+                    <lightning-button label="Save" variant="brand" onclick={saveActivities}></lightning-button>
+                </lightning-layout-item>
+            </lightning-layout>
+        </lightning-card>
+    </template>
+
+    <template if:true={isLogACall}>
+        <lightning-card title="Log a Call" icon-name="standard:log_a_call">
+            <lightning-layout multiple-rows>
+                <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="4" class="slds-var-p-horizontal_small">
+                    <lightning-input label="Subject" data-field="Subject" onchange={handleChange}>
+                    </lightning-input>
+                </lightning-layout-item>
+
+                <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="4" class="slds-var-p-horizontal_small">
+                    <lightning-record-picker label="Name" placeholder="Search Name..." object-api-name="Contact" data-field="Name" onchange={handleChange} value={selectedRecordId} name="Name">
+                    </lightning-record-picker>
+                </lightning-layout-item>
+                <!-- <lightning-layout-item size="12">
+                    <lightning-input label="Name" placeholder="Search Contacts" data-field="Name"
+                        onchange={handleChange} value={selectedContactName}>
+                    </lightning-input>
+                    <template if:true={contacts.length}>
+                        <div class="slds-box slds-theme_default">
+                            <template for:each={contacts} for:item="contact">
+                                <div key={contact.Id} onclick={selectContact} data-id={contact.Id}
+                                    data-name={contact.Name} class="slds-p-around_x-small">
+                                    {contact.Name}
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                </lightning-layout-item> -->
+                <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="4" class="slds-var-p-horizontal_small">
+                    <lightning-input label="Related To" data-field="Related To" onchange={handleChange} value={relatedToName} disabled></lightning-input>
+                </lightning-layout-item>
+                <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="4" class="slds-var-p-horizontal_small">
+                    <lightning-textarea label="Comments" data-field="Comments" onchange={handleChange} placeholder="how did the call go?"></lightning-textarea>
+                </lightning-layout-item>
+            </lightning-layout>
+            <lightning-layout horizontal-align="spread" class="slds-p-around_medium">
+                <lightning-layout-item size="6" small-device-size="6" medium-device-size="6" large-device-size="6" class="slds-var-p-horizontal_small" style="text-align: end;">
+                    <lightning-button label="Cancel" variant="brand-outline" onclick={handleCancel} class="slds-button_neutral"></lightning-button>
+                </lightning-layout-item>
+                <lightning-layout-item size="6" small-device-size="6" medium-device-size="6" large-device-size="6" class="slds-var-p-horizontal_small">
+                    <lightning-button label="Save" variant="brand" onclick={saveActivities}></lightning-button>
+                </lightning-layout-item>
+            </lightning-layout>
+        </lightning-card>
+    </template>
+</template>

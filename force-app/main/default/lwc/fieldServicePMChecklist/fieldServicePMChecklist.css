@@ -1,0 +1,213 @@
+/* ─── Header ─── */
+.pm-header {
+    border-bottom: 1px solid #e5e5e5;
+    background: #fafaf9;
+}
+
+/* ─── Table Grid Layout ─── */
+.pm-table-header {
+    border-bottom: 2px solid #d8d8d8;
+    padding-bottom: 0.25rem;
+    font-size: 0.65rem;
+    letter-spacing: 0.05em;
+    color: #706e6b;
+}
+
+.pm-col-title {
+    width: 22%;
+    flex-shrink: 0;
+}
+
+.pm-col-spec {
+    width: 12%;
+    flex-shrink: 0;
+}
+
+.pm-col-actual {
+    width: 22%;
+    flex-shrink: 0;
+}
+
+.pm-col-lastpm {
+    width: 12%;
+    flex-shrink: 0;
+    padding-left: 1rem;
+    text-align: center;
+}
+
+.pm-col-remark {
+    width: 32%;
+    flex-shrink: 0;
+}
+
+/* Batch rows */
+.pm-col-batch {
+    width: 22%;
+    flex-shrink: 0;
+}
+
+.pm-col-expiry {
+    width: 22%;
+    flex-shrink: 0;
+}
+
+/* ─── Row styling ─── */
+.pm-row {
+    border-bottom: 1px solid #f3f2f2;
+    align-items: center;
+    min-height: 2.5rem;
+}
+
+.pm-row:hover {
+    background-color: #f7f9fb;
+}
+
+.pm-row-title {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: #181818;
+}
+
+.pm-unit {
+    font-size: 0.75rem;
+    color: #706e6b;
+    white-space: nowrap;
+}
+
+.pm-spec-text {
+    font-size: 0.75rem;
+    color: #514f4d;
+}
+
+.pm-lastpm-text {
+    font-size: 0.75rem;
+    color: #514f4d;
+}
+
+/* ─── Auto-remark ─── */
+.pm-auto-remark {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #0070d2;
+    word-break: break-word;
+}
+
+/* ─── Error styling ─── */
+.pm-invalid {
+    --slds-c-input-color-border: var(--slds-g-color-border-error-1, #ea001e);
+    --slds-c-input-shadow: 0 0 0 1px var(--slds-g-color-border-error-1, #ea001e);
+}
+
+/* ─── VMS auto-computed field ─── */
+.pm-vms-computed {
+    --slds-c-input-color-background: #e8f4fd;
+    font-weight: 600;
+}
+
+.pm-error-text {
+    color: #ea001e;
+    font-size: 0.6875rem;
+    margin-top: 0.125rem;
+}
+
+/* ─── Reference link ─── */
+.pm-reference-link {
+    font-size: 0.8125rem;
+    text-decoration: none;
+    color: #0070d2;
+}
+
+.pm-reference-link:hover {
+    text-decoration: underline;
+}
+
+.pm-row-link {
+    margin-left: 0.25rem;
+    text-decoration: none;
+    font-size: 0.75rem;
+}
+
+/* ─── Image rows ─── */
+.pm-image-row {
+    border-bottom: 1px solid #f3f2f2;
+    background: #fafaf9;
+}
+
+.pm-file-input {
+    font-size: 0.75rem;
+    width: 100%;
+}
+
+.pm-max-size {
+    font-size: 0.6875rem;
+    color: #706e6b;
+}
+
+.pm-image-preview {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.25rem 0.5rem;
+    margin-top: 0.25rem;
+    background: #e0f0ff;
+    border-radius: 4px;
+    font-size: 0.75rem;
+}
+
+.pm-image-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 75%;
+}
+
+.pm-delete-btn {
+    flex-shrink: 0;
+}
+
+/* ─── Footer ─── */
+.pm-footer {
+    border-top: 1px solid #e5e5e5;
+    position: sticky;
+    bottom: 0;
+    background: #ffffff;
+    z-index: 10;
+}
+
+/* ─── Mobile responsive ─── */
+@media (max-width: 48em) {
+    .pm-table-header {
+        display: none;
+    }
+
+    .pm-row,
+    .pm-batch-row {
+        flex-wrap: wrap;
+    }
+
+    .pm-col-title,
+    .pm-col-spec,
+    .pm-col-actual,
+    .pm-col-lastpm,
+    .pm-col-remark,
+    .pm-col-batch,
+    .pm-col-expiry {
+        width: 100%;
+    }
+
+    .pm-col-title {
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+    }
+
+    .pm-col-spec {
+        font-size: 0.6875rem;
+        color: #706e6b;
+        margin-bottom: 0.25rem;
+    }
+
+    .pm-col-lastpm {
+        font-size: 0.6875rem;
+        margin-bottom: 0.25rem;
+    }
+}

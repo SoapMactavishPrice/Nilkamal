@@ -1,0 +1,99 @@
+<template>
+
+    <template if:true={showSpinner}>
+        <lightning-spinner alternative-text="Loading" variant="brand" size="medium"></lightning-spinner>
+    </template>
+
+
+    <div class="container-max-width">
+
+        <template if:true={isDesktop}>
+            <div if:true={pdfUrl} class="material-card-without-shadow slds-var-m-bottom_small">
+                <iframe id="pdf" src={pdfUrl} style="width: 100%; height: 100vh"></iframe>
+            </div>
+        </template>
+
+
+        <div class="slds-var-m-bottom_small">
+
+            <lightning-layout multiple-rows style="max-width: 767px; margin: auto" class="material-card-without-shadow">
+
+                <lightning-layout-item size="12" class="slds-var-p-horizontal_small slds-var-p-vertical_xx-small email-container">
+                    <div class="wrapper">
+                        <template iterator:item={toAddresses}>
+                            <lightning-pill key={item.value.label} label={item.value.label} class="slds-var-p-right_x-small slds-var-p-bottom_xx-small" onremove={handleRemoveRecipient}
+                                data-index={item.index} data-type="to">
+                                <lightning-avatar initials={item.value.initials} fallback-icon-name="standard:user" variant="circle" size="x-small" class="slds-var-m-right_small"></lightning-avatar>
+                            </lightning-pill>
+                        </template>
+                        <template if:false={isDesktop}><br /></template>
+                        <input class="email-input" name="toAddress" placeholder="To Address" value={toAddress} autocomplete="off" enterkeyhint="done" onkeyup={handleKeyUp}
+                            onchange={handleRecipientChange} data-type="to" data-device={device} />
+                        <datalist id="emailListForTo">
+                            <template iterator:contact={contacts}>
+                                <template if:true={contact.value.Id}>
+                                    <template if:false={contact.value.isAdded}>
+                                        <option key={contact.value.Email} value={contact.value.Email}></option>
+                                    </template>
+                                </template>
+                            </template>
+                        </datalist>
+                    </div>
+                </lightning-layout-item>
+
+
+                <lightning-layout-item size="12" class="slds-var-p-horizontal_small slds-var-p-vertical_xx-small email-container">
+                    <div class="wrapper">
+                        <template iterator:item={ccAddresses}>
+                            <lightning-pill key={item.value.label} label={item.value.label} class="slds-var-p-right_x-small slds-var-p-bottom_xx-small" onremove={handleRemoveRecipient}
+                                data-index={item.index} data-type="cc">
+                                <lightning-avatar initials={item.value.initials} fallback-icon-name="standard:user" variant="circle" size="x-small" class="slds-var-m-right_small"></lightning-avatar>
+                            </lightning-pill>
+                        </template>
+                        <template if:false={isDesktop}><br /></template>
+                        <input class="email-input" name="ccAddress" placeholder="Cc Address" value={ccAddress} autocomplete="off" enterkeyhint="done" onkeyup={handleKeyUp}
+                            onchange={handleRecipientChange} data-type="cc" data-device={device} />
+                        <datalist id="emailListForCC">
+                            <template iterator:contact={contacts}>
+                                <template if:true={contact.value.Id}>
+                                    <template if:false={contact.value.isAdded}>
+                                        <option key={contact.value.Email} value={contact.value.Email}></option>
+                                    </template>
+                                </template>
+                            </template>
+                        </datalist>
+                    </div>
+                </lightning-layout-item>
+
+
+                <lightning-layout-item size="12" small-device-size="12" medium-device-size="12" large-device-size="12" class="slds-var-p-horizontal_small slds-var-p-vertical_xx-small">
+                    <label class="slds-form-element__label">Subject</label>
+                    <lightning-input type="text" name="subject" variant="label-hidden" value={subject} onchange={handleChange} data-name="subject"></lightning-input>
+                </lightning-layout-item>
+
+
+                <lightning-layout-item size="12" small-device-size="12" medium-device-size="12" large-device-size="12" class="slds-var-p-horizontal_small slds-var-p-vertical_xx-small">
+                    <label class="slds-form-element__label">Body</label>
+                    <lightning-input-rich-text name="body" variant="label-hidden" value={body} onchange={handleChange} disabled-categories="FORMAT_FONT ALIGN_TEXT INSERT_CONTENT REMOVE_FORMATTING"
+                        data-name="body"></lightning-input-rich-text>
+                </lightning-layout-item>
+
+
+                <lightning-layout-item size="12" small-device-size="12" medium-device-size="12" large-device-size="12" class="slds-var-p-horizontal_small slds-var-p-top_large slds-var-p-bottom_small">
+                    <div class="horizontal-flex slds-wrap" style="justify-content: center">
+                        <lightning-button label="Send" variant="brand" onclick={handleSendEmail} class="slds-var-p-around_x-small"></lightning-button>
+                        <template if:false={isDesktop}>
+                            <lightning-button label="Preview File" variant="brand-outline" onclick={handlePreviewFile} class="slds-var-p-around_x-small"
+                                disabled={isPreviewButtonDisabled}></lightning-button>
+                        </template>
+                        <lightning-button label="Cancel" variant="brand-outline" onclick={handleCancel} class="slds-var-p-around_x-small"></lightning-button>
+                    </div>
+                </lightning-layout-item>
+
+            </lightning-layout>
+
+        </div>
+
+    </div>
+
+</template>

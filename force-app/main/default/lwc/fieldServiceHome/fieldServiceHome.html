@@ -1,0 +1,306 @@
+<template>
+
+    <template if:true={showSpinner}>
+        <lightning-spinner variant="brand" size="medium"></lightning-spinner>
+    </template>
+
+    <lightning-card hide-header="true" variant="narrow">
+
+        <!--
+        <template if:true={isMobile}>
+            <div class="nilkamal-logo-container">
+                <img src={nilkamalLogo} alt="nilkamal-logo" />
+            </div>
+        </template>
+        -->
+
+        <lightning-layout multiple-rows>
+            <lightning-layout-item size="12" class="block1" small-device-size="12" medium-device-size="6" large-device-size="6">
+
+                <template if:false={isDesktop}>
+                    <div class="events-table-container">
+                        <div class="events-table open-events-container" data-id="todaysActions">
+                            <div class="events-table-header">
+                                <lightning-button-icon icon-name="utility:chevronleft" variant="container" alternative-text="Prev" title="Previous" disabled>
+                                    <div>Prev</div>
+                                </lightning-button-icon>
+                                <div class="slds-text-heading_small slds-text-align_center">Open Events</div>
+                                <lightning-button-icon icon-name="utility:chevronright" variant="container" onclick={handlePreviousNextClick} alternative-text="Next" title="Next" data-current="0"
+                                    data-action="1">
+                                    <div>Next</div>
+                                </lightning-button-icon>
+                            </div>
+
+                            <div class="slds-scrollable events-table-outer-div">
+                                <table class="slds-table slds-table_bordered slds-no-row-hover">
+                                    <thead>
+                                        <tr class="slds-line-height_reset">
+                                            <th scope="col">No</th>
+                                            <th scope="col">Appointment/Case No</th>
+                                            <th scope="col">Customer</th>
+                                            <th scope="col">Serial No</th>
+                                            <th scope="col">Address</th>
+                                            <th scope="col">Date Raised</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <template if:true={openEvents}>
+                                            <template iterator:item={openEvents}>
+                                                <tr key={item.value.id} class="slds-hint-parent">
+                                                    <td class="slds-cell-wrap">{item.value.srNo}</td>
+                                                    <td class="slds-cell-wrap">{item.value.name} / {item.value.caseNumber}</td>
+                                                    <!-- <td class="slds-cell-wrap">{item.value.name}</td> -->
+                                                    <td class="slds-cell-wrap">
+                                                        <div class="truncate" onclick={handleToggleDescription}>{item.value.customerName}</div>
+                                                    </td>
+                                                    <td class="slds-cell-wrap">{item.value.serialNumber}</td>
+                                                    <td class="slds-cell-wrap">
+                                                        <div class="truncate" onclick={handleToggleDescription}>{item.value.address}</div>
+                                                    </td>
+                                                    <td class="slds-cell-wrap">
+                                                        <lightning-formatted-date-time value={item.value.createdDate} year="numeric" day="2-digit" month="short"></lightning-formatted-date-time>
+                                                    </td>
+                                                </tr>
+                                            </template>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="events-table missed-events-container">
+                            <div class="events-table-header">
+                                <lightning-button-icon icon-name="utility:chevronleft" variant="container" onclick={handlePreviousNextClick} alternative-text="Prev" title="Previous" data-current="1"
+                                    data-action="0">
+                                    <div>Prev</div>
+                                </lightning-button-icon>
+                                <div class="slds-text-heading_small slds-text-align_center slds-text-color_error">Missed Events</div>
+                                <lightning-button-icon icon-name="utility:chevronright" variant="container" onclick={handlePreviousNextClick} alternative-text="Next" title="Next" data-current="1"
+                                    data-action="2">
+                                    <div>Next</div>
+                                </lightning-button-icon>
+                            </div>
+
+                            <div class="slds-scrollable events-table-outer-div">
+                                <table class="slds-table slds-table_bordered slds-no-row-hover">
+                                    <thead>
+                                        <tr class="slds-line-height_reset">
+                                            <th scope="col">No</th>
+                                            <th scope="col">Appointment/Case No</th>
+                                            <th scope="col">Customer</th>
+                                            <th scope="col">Serial No</th>
+                                            <th scope="col">Address</th>
+                                            <th scope="col">Date Raised</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <template if:true={missedEvents}>
+                                            <template iterator:item={missedEvents}>
+                                                <tr key={item.value.id} class="slds-hint-parent">
+                                                    <td class="slds-cell-wrap">{item.value.srNo}</td>
+                                                    <td class="slds-cell-wrap">{item.value.name} / {item.value.caseNumber}</td>
+                                                    <td class="slds-cell-wrap">
+                                                        <div class="truncate" onclick={handleToggleDescription}>{item.value.customerName}</div>
+                                                    </td>
+                                                    <td class="slds-cell-wrap">{item.value.serialNumber}</td>
+                                                    <td class="slds-cell-wrap">
+                                                        <div class="truncate" onclick={handleToggleDescription}>{item.value.address}</div>
+                                                    </td>
+                                                    <td class="slds-cell-wrap">
+                                                        <lightning-formatted-date-time value={item.value.createdDate} year="numeric" day="2-digit" month="short"></lightning-formatted-date-time>
+                                                    </td>
+                                                </tr>
+                                            </template>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="events-table upcoming-events-container">
+                            <div class="events-table-header">
+                                <lightning-button-icon icon-name="utility:chevronleft" variant="container" onclick={handlePreviousNextClick} alternative-text="Prev" title="Previous" data-current="2"
+                                    data-action="1">
+                                    <div>Prev</div>
+                                </lightning-button-icon>
+                                <div class="slds-text-heading_small slds-text-align_center">Upcoming Events</div>
+                                <lightning-button-icon icon-name="utility:chevronright" variant="container" alternative-text="Next" title="Next" disabled>
+                                    <div>Next</div>
+                                </lightning-button-icon>
+                            </div>
+
+                            <div class="slds-scrollable events-table-outer-div">
+                                <table class="slds-table slds-table_bordered slds-no-row-hover">
+                                    <thead>
+                                        <tr class="slds-line-height_reset">
+                                            <th scope="col">No</th>
+                                            <th scope="col">Appointment/Case No</th>
+                                            <th scope="col">Customer</th>
+                                            <th scope="col">Serial No</th>
+                                            <th scope="col">Address</th>
+                                            <th scope="col">Date Raised</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <template if:true={upcomingEvents}>
+                                            <template iterator:item={upcomingEvents}>
+                                                <tr key={item.value.id} class="slds-hint-parent">
+                                                    <td class="slds-cell-wrap">{item.value.srNo}</td>
+                                                    <td class="slds-cell-wrap">{item.value.name} / {item.value.caseNumber}</td>
+                                                    <td class="slds-cell-wrap">
+                                                        <div class="truncate" onclick={handleToggleDescription}>{item.value.customerName}</div>
+                                                    </td>
+                                                    <td class="slds-cell-wrap">{item.value.serialNumber}</td>
+                                                    <td class="slds-cell-wrap">
+                                                        <div class="truncate" onclick={handleToggleDescription}>{item.value.address}</div>
+                                                    </td>
+                                                    <td class="slds-cell-wrap">
+                                                        <lightning-formatted-date-time value={item.value.createdDate} year="numeric" day="2-digit" month="short"></lightning-formatted-date-time>
+                                                    </td>
+                                                </tr>
+                                            </template>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+
+                <template if:true={isDesktop}>
+                    <lightning-layout class="toggle-events-container" horizontal-align="space">
+                        <lightning-layout-item size="4" class="slds-text-align_center">
+                            <template lwc:if={isOpenEventsVisible}>
+                                <lightning-button label="Open" onclick={handleOpenEventsClick}></lightning-button>
+                            </template>
+                            <template lwc:else>
+                                <lightning-button variant="base" label="Open" onclick={handleOpenEventsClick}></lightning-button>
+                            </template>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="4" class="slds-text-align_center">
+                            <template lwc:if={isMissedEventsVisible}>
+                                <lightning-button label="Missed" variant="destructive-text" onclick={handleMissedEventsClick}></lightning-button>
+                            </template>
+                            <template lwc:else>
+                                <lightning-button variant="base" label="Missed" onclick={handleMissedEventsClick}></lightning-button>
+                            </template>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="4" class="slds-text-align_center">
+                            <template lwc:if={isUpcomingEventsVisible}>
+                                <lightning-button label="Upcoming" onclick={handleUpcomingEventsClick}></lightning-button>
+                            </template>
+                            <template lwc:else>
+                                <lightning-button variant="base" label="Upcoming" onclick={handleUpcomingEventsClick}></lightning-button>
+                            </template>
+                        </lightning-layout-item>
+                    </lightning-layout>
+
+                    <div class="slds-scrollable" style="max-height: 90vh">
+                        <table class="slds-table slds-table_bordered slds-no-row-hover">
+                            <thead>
+                                <tr class="slds-line-height_reset">
+                                    <th scope="col">No</th>
+                                    <th scope="col">Appointment/Case No</th>
+                                    <th scope="col">Customer</th>
+                                    <th scope="col">Serial No</th>
+                                    <th scope="col">Address</th>
+                                    <!-- <th scope="col">Description</th> -->
+                                    <th scope="col">Date Raised</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template if:true={eventsInView}>
+                                    <template iterator:item={eventsInView}>
+                                        <tr key={item.value.id} class="slds-hint-parent">
+                                            <td class="slds-truncate">{item.value.srNo}</td>
+                                            <td class="slds-truncate">{item.value.name} / {item.value.caseNumber}</td>
+                                            <td class="slds-cell-wrap">
+                                                <div class="truncate" onclick={handleToggleDescription}>{item.value.customerName}</div>
+                                            </td>
+                                            <td class="slds-cell-wrap">{item.value.serialNumber}</td>
+                                            <td class="slds-cell-wrap">
+                                                <div class="truncate" onclick={handleToggleDescription}>{item.value.address}</div>
+                                            </td>
+                                            <!-- <td class="slds-truncate">{item.value.description}</td> -->
+                                            <td class="slds-cell-wrap">
+                                                <lightning-formatted-date-time value={item.value.createdDate} year="2-digit" month="2-digit" day="2-digit"></lightning-formatted-date-time>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </template>
+
+            </lightning-layout-item>
+
+
+
+
+
+            <lightning-layout-item size="12" class="block2" small-device-size="12" medium-device-size="6" large-device-size="6">
+                <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6">
+                    <div class="summary-container">
+                        <div onclick={handleSummaryClick} data-id="newCases">
+                            <p>
+                                {caseData.newCases}
+                                <span>New Cases</span>
+                            </p>
+                        </div>
+                        <div onclick={handleSummaryClick} data-id="missedCases">
+                            <p>
+                                {caseData.missedCases}
+                                <span>Missed Cases</span>
+                            </p>
+                        </div>
+                        <div onclick={handleSummaryClick} data-id="todaysActions">
+                            <p>
+                                {caseData.todaysActions}
+                                <span>Today's Actions</span>
+                            </p>
+                        </div>
+                        <div onclick={handleSummaryClick} data-id="openCases">
+                            <p>
+                                {caseData.openCases}
+                                <span>Open Cases</span>
+                            </p>
+                        </div>
+                    </div>
+                </lightning-layout-item>
+
+
+                <template for:each={sectionList} for:item="section" for:index="index">
+                    <div class="material-card slds-var-m-around_xx-small" key={section.label}>
+                        <div class="material-card-header slds-var-p-horizontal_medium slds-var-p-vertical_xx-small slds-text-heading_small">{section.label}</div>
+                        <lightning-layout multiple-rows vertical-align="stretch">
+                            <template for:each={section.items} for:item="item" for:index="childIndex">
+                                <template if:true={item.isVisible}>
+                                    <lightning-layout-item key={item.label} class="slds-var-p-horizontal_x-small home-page-card" data-index={index} data-child-index={childIndex}
+                                        onclick={item.clickHandler}>
+                                        <div class="home-page-card-icon">
+                                            <img src={item.imageUrl} alt={item.label} loading="lazy" />
+                                            <template if:true={item.pendingTasksCount}>
+                                                <!-- <template if:true={item.isPendingTasksCountAvailable}> -->
+                                                <div class="pending-task-count">
+                                                    {item.pendingTasksCount}
+                                                </div>
+                                                <!-- </template> -->
+                                            </template>
+                                        </div>
+                                        <div class="slds-var-p-bottom_small home-page-card-label">
+                                            {item.label}
+                                        </div>
+                                    </lightning-layout-item>
+                                </template>
+                            </template>
+                        </lightning-layout>
+                    </div>
+                </template>
+
+            </lightning-layout-item>
+        </lightning-layout>
+    </lightning-card>
+
+</template>

@@ -1,0 +1,39 @@
+@import 'c/utilCSS';
+
+
+
+
+.scrollable {
+	overflow-y: auto;
+	border: 1px solid #d8dde6;
+	/* padding: 0.5rem; */
+}
+
+.slds-table thead th {
+	position: sticky;
+	top: 0;
+	background-color: rgba(238, 238, 238, 1);
+	z-index: 1;
+}
+
+.all-loaded {
+	color: var(--brand-color);
+	padding: 0.5rem;
+	font-weight: bold;
+}
+
+
+
+
+
+
+.table-header-cell[data-sortable="true"] {
+	cursor: pointer;
+}
+
+
+.case-number-sa-number[data-checked="true"] a div {
+	color: var(--green-clr);
+	font-weight: bold;
+	text-decoration: underline;
+}

@@ -1,0 +1,246 @@
+<template>
+
+    <template if:true={showSpinner}>
+        <lightning-spinner alternative-text="Loading" variant="brand" size="medium"></lightning-spinner>
+    </template>
+
+    <lightning-layout multiple-rows>
+        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-around_x-small" style="margin: auto;">
+            <lightning-card hide-header="true" variant="narrow">
+
+                <lightning-layout multiple-rows style="align-items: center !important;">
+                    <lightning-layout-item size="12" small-device-size="12" medium-device-size="12" large-device-size="12" class="slds-var-p-around_x-small" style="text-align: center;">
+                        <template lwc:if={isMobile}>
+                            <div class="radio-container">
+                                <fieldset class="slds-form-element">
+                                    <!-- sldsValidatorIgnoreNextLine -->
+                                    <legend class="slds-form-element__legend slds-form-element__label radio-label">Check
+                                        In
+                                    </legend>
+                                    <div class="slds-form-element__control radio-control" style="width:100%;">
+                                        <span class="slds-radio slds-var-p-right_small" style="flex: 1 1 auto; ">
+                                            <input type="radio" id="customerOffice" value="Customer Office" name="checkInRadio" onchange={handleCheckInInput} checked={isCheckInCustomerOffice}
+                                                disabled={isReadOnly} />
+                                            <label class="slds-radio__label" for="customerOffice">
+                                                <span class="slds-radio_faux"></span>
+                                                <span class="slds-form-element__label">Customer Office</span>
+                                            </label>
+                                        </span>
+                                        <span class="slds-radio slds-var-p-right_small" style="flex: 1 1 auto;">
+                                            <input type="radio" id="customerPlant" value="Customer Plant" name="checkInRadio" onchange={handleCheckInInput} checked={isCheckInCustomerPlant}
+                                                disabled={isReadOnly} />
+                                            <label class="slds-radio__label" for="customerPlant">
+                                                <span class="slds-radio_faux"></span>
+                                                <span class="slds-form-element__label">Customer Plant</span>
+                                            </label>
+                                        </span>
+                                        <span class="slds-radio" style="flex: 1 1 auto;">
+                                            <input type="radio" id="endCustomer" value="End Customer" name="checkInRadio" onchange={handleCheckInInput} checked={isCheckInEndCustomer}
+                                                disabled={isReadOnly} />
+                                            <label class="slds-radio__label" for="endCustomer">
+                                                <span class="slds-radio_faux"></span>
+                                                <span class="slds-form-element__label">End Customer</span>
+                                            </label>
+                                        </span>
+                                    </div>
+                                </fieldset>
+                            </div>
+                        </template>
+
+                        <template lwc:else>
+                            <lightning-radio-group name="Check_In__c" label="Check In" value={record.Check_In__c} variant="label-stacked" type="button" options={checkInOptions}
+                                onchange={handleRecordChange} disabled={isReadOnly}>
+                            </lightning-radio-group>
+                        </template>
+                    </lightning-layout-item>
+
+                    <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-horizontal_small">
+                        <div class="inline-label-combobox slds-form-element">
+                            <!-- <label class="custom-label slds-form-element__label">End Cust Name</label> -->
+                            <lightning-record-picker name="Account__c" object-api-name="Account" label="End Cust Name" value={record.Account__c} onchange={handleRecordChange} style="width: 100%;"
+                                data-type="RecordPicker" filter={accountFilter} disabled={isReadOnly} variant="label-stacked"></lightning-record-picker>
+                        </div>
+                    </lightning-layout-item>
+                    <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-horizontal_small">
+                        <div class="inline-label-combobox slds-form-element">
+                            <!-- <label class="custom-label slds-form-element__label">Meeting With</label> -->
+                            <lightning-record-picker name="Contact__c" object-api-name="Contact" label="Meeting With" value={record.Contact__c} filter={contactFilter} onchange={handleRecordChange}
+                                style="width: 100%;" data-type="RecordPicker" disabled={isReadOnly} variant="label-stacked"></lightning-record-picker>
+                        </div>
+                    </lightning-layout-item>
+                    <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-horizontal_small">
+                        <div class="inline-label-combobox slds-form-element">
+                            <!-- <label class="custom-label slds-form-element__label">Case Type</label> -->
+                            <lightning-combobox name="Type" label="Case Type" value={record.WO_Type__c} options={caseTypeOptions} onchange={handleRecordChange} style="width: 100%;"
+                                disabled={isReadOnly} variant="label-stacked"></lightning-combobox>
+                        </div>
+                    </lightning-layout-item>
+                    <lightning-layout-item size="12" small-device-size="6" medium-device-size="6" large-device-size="6" class="slds-var-p-horizontal_small">
+                        <!-- <div class="slds-text-heading_medium">Additional Information</div> -->
+                        <lightning-textarea name="Additional_Information__c" label="Meeting Interaction Note​" variant="label-stacked" value={record.Meeting_Interaction_Note__c}
+                            onchange={handleRecordChange} placeholder="Enter Notes Here..." disabled={isReadOnly}></lightning-textarea>
+                    </lightning-layout-item>
+                    <!-- <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6"
+                class="slds-var-p-around_x-small">
+                <div class="slds-text-heading_small">Installation Checklist</div>
+                <lightning-checkbox-group name="Installation_Checklist__c" label="Installation Checklist"
+                    value={record.Installation_Checklist__c} variant="label-inline"
+                    options={installationChecklistOptions} onchange={handleRecordChange}></lightning-checkbox-group>
+            </lightning-layout-item> -->
+                    <!--  -->
+                    <lightning-layout-item size="12" small-device-size="12" medium-device-size="12" large-device-size="12" class="slds-var-p-around_x-small">
+                        <div class="section">
+                            <!-- <label>Installation Checklist</label> -->
+                            <!-- <div class="checklist">
+                                <template for:each={checklistItems} for:item="item">
+                                    <lightning-input key={item.value} type="checkbox" label={item.label}
+                                        name={item.value} checked={item.checked} onchange={handleChecklistChange}>
+                                    </lightning-input>
+                                </template>
+                            </div> -->
+                            <!-- <div class="checklist">
+                                <template for:each={checklistItems} for:item="category">
+                                    <div key={category.Checklist_Category__c}>
+                                        <h3 style="font-size:large;">{category.Checklist_Category__c}</h3>
+                                        <template for:each={category.checkpoints} for:item="checkpoint">
+                                    
+                                            <div key={checkpoint.Checklist_Master__c} style="display: flex; flex-direction: row">
+                                                <div>{checkpoint.Check_Point__c}</div>
+                                                <div>
+                                                    <lightning-combobox name="Observation__c" value={checkpoint.Observation__c} variant="label-hidden" options={observationOptions}
+                                                        onchange={handleChecklistChange} data-checklist-category={category.Checklist_Category__c}
+                                                        data-checklist-master-id={checkpoint.Checklist_Master__c}></lightning-combobox>
+                                                </div>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+                            </div> -->
+                            <!-- test -->
+                            <template for:each={checklistItemsWithObservation} for:item="category" if:true={isReadOnly}>
+                                <div key={category.Checklist_Category__c} class="category-section">
+                                    <h3 style="font-size:large;">{category.Checklist_Category__c}</h3>
+                                    <table class="slds-table slds-table_bordered slds-table_cell-buffer">
+                                        <thead>
+                                            <tr>
+                                                <!-- <th style="text-align: start;width:10%;" scope="col">SR. NO.</th> -->
+                                                <th style="text-align: start;" scope="col">CHECK POINTS</th>
+                                                <th style="text-align: start;width:25%;" scope="col">OBSERVATION</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <template for:each={category.checkpoints} for:item="checkpoint">
+                                                <tr key={checkpoint.Checklist_Master__c}>
+                                                    <!-- <td style="text-align: start;width:10%;"></td> -->
+                                                    <td>{checkpoint.Check_Point__c}</td>
+                                                    <td>
+                                                        <lightning-combobox name="Observation__c" value={checkpoint.Observation__c} variant="label-hidden" options={observationOptions}
+                                                            onchange={handleChecklistChange} data-checklist-category={category.Checklist_Category__c}
+                                                            data-checklist-master-id={checkpoint.Checklist_Master__c} disabled={isReadOnly} dropdown-alignment="auto"
+                                                            placeholder="Observation"></lightning-combobox>
+                                                    </td>
+                                                </tr>
+                                            </template>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </template>
+                            <template for:each={checklistItemsAll} for:item="category" if:false={isReadOnly}>
+                                <div key={category.Checklist_Category__c} class="category-section">
+                                    <h3 style="font-size:large;">{category.Checklist_Category__c}</h3>
+                                    <table class="slds-table slds-table_bordered slds-table_cell-buffer">
+                                        <thead>
+                                            <tr>
+                                                <!-- <th style="text-align: start;width:10%;" scope="col">SR. NO.</th> -->
+                                                <th style="text-align: start;" scope="col">CHECK POINTS</th>
+                                                <th style="text-align: start;width:25%;" scope="col">OBSERVATION</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <template for:each={category.checkpoints} for:item="checkpoint">
+                                                <tr key={checkpoint.Checklist_Master__c}>
+                                                    <!-- <td style="text-align: start;width:10%;"></td> -->
+                                                    <td>{checkpoint.Check_Point__c}</td>
+                                                    <td>
+                                                        <lightning-combobox name="Observation__c" value={checkpoint.Observation__c} variant="label-hidden" options={observationOptions}
+                                                            onchange={handleChecklistChange} data-checklist-category={category.Checklist_Category__c}
+                                                            data-checklist-master-id={checkpoint.Checklist_Master__c} dropdown-alignment="auto" placeholder="Observation"></lightning-combobox>
+                                                    </td>
+                                                </tr>
+                                            </template>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </template>
+                            <!-- test -->
+                        </div>
+                    </lightning-layout-item>
+                    <!--  -->
+
+                    <lightning-layout-item size="12" small-device-size="12" medium-device-size="12" large-device-size="12" class="slds-var-p-around_x-small" style="text-align: center;"
+                        if:false={isReadOnly}>
+                        <lightning-button label="Save" onclick={handleSubmit} disabled={isReadOnly} variant="brand"></lightning-button>
+                    </lightning-layout-item>
+
+                    <!-- <lightning-layout-item size="12" small-device-size="12" medium-device-size="2" large-device-size="2"
+                class="slds-var-p-around_x-small">
+                <lightning-button variant="brand" label="Save" title="Save"
+                    onclick={handleSaveClick}></lightning-button>
+            </lightning-layout-item> -->
+                    <!-- <lightning-layout-item size="6" small-device-size="6" medium-device-size="2" large-device-size="2"
+                class="slds-var-p-around_x-small slds-flex slds-flex_align-stretch">
+                <div>
+                    <lightning-button variant="brand-outline" label="Fill Installation Report"
+                        title="Fill Installation Report" onclick={handleFillInstallationReportClick}
+                        style="width: 100%;" class="slds-button_stretch "></lightning-button>
+                </div>
+            </lightning-layout-item> -->
+                    <!-- Close Ticket -->
+                    <!-- <lightning-layout-item size="6" small-device-size="6" medium-device-size="2" large-device-size="2"
+                class="slds-var-p-around_x-small slds-flex slds-flex_align-stretch">
+                <div>
+                    <lightning-button variant="brand-outline" label="Close Ticket" title="Close Ticket"
+                        onclick={handleCloseTicketClick} style="width:100%;"></lightning-button>
+                </div>
+            </lightning-layout-item> -->
+                    <!-- Fill Installation Report  -->
+                    <!-- <lightning-layout-item size="12" small-device-size="6" medium-device-size="6" large-device-size="6" class="slds-var-p-around_x-small slds-flex slds-flex_align-stretch"
+                        style="text-align: center;">
+                        <div>
+                            <lightning-button class="slds-button slds-size_1-of-1" title="Fill Installation Report" onclick={handleFillInstallationReportClick} variant="brand-outline"
+                                label="Fill Installation Report">
+                            </lightning-button>
+                        </div>
+                    </lightning-layout-item> -->
+
+                    <!-- Close Ticket -->
+                    <!-- <lightning-layout-item size="12" small-device-size="6" medium-device-size="6" large-device-size="6" class="slds-var-p-around_x-small slds-flex slds-flex_align-stretch"
+                        style="text-align: center;">
+                        <div>
+                            <lightning-button class="slds-button slds-size_1-of-1" title="Close Ticket" onclick={handleCloseTicketClick} variant="brand-outline" label="Close Ticket">
+                            </lightning-button>
+                        </div>
+                    </lightning-layout-item> -->
+
+                    <!--  -->
+
+                    <lightning-layout-item size="12" small-device-size="12" medium-device-size="12" large-device-size="12" class="slds-var-p-around_x-small" if:true={serviceAppointments.length}>
+                        <div class="section last-meetings">
+                            <label>View Last {serviceAppointments.length} Meeting</label>
+                            <div class="date-buttons">
+                                <template for:each={serviceAppointments} for:item="meeting">
+                                    <lightning-button key={meeting.Id} label={meeting.Due_Date__c} variant="neutral" data-status={meeting.Status__c} data-id={meeting.Id}
+                                        data-work-order-id={meeting.Work_Order__c} onclick={handleMeetingClick} style="width: 100%;">
+                                    </lightning-button>
+                                </template>
+                            </div>
+                        </div>
+                    </lightning-layout-item>
+                </lightning-layout>
+
+
+            </lightning-card>
+        </lightning-layout-item>
+    </lightning-layout>
+
+</template>

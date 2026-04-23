@@ -1,0 +1,39 @@
+<template>
+
+    <template lwc:if={showSpinner}>
+        <lightning-spinner alternative-text="Loading" variant="brand" size="medium"></lightning-spinner>
+    </template>
+
+    <!-- <lightning-layout horizontal-align="center"> -->
+    <!-- <lightning-layout-item size="12" small-device-size="12" medium-device-size="8" large-device-size="6" class="slds-var-p-horizontal_x-small"> -->
+
+    <lightning-card variant="narrow">
+        <div class="slds-text-align_center">
+            <h3 class="slds-text-heading_medium">Search for and add member</h3>
+        </div>
+
+        <lightning-layout multiple-rows vertical-align="center" class="slds-var-p-horizontal_small">
+            <lightning-layout-item size="12" class="slds-var-p-around_medium">
+                <lightning-record-picker name="Member__c" object-api-name="User" label="Member" onchange={handleChange} filter={memberFilter} display-info={memberDisplayInfo}
+                    placeholder="Search People" matching-info={memberMatchingInfo} data-name="Member__c" data-type="RecordPicker"></lightning-record-picker>
+            </lightning-layout-item>
+            <lightning-layout-item size="12" class="slds-var-p-around_medium">
+                <lightning-combobox name="Case_Team_Role__c" value={caseTeamRecord.Case_Team_Role__c} label="Case Team Role" options={caseTeamRecord.caseTeamRolesOptions}
+                    placeholder="Select Case Team Role" onchange={handleChange} data-name="Case_Team_Role__c"></lightning-combobox>
+            </lightning-layout-item>
+            <lightning-layout-item size="12" class="slds-var-p-around_medium">
+                <lightning-combobox name="Access Level" value={caseTeamRecord.Access_Level__c} label="Access Level" options={caseTeamRecord.caseTeamAccessLevelOptions}
+                    placeholder="Select Access Level" onchange={handleChange} data-name="Access_Level__c" read-only></lightning-combobox>
+            </lightning-layout-item>
+        </lightning-layout>
+
+        <div class="slds-text-align_right slds-var-p-horizontal_medium">
+            <lightning-button variant="brand-outline" label="Cancel" title="Cancel" class="slds-m-right_small" onclick={handleCancel}></lightning-button>
+            <lightning-button variant="brand" label="Save" title="Save" onclick={handleSave}></lightning-button>
+        </div>
+    </lightning-card>
+
+    <!-- </lightning-layout-item> -->
+    <!-- </lightning-layout> -->
+
+</template>

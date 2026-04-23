@@ -1,0 +1,387 @@
+<apex:page standardStylesheets="false" renderAs="pdf" applyHtmlTag="false" applyBodyTag="false" showHeader="false" docType="html-5.0" controller="InstallationReportPdfController">
+
+    <!-- <apex:stylesheet value="{!$Resource.ServiceReportFooter}" /> -->
+    <!-- <c:PDFHeaderFooter type="footer" position="right" showPageNumbers="true" /> -->
+
+
+    <head>
+        <style type="text/css" media="print">
+            @page {
+                padding-top: 60px;
+                margin-bottom:70px;
+                @top-center {
+                    content: element(header);
+                }
+                @bottom-right {
+                    content: element(footer);
+                }
+            }
+            div.header {
+                padding: 10px;
+                display: block;
+                position: running(header);
+            }
+            div.footer {
+                width: 98%;
+                padding: 5px;
+                display: block;
+                text-align: right;
+                position: running(footer);
+            }
+            .pagenumber:before {
+                content: counter(page);
+            }
+            .pagecount:before {
+                content: counter(pages);
+            }
+
+            body {
+                padding-top: 20px;
+            }
+
+
+            .pdf-table-input{
+            width: 100%;
+            border: 1px solid #000;
+            border-top: 1px solid #000;
+            border-bottom: 1px solid #000;
+            }
+            .table-container {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 14px;
+            }
+            .table-container td {
+            border: 1px solid #000;
+            padding: 8px;
+            }
+            .table-container td.label {
+            font-weight: bold;
+            text-align: right;
+            }
+            /* General styling for text alignment and table borders */
+            .main-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 12px;
+            }
+            .main-table td {
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: center;
+            }
+            .maintenance-schedule {
+            text-align: center;
+            font-weight: bold;
+            margin-top: 10px;
+            }
+            .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            }
+            .schedule-table td {
+            border: 1px solid #000;
+            padding: 5px;
+            text-align: center;
+            }
+            .signature-section {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            }
+            .signature-box {
+            width: 48%;
+            border: 1px solid black;
+            padding: 10px;
+            text-align: left;
+            }
+            .signature-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            }
+            .report-table{
+            width: 100%;
+            border-collapse: collapse;
+            border-spacing: 0;
+            -fs-table-paginate: paginate;
+            }
+
+            ol li {
+                padding: 8px 0px 8px 0px;
+            }
+            ol li ol li {
+                padding: 4px 0px 4px 0px;
+            }
+        </style>
+    </head>
+
+
+
+    <body>
+
+        <apex:outputPanel rendered="{!isPreview}">
+            <img src="{!URLFOR($Resource.Watermark)}" width="100%" height="100%" style="position: fixed;background-repeat:repeat;left: 0cm; top:0cm; z-index:0" />
+        </apex:outputPanel>
+
+        <div class="header">
+            <table style=" width:100%;border:none;margin-top:10px; border-collapse: collapse; ">
+                <tr>
+                    <td style="padding-left:90px;border-collapse:collapse;text-align:center;">
+                        <strong style="width:100%; font-size:15px; font-family:Times New Roman;"><i>Nilkamal Limited</i></strong>
+                        <strong>
+                            <p style="margin:0px;font-size:10px;">SERVICE DIVISION</p>
+                        </strong>
+                    </td>
+                    <td style="padding:5px 5px;font-size:16px;border-collapse: collapse;width:10%;">
+                        <img style="width:100px;height:50px" alt="logo" src="{!$Resource.NilkamalLogo}"/>
+                    </td>
+                </tr>
+                <h6 style="font-family : Microsoft Sans Serif; text-align:center; font-size: 10px;margin:0px;padding:0px;">Regd. / Administrative Office : Nilkamal Houce, Plot No. 77/78, Street No.14, M.I.D.C., Andheri (E) , Mumbai - 93.
+                    <br/>Tel: (022) 4235 8825 Mobile : 80077 73280 Fax : 98230 38284 E-mail : mhe.services@nilkamal.com
+                </h6>
+            </table>
+        </div>
+
+        <div class="footer">
+            <div>Page <span class="pagenumber"/> of <span class="pagecount"/></div>
+        </div>
+
+
+
+        <div class="content">
+
+            <table style="width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 10px">
+                <tr>
+                    <td style="text-align: left; width: 33%; font-size: 12px;">No. {!record.Name}</td>
+                    <td style="text-align: center; width: 33%; font-size: 14px;">COMMISSIONING REPORT</td>
+                    <td style="text-align: right; width: 33%; font-size: 12px;">
+                        Date :
+                        <apex:outputText value="{0, date, dd/MM/yyyy}">
+                            <apex:param value="{!today}" />
+                        </apex:outputText>
+                    </td>
+                </tr>
+            </table>
+
+            <table class="table-container" style=" width: 100%;border-collapse: collapse;margin: 20px 0; margin-top:5px;font-size: 12px;">
+                <tr>
+                    <td class="label" style="border: 1px solid #000;padding: 8px;">Customer :</td>
+                    <td colspan="3" style="border: 1px solid #000;padding: 8px;">{!record.Case__r.Account.Name}</td>
+                    <td class="label" style="border: 1px solid #000;padding: 8px;">Party Code :</td>
+                    <td style="border: 1px solid #000;padding: 8px;">{!record.Case__r.Account.SAP_Customer_code__c}</td>
+                </tr>
+                <tr>
+                    <td class="label" style="border: 1px solid #000;padding: 8px;">Contact Person :</td>
+                    <td colspan="2" style="border: 1px solid #000;padding: 8px;">{!record.Case__r.Contact.Name}</td>
+                    <td class="label" style="border: 1px solid #000;padding: 8px">Contact No. :</td>
+                    <td colspan="2" style="border: 1px solid #000;padding: 8px">{!record.Case__r.ContactMobile}</td>
+                </tr>
+                <tr>
+                    <td class="label" style="border: 1px solid #000;padding: 8px;">OEM Model No. :</td>
+                    <td colspan="2" style="border: 1px solid #000;padding: 8px;">{!record.Case__r.Asset.Product2.OEM_Material_Code__c}</td>
+                    <td class="label" style="border: 1px solid #000;padding: 8px;">OEM Sr. No. :</td>
+                    <td colspan="2" style="border: 1px solid #000;padding: 8px;">{!record.Case__r.Asset.OEM_Serial_Number__c}</td>
+                </tr>
+                <tr>
+                    <td class="label" style="border: 1px solid #000;padding: 8px;">Model No. :</td>
+                    <td colspan="2" style="border: 1px solid #000;padding: 8px">{!record.Item_Master__r.ProductCode}</td>
+                    <td class="label" style="border: 1px solid #000;padding: 8px">NKL Sr. No. :</td>
+                    <td colspan="2" style="border: 1px solid #000;padding: 8px">{!record.Case__r.Asset.SerialNumber}</td>
+                    <!--
+                    <td class="label"  style="border: 1px solid #000;padding: 8px;">HMR :</td>
+                    <td style="border: 1px solid #000;padding: 8px"></td>
+                    -->
+                </tr>
+                <tr>
+                    <td class="label" style="border: 1px solid #000;padding: 8px; ">Product :</td>
+                    <td colspan="2" style="border: 1px solid #000;padding: 8px;">{!record.Item_Master__r.Name}</td>
+                    <td class="label" style="border: 1px solid #000;padding: 8px;">Invoice No. &nbsp; Date :</td>
+                    <td colspan="2" style="border: 1px solid #000;padding: 8px;">
+                        {!record.Case__r.Asset.Invoice_Number__c} - &nbsp;
+                        <apex:outputText value="{0,date,dd MMM yyyy}">
+                            <apex:param value="{!record.Case__r.Asset.Invoice__r.Billing_Date__c}" />
+                        </apex:outputText>
+                    </td>
+                </tr>
+            </table>
+
+
+            <div>
+                <div style="width: 48%; border-collapse: collapse; float: left; font-size: 12px; margin-top: 5px">
+                    <apex:repeat value="{!col1}" var="categoryList">
+                        <table class="report-table" style="border-collapse: collapse;width: 100%;-fs-table-paginate: paginate; border-spacing: 0;">
+                            <thead style="border-collapse: collapse;border-spacing: 0;">
+                                <tr>
+                                    <th colspan="2">
+                                        <div class="section-title" style="font-weight: bold; margin-bottom:5px;">{!categoryList[0].Checklist_Category__c}:</div>
+                                    </th>
+                                </tr>
+                                <tr style="border-collapse: collapse;">
+                                    <th style="border: 0.5px solid black;padding: 4px;text-align: left;border-collapse: collapse;border-spacing: 0;width:80%;">Check Point</th>
+                                    <th style="border: 0.5px solid black;padding: 4px;text-align: left;border-collapse: collapse;border-spacing: 0;width:20%;">Observation</th>
+                                </tr>
+                            </thead>
+                            <apex:repeat value="{!categoryList}" var="checklist">
+                                <tbody style="border-collapse: collapse;border-spacing: 0;">
+                                    <tr style="page-break-inside: avoid;border-collapse: collapse;border-spacing: 0;">
+                                        <td style="border: 0.5px solid black;padding: 8px;text-align: left;border-collapse: collapse;border-spacing: 0;width:80%;">{!checklist.Check_Point__c}</td>
+                                        <td style="border: 0.5px solid black;padding: 8px;text-align: left;border-collapse: collapse;border-spacing: 0;width:20%;">{!checklist.Observation__c}</td>
+                                    </tr>
+                                </tbody>
+                            </apex:repeat>
+                        </table>
+                    </apex:repeat>
+                </div>
+
+                <div style="width: 48%; border-collapse: collapse; float: right; font-size: 12px; margin-top: 5px">
+                    <apex:repeat value="{!col2}" var="categoryList">
+                        <table class="report-table" style="border-collapse: collapse;width: 100%;-fs-table-paginate: paginate; border-spacing: 0;">
+                            <thead style="border-collapse: collapse;border-spacing: 0;">
+                                <tr>
+                                    <th colspan="2">
+                                        <div class="section-title" style="font-weight: bold; margin-bottom:5px;">{!categoryList[0].Checklist_Category__c}:</div>
+                                    </th>
+                                </tr>
+                                <tr style="border-collapse: collapse;">
+                                    <th style="border: 0.5px solid black;padding: 4px;text-align: left;border-collapse: collapse;border-spacing: 0;width:80%;">Check Point</th>
+                                    <th style="border: 0.5px solid black;padding: 4px;text-align: left;border-collapse: collapse;border-spacing: 0;width:20%;">Observation</th>
+                                </tr>
+                            </thead>
+                            <apex:repeat value="{!categoryList}" var="checklist">
+                                <tbody style="border-collapse: collapse;border-spacing: 0;">
+                                    <tr style="page-break-inside: avoid;border-collapse: collapse;border-spacing: 0;">
+                                        <td style="border: 0.5px solid black;padding: 8px;text-align: left;border-collapse: collapse;border-spacing: 0;width:80%;">{!checklist.Check_Point__c}</td>
+                                        <td style="border: 0.5px solid black;padding: 8px;text-align: left;border-collapse: collapse;border-spacing: 0;width:20%;">{!checklist.Observation__c}</td>
+                                    </tr>
+                                </tbody>
+                            </apex:repeat>
+                        </table>
+                    </apex:repeat>
+                </div>
+            </div>
+
+            <br/>
+            <br/>
+
+
+            <div style="clear: both">
+                <div style="text-align: justify; font-size: 12px; margin-top: 20px; page-break-inside: avoid">
+                    <div style="text-align: center; font-size: 16px"><strong><u>STANDARD WARRANTY POLICY</u></strong></div>
+                    <ol>
+                        <li><strong>WARRANTY PERIOD &amp; ACTIVATION:</strong> Material Handling Equipments manufactured or imparted by NILKAMAL Ltd is warranted to be free from defects in material and workmanship under normal use and service, provided it is still owned and operated by the original purchaser, for the period as mentioned below:
+                            <ol>
+                                <li><strong>For equipments which have hour meters-Electric Stackers/Battery Operated Pallet truck's / Reach trucks/Forklifts</strong>: Standard warranty of twelve months or 2000 (two thousand) hours whichever is earlier for manufacturing defects only. The warranty period start from the date of commissioning or fifteen days from the date of invoice, whichever is earlier, subject to our standard warranty policy.</li>
+                                <li><strong>For equipments which do not have hour meters - Aerial work platforms / Manual range-excluding Pallet Trucks:</strong> Standard warranty of twelve months for manufacturing defects only. The warranty period start from the date of commissioning or fifteen days from the date of invoice, whichever is earlier, subject to our standard warranty policy.</li>
+                                <li><strong>For pallet trucks</strong>: Standard warranty of six months for manufacturing defects only. The warranty period start from fifteen days from the date of invoice.</li>
+                            </ol>
+                        </li>
+                        <li><strong>WARRANTY INCLUSION:</strong> During the warranty period as specified above NILKAMAL LTD. will replace/repair the component within reasonable time which is having manufacturing defect, at NILKAMAL's sole discretion.</li>
+                        <li><strong>WARRANTY EXCLUSION</strong>:
+                            <ol>
+                                <li>Parts which are subjected to normal wear and tear like seals, filters, brake shoe, belts, rollers, bearings, valves, switches, wheels, tyres, consumables like hydraulic oil, electrolyte etc, and all rubber and electrical items including horns, electric switches, fuses, electric motor brushes, bulbs, spark plugs etc.</li>
+                                <li>Any plastic parts affected by discoloration.</li>
+                                <li>Any failure due to the external voltage fluctuations.</li>
+                                <li>Any damage caused by the failure of any supporting hardware not supplied by NILKAMAL LTD.</li>
+                                <li>Parts or components damaged in transit where NILKAMAL is not involved in transportation of goods to purchaser's site. This warranty does not apply to any failure of product due to alterations, modifications, misuse, abuse, neglect, accident, improper maintenance ordo installation, use of parts not supplied by NILKAMAL LTD, failure to operate and use the product in accordance with the instructions provided in the operation's Manual supplied with the product or failure to otherwise meet manufacturer's specifications, or if the serial number has been removed, altered or defaced.</li>
+                            </ol>
+                        </li>
+                        <li><strong>PROCEDURE FOR REQUESTING WARRANTY:</strong> In the event of a problem covered under standard warranty policy, the customer must first contact NILKAMAL LTD through a written email (<a href="mailto:mhe.services@nlikamal.com">services@nlikamal.com</a>)</li>
+                        <li><strong>RIGHT TO MODIFY:</strong> NILKAMAL LTD. reserves the right to make changes or improvements in its products without any notice or obligations.</li>
+                        <li><strong>LIMITATION OF LIABILITY: </strong>NILKAMAL LTD. shall not be liable for any loss, damages, or penalty resulting from failure to perform any of its obligations under this Agreement due to force majeure or any cause beyond its reasonable control. The warranty shall be void in case of any breach of commercial obligations by the purchaser under the contract / sale. NILKAMAL liability under or for breach of this agreement shall not exceed the refund of the purchase price less reasonable value for past use. In no event shall NILKAMAL be liable for costs of procurement of substitute goods by the purchaser or for unauthorized repairs undertaken by the purchaser without NILKAMAL'S previous written approval. In no event shall NILKAMAL be liable for any special, consequential, or incidental damages, however caused, whether for breach of warranty, negligence, or otherwise. NILKAMAL disclaims any obligation or liability for loss of use of the product warranted, loss of time, inconvenience, rental or substitute products, loss of business, loss of income, commercial loss or any other direct, consequential, special or incidental damages.</li>
+                        <li><strong>GOVERNING LAW:</strong> Any dispute arising out of this contract shall be governed by the court having jurisdiction only at Silvassa &amp; Mumbai.</li>
+                    </ol>
+                </div>
+            </div>
+
+
+
+            <div style="page-break-inside: avoid; margin-top: 20px">
+                <table style="width: 100%; border-collapse: collapse; font-size: 12px; clear: both">
+                    <tbody>
+                        <tr style="border-collapse: collapse; border: 1px solid #000">
+                            <td colspan="2" class="label" style="border: 1px solid #000;padding: 8px; text-align:center;">
+                                Equipment Commissioned, Necessary Training Pertaining Safety, Operation and Maintenance is given to Customer.
+                                Please Refer Operation and Maintenance Manual For Better Operational Efficiency and Safety.
+                                Procure recommended spare parts for schedule maintenance. For Standard Warranty Policy please read overleaf.
+                            </td>
+                        </tr>
+                        <tr style="border-collapse: collapse; border: 1px solid #000">
+                            <td colspan="2" class="label" style="border: 1px solid #000;padding: 8px; text-align:center; width:100%">
+                                E-mail : mhe.services@nilkamal.com / Toll Free No.: 8007773280
+                            </td>
+                        </tr>
+                        <tr style="border-collapse: collapse; border: 1px solid #000">
+                            <td style="border: 1px solid #000;padding: 8px; height:25px;vertical-align:baseline;">
+                                <!-- <p style="text-align:left;">Customer Contact Name : {!record.Signature_by__c}</p>
+                                <p style="text-align:left;">Customer Email : {!record.Customer_Email__c}</p>
+                                <p style="text-align:left;">Customer Contact No. :{!record.Customer_Contact_Number__c}</p>
+                                <p style="text-align:left;">Customer Sign and Seal</p><br/>
+                                <apex:outputText value="{!record.Signature__c}" escape="false"/> -->
+                                <div style="line-height: 1; margin: 0; padding: 0;">
+                                <p style="text-align:center; margin-top: 5px; padding: 2px;">Customer's Acceptance</p>
+                                <p style="text-align:left; margin: 0; padding: 2px;">Name : {!record.Signature_by__c}</p>
+                                <p style="text-align:left; margin: 0; padding: 2px;">Designation : {!record.Customer_Designation__c}</p>
+                                <p style="text-align:left; margin: 0; padding: 2px;">Mobile No : {!record.Customer_Contact_Number__c}</p>
+                                <p style="text-align:left; margin: 0; padding: 2px;">Email : {!record.Customer_Email__c}</p>
+                                <p style="text-align:left; margin: 0; padding: 2px;">Sign :</p>
+                                <apex:outputText value="{!record.Signature__c}" escape="false" />
+                                </div>
+                            </td>
+                            <!-- <td style="border: 1px solid #000;padding: 8px; width:50%; height:50px;">
+                                Service Engineer<br/><br/>
+                                <apex:outputText value="{!serviceResource.Signature__c}" escape="false" />
+                                <br/>Sign
+                            </td> -->
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+
+
+            <div style="page-break-inside:avoid; padding-top:20px">
+
+                Yours faithfully,
+                <br/>
+                <strong>NILKAMAL LIMITED</strong>
+                <br/>
+                <br/>
+
+                <table style="width:100%; border-collapse:collapse; font-size:14px; text-align:left;">
+                    <tr>
+                        <td style="border:1px solid #000; padding:8px;">
+                            <br/>
+                            <strong>{!record.Case__r.Owner.Name}</strong>
+                            <br/> {!record.Case__r.Division__c} - SERVICE DIVISION
+                            <br/>
+                            <a href="mailto:{!record.Case__r.Owner.Email}" style="color:blue; text-decoration:none;">{!record.Case__r.Owner.Email}</a>
+                            <br/> {!record.Case__r.Owner.Phone}
+
+                        </td>
+                        <td style="border:1px solid #000; padding:8px;">
+                            <br/>
+                            <strong>{!serviceResource.RSM__r.Name}</strong>
+                            <br/> Regional Service Manager
+                            <br/>
+                            <a href="mailto:{!serviceResource.RSM__r.Email}" style="color:blue; text-decoration:none;">{!serviceResource.RSM__r.Email}</a>
+                            <br/> {!serviceResource.RSM__r.MobilePhone}
+                        </td>
+                        <td style="border:1px solid #000; padding:8px;">
+                            <br/>
+                            <strong>{!serviceResource.Coordinator__r.Name}</strong>
+                            <br/> Service Coordinator
+                            <br/>
+                            <a href="mailto:{!serviceResource.Coordinator__r.Email}" style="color:blue; text-decoration:none;">{!serviceResource.Coordinator__r.Email}</a>
+                            <br/> {!serviceResource.Coordinator__r.MobilePhone}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+    </body>
+
+</apex:page>

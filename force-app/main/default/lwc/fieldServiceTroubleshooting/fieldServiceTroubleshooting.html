@@ -1,0 +1,69 @@
+<template>
+
+    <template if:true={showSpinner}>
+        <lightning-spinner size="medium" variant="brand" alternative-text="Loading"></lightning-spinner>
+    </template>
+
+
+    <lightning-card variant="narrow" label="Troubleshooting" hide-header>
+
+        <div class="search-container slds-var-p-around_x-small">
+            <lightning-input type="search" name="searchTerm" label="Search" variant="label-hidden" placeholder="Search" value={searchTerm} onchange={handleFilterChange}></lightning-input>
+        </div>
+
+
+        <template lwc:if={errorCodesList}>
+            <ul class="slds-accordion accordion">
+                <template iterator:category={errorCodesList}>
+                    <li key={category.value.categoryName} class="slds-accordion__list-item accordion-item">
+                        <section class={category.value.sectionClassList}>
+                            <div class="slds-accordion__summary accordion-item-header">
+                                <h2 class="slds-accordion__summary-heading">
+                                    <button class="slds-button slds-button_reset slds-accordion__summary-action" title={category.value.categoryName} aria-controls={category.value.categoryName}
+                                        onclick={handleToggleAccordionSection} data-category-name={category.value.categoryName}>
+                                        <lightning-icon icon-name={category.value.iconName} size="xx-small"></lightning-icon>
+                                        <span class="slds-accordion__summary-content slds-var-p-left_small">{category.value.categoryName}</span>
+                                    </button>
+                                </h2>
+                            </div>
+
+                            <div class="slds-accordion__content" id={category.value.index}>
+                                <template iterator:error={category.value.errorItems}>
+                                    <div key={error.value.id} class="slds-var-m-vertical_x-small">
+                                        <div class="material-card-without-shadow no-round-corners">
+                                            <lightning-record-view-form object-api-name="Troubleshooting_Master__c" record-id={error.value.id}>
+                                                <lightning-layout multiple-rows>
+                                                    <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6">
+                                                        <lightning-output-field field-name="Error_Code__c"></lightning-output-field>
+                                                    </lightning-layout-item>
+                                                    <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6">
+                                                        <lightning-output-field field-name="Programmer_LCD_Display__c"></lightning-output-field>
+                                                    </lightning-layout-item>
+                                                    <lightning-layout-item size="12" small-device-size="12" medium-device-size="12" large-device-size="12">
+                                                        <lightning-output-field field-name="Possible_Cause__c"></lightning-output-field>
+                                                    </lightning-layout-item>
+                                                </lightning-layout>
+                                            </lightning-record-view-form>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </section>
+                    </li>
+                </template>
+            </ul>
+        </template>
+
+        <template lwc:else>
+            <lightning-layout>
+                <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3"></lightning-layout-item>
+                <lightning-layout-item size="8" small-device-size="8" medium-device-size="6" large-device-size="6">
+                    <img src="/img/chatter/OpenRoad.svg" class="slds-illustration__svg slds-var-p-around_large" />
+                </lightning-layout-item>
+                <lightning-layout-item size="2" small-device-size="2" medium-device-size="6" large-device-size="3"></lightning-layout-item>
+            </lightning-layout>
+        </template>
+
+    </lightning-card>
+
+</template>

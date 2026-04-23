@@ -1,0 +1,77 @@
+<template>
+
+    <template if:true={showSpinner}>
+        <lightning-spinner alternative-text="Loading" variant="brand" size="medium"></lightning-spinner>
+    </template>
+
+
+    <lightning-card title="Create Contact">
+
+        <lightning-record-edit-form object-api-name="Contact">
+
+            <lightning-layout multiple-rows>
+
+                <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-around_xx-small">
+                    <!-- <lightning-combobox name="Salutation" label="Salutation" value={contactRecord.Salutation} placeholder="Select Salutation" options={salutationOptions} onchange={handleChange}
+                        required>
+                    </lightning-combobox> -->
+                    <lightning-input-field field-name="Salutation" onchange={handleChange} options={salutationOptions} required></lightning-input-field>
+
+                </lightning-layout-item>
+
+
+                <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-around_xx-small">
+                    <lightning-input-field field-name="LastName" onchange={handleChange} required></lightning-input-field>
+                </lightning-layout-item>
+
+                <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-around_xx-small">
+                    <lightning-input-field field-name="FirstName" onchange={handleChange} required></lightning-input-field>
+                </lightning-layout-item>
+
+                <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-around_xx-small">
+                    <lightning-input-field field-name="Email" onchange={handleChange} required></lightning-input-field>
+                </lightning-layout-item>
+
+                <!--lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-around_xx-small">
+                    <lightning-input-field type="phone" field-name="MobilePhone" data-id="mobilePhone" onchange={handleChange} required oninput={handlePhoneInput} maxlength="10"></lightning-input-field>
+                </lightning-layout-item>-->
+
+            <lightning-layout-item
+    size="12"
+    small-device-size="12"
+    medium-device-size="6"
+    large-device-size="6"
+    class="slds-var-p-around_xx-small">
+
+    <lightning-input
+        type="tel"
+        name="MobilePhone"
+        data-id="mobilePhone"
+        label="Mobile Phone"
+        required
+        value={contactRecord.MobilePhone}
+        onchange={handleChange}
+        oninput={handlePhoneInput}>
+    </lightning-input>
+
+</lightning-layout-item>
+
+
+
+
+                <lightning-layout-item size="12" class="slds-align_absolute-center slds-var-p-around_small">
+                    <div class="horizontal-flex">
+                        <lightning-button label="Save" class="slds-var-p-right_xx-small" variant="brand" onclick={handleSave}></lightning-button>
+                        <lightning-button label="Cancel" class="slds-var-p-left_xx-small" onclick={handleCancel}></lightning-button>
+                    </div>
+                </lightning-layout-item>
+
+            </lightning-layout>
+
+        </lightning-record-edit-form>
+
+        <c-toast-message></c-toast-message>
+
+    </lightning-card>
+
+</template>

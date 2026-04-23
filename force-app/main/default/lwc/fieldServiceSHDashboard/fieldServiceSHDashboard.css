@@ -1,0 +1,18 @@
+.full-width {
+    width: 100% !important;
+}
+
+.slds-scrollable_x {
+    overflow-x: auto;
+}
+
+td,
+th {
+    white-space: normal;
+}
+
+.table-container {
+    max-height: 50vh;
+    overflow-y: auto;
+    border: 1px solid #dddbda;
+}

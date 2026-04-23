@@ -1,0 +1,9 @@
+@import 'c/utilCSS';
+
+
+
+
+.container-max-width {
+	max-width: 1300px;
+	margin: auto;
+}

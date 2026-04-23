@@ -1,0 +1,449 @@
+<template>
+
+    <template if:true={showSpinner}>
+        <lightning-spinner alternative-text="Loading" variant="brand" size="medium"></lightning-spinner>
+    </template>
+
+
+    <div class="container-max-width">
+
+        <template if:true={isInstallationReport}>
+            <lightning-card title="Installation Report">
+                <lightning-record-edit-form if:true={installationReportRecord} object-api-name="Installation_Report__c" record-id={installationReportRecord.Id} onload={handleOnLoad}>
+                    <lightning-layout pull-to-boundary="stretch" vertical-align="start" multiple-rows>
+                        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="4" class="slds-var-p-horizontal_x-small">
+                            <lightning-output-field if:true={installationReportRecord.IsSavedByUser__c} field-name="Name" variant="label-stacked"></lightning-output-field>
+                            <lightning-input if:false={installationReportRecord.IsSavedByUser__c} label="Installation Document Number" variant="label-stacked" required disabled></lightning-input>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="4" class="slds-var-p-horizontal_x-small">
+                            <lightning-output-field if:true={installationReportRecord.IsSavedByUser__c} field-name="Case__c" variant="label-stacked"></lightning-output-field>
+                            <lightning-input-field if:false={installationReportRecord.IsSavedByUser__c} field-name="Case__c" variant="label-stacked" value={installationReportRecord.Case__c}
+                                disabled></lightning-input-field>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="4" class="slds-var-p-horizontal_x-small">
+                            <lightning-output-field if:true={installationReportRecord.IsSavedByUser__c} field-name="Item_Master__c" variant="label-stacked"></lightning-output-field>
+                            <lightning-input-field if:false={installationReportRecord.IsSavedByUser__c} field-name="Item_Master__c" variant="label-stacked"
+                                value={installationReportRecord.Item_Master__c} disabled></lightning-input-field>
+                        </lightning-layout-item>
+
+                        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="4" class="slds-var-p-horizontal_x-small">
+                            <!--
+                            <template if:true={isTempSerialNumber}>
+                                <lightning-input-field field-name="Asset_Serial_Number__c" variant="label-stacked" value={installationReportRecord.Asset_Serial_Number__c}
+                                    onchange={handleChange} data-name="Asset_Serial_Number__c"></lightning-input-field>
+                            </template>
+                            <template if:false={isTempSerialNumber}>
+                            -->
+                            <lightning-output-field if:true={installationReportRecord.IsSavedByUser__c} field-name="Asset_Serial_Number__c" variant="label-stacked"></lightning-output-field>
+                            <lightning-input-field if:false={installationReportRecord.IsSavedByUser__c} field-name="Asset_Serial_Number__c" variant="label-stacked"
+                                value={installationReportRecord.Asset_Serial_Number__c} disabled></lightning-input-field>
+                            <!-- </template> -->
+                        </lightning-layout-item>
+
+                        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="4" class="slds-var-p-horizontal_x-small">
+                            <lightning-input-field field-name="Hour_Meter__c" variant="label-stacked" onchange={handleChange} value={installationReportRecord.Hour_Meter__c}
+                                required={hourMeterRequired}></lightning-input-field>
+                        </lightning-layout-item>
+
+                        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="4" class="slds-var-p-horizontal_x-small">
+                            <lightning-input-field field-name="Installation_Start_Date__c" variant="label-stacked" onchange={handleChange} value={installationReportRecord.Installation_Start_Date__c}
+                                required></lightning-input-field>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="4" class="slds-var-p-horizontal_x-small">
+                            <lightning-input-field field-name="Installation_End_Date__c" variant="label-stacked" onchange={handleChange} value={installationReportRecord.Installation_End_Date__c}
+                                required></lightning-input-field>
+                        </lightning-layout-item>
+
+
+
+                        <!--
+                        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="4" class="slds-var-p-horizontal_x-small">
+                            <lightning-input-field field-name="Customer_Feedback__c" variant="label-stacked" onchange={handleChange} disabled={isCustomerFeedback}></lightning-input-field>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="4" class="slds-var-p-horizontal_x-small">
+                            <lightning-input-field field-name="Customer_Remark__c" variant="label-stacked" onchange={handleChange} disabled={isRemarkFilled}></lightning-input-field>
+                        </lightning-layout-item>
+                        -->
+
+
+
+                        <!--
+                        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="4" class="slds-var-p-horizontal_x-small">
+                            <c-signature-pad enable-name-signing="true" name-input-label="Customer Contact Name" enable-signature-drawing="true" pad-label="Signature" stroke-thickness="2"
+                                pen-color="black" pad-color="white" existing-input-text={installationReportRecord.Signature_by__c} existing-signature={installationReportRecord.Signature__c}
+                                font="30px 'Great Vibes'" oninput={drawText} is-remote-support={isRemoteSupport}></c-signature-pad>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="4" class="slds-var-p-horizontal_x-small">
+                            <lightning-input-field field-name="Customer_Email__c" variant="label-stacked" onchange={handleChange} required={isRemoteSupport}></lightning-input-field>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="4" class="slds-var-p-horizontal_x-small">
+                            <lightning-input-field field-name="Customer_Contact_Number__c" variant="label-stacked" onchange={handleChange} required={isRemoteSupport}></lightning-input-field>
+                        </lightning-layout-item>
+                        -->
+
+
+                        <template if:true={isSignatureModalOpen}>
+                            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+                                <div class="slds-modal__container">
+                                    <header class="slds-modal__header">
+                                        <h2 class="slds-modal__title">Customer Signature</h2>
+                                        <lightning-button-icon icon-name="utility:close" onclick={handleSignatureModalCancelClick} variant="bare" class="slds-modal__close"
+                                            alternative-text="Close"></lightning-button-icon>
+                                    </header>
+
+                                    <div class="slds-modal__content slds-p-around_medium">
+                                        <lightning-layout multiple-rows>
+                                            <lightning-layout-item size="12" class="slds-var-p-horizontal_x-small">
+                                                <c-signature-pad enable-name-signing="true" name-input-label="Customer Contact Name" enable-signature-drawing="true" pad-label="Signature"
+                                                    stroke-thickness="2" pen-color="black" pad-color="white" existing-input-text={installationReportRecord.Signature_by__c}
+                                                    existing-signature={installationReportRecord.Signature__c} is-remote-support={isRemoteSupport} font="30px 'Great Vibes'"
+                                                    oninput={drawText}></c-signature-pad>
+                                            </lightning-layout-item>
+                                            <lightning-layout-item size="12" class="slds-var-p-horizontal_x-small">
+                                                <lightning-input name="Customer_Email__c" label="Customer Email" type="email" onchange={handleChange} required={isRemoteSupport} variant="label-stacked"
+                                                    value={installationReportRecord.Customer_Email__c}></lightning-input>
+                                            </lightning-layout-item>
+                                            <lightning-layout-item size="12" class="slds-var-p-horizontal_x-small">
+                                                <lightning-input name="Customer_Contact_Number__c" label="Customer Contact Number" type="tel" onchange={handleChange} required={isRemoteSupport}
+                                                    variant="label-stacked" value={installationReportRecord.Customer_Contact_Number__c} pattern="[0-9]{10}"
+                                                    message-when-pattern-mismatch="Please enter a valid 10-digit mobile number"></lightning-input>
+                                            </lightning-layout-item>
+                                            <lightning-layout-item size="12" class="slds-var-p-horizontal_x-small">
+                                                <lightning-input name="Customer_Designation__c" label="Customer Designation" onchange={handleChange} required={isRemoteSupport} variant="label-stacked"
+                                                    value={installationReportRecord.Customer_Designation__c}></lightning-input>
+                                            </lightning-layout-item>
+                                            <lightning-layout-item size="12" class="slds-var-p-horizontal_x-small">
+                                                <lightning-input-field field-name="Customer_Feedback__c" variant="label-stacked" onchange={handleChange}
+                                                    value={installationReportRecord.Customer_Feedback__c} disabled={isCustomerFeedback}></lightning-input-field>
+                                            </lightning-layout-item>
+                                            <lightning-layout-item size="12" class="slds-var-p-horizontal_x-small">
+                                                <lightning-input-field field-name="Customer_Remark__c" variant="label-stacked" onchange={handleChange}
+                                                    value={installationReportRecord.Customer_Remark__c} disabled={isRemarkFilled}></lightning-input-field>
+                                            </lightning-layout-item>
+                                        </lightning-layout>
+                                    </div>
+
+                                    <footer class="slds-modal__footer">
+                                        <lightning-button class="slds-var-p-horizontal_x-small" variant="brand" label="Capture" onclick={handleSignatureModalCaptureClick}></lightning-button>
+                                        <!-- <lightning-button class="slds-var-p-horizontal_x-small" variant="neutral" label="Clear" onclick={handleSignatureModalClearClick}></lightning-button> -->
+                                        <lightning-button class="slds-var-p-horizontal_x-small" variant="neutral" label="Cancel" onclick={handleSignatureModalCancelClick}></lightning-button>
+                                    </footer>
+                                </div>
+                            </section>
+                            <div class="slds-backdrop slds-backdrop_open"></div>
+                        </template>
+
+                        <lightning-layout-item size="12" class="slds-var-p-horizontal_x-small slds-text-align_center slds-var-p-bottom_large">
+                            <div style="display: flex; justify-content: center">
+                                <lightning-button label="Capture Signature" variant="brand-outline" class="slds-var-p-bottom_small" onclick={handleOpenCaptureSignatureClick}></lightning-button>
+                            </div>
+                            <lightning-button label="Save" variant="brand" class="slds-var-p-horizontal_x-small" onclick={handleSave}></lightning-button>
+                            <lightning-button label="Preview PDF" variant="brand-outline" class="slds-var-p-horizontal_x-small" onclick={handlePreviewPDF}
+                                disabled={isPreviewAndSendDisabled}></lightning-button>
+                            <lightning-button label="Send Email" variant="brand-outline" class="slds-var-p-horizontal_x-small" onclick={handleSendEmail}
+                                disabled={isPreviewAndSendDisabled}></lightning-button>
+                        </lightning-layout-item>
+
+                    </lightning-layout>
+                </lightning-record-edit-form>
+            </lightning-card>
+        </template>
+
+        <template if:true={isServiceReport}>
+            <lightning-card title="Service Report">
+                <lightning-record-edit-form if:true={serviceReportRecord} object-api-name="Service_Report__c" record-id={serviceReportRecord.Id} onload={handleOnLoad}>
+                    <lightning-layout multiple-rows="true">
+                        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="4" class="slds-var-p-horizontal_x-small">
+                            <lightning-output-field if:true={serviceReportRecord.IsSavedByUser__c} field-name="Name" variant="label-stacked"></lightning-output-field>
+                            <lightning-input if:false={serviceReportRecord.IsSavedByUser__c} label="Service Report Number" variant="label-stacked" required disabled></lightning-input>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="4" class="slds-var-p-horizontal_x-small">
+                            <lightning-output-field if:true={serviceReportRecord.IsSavedByUser__c} field-name="Case__c" variant="label-stacked"></lightning-output-field>
+                            <lightning-input-field if:false={serviceReportRecord.IsSavedByUser__c} field-name="Case__c" variant="label-stacked" value={serviceReportRecord.Case__c}
+                                disabled></lightning-input-field>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="4" class="slds-var-p-horizontal_x-small">
+                            <lightning-output-field if:true={serviceReportRecord.IsSavedByUser__c} field-name="Product__c" variant="label-stacked"></lightning-output-field>
+                            <lightning-input-field if:false={serviceReportRecord.IsSavedByUser__c} field-name="Product__c" variant="label-stacked" value={serviceReportRecord.Product__c}
+                                disabled></lightning-input-field>
+                        </lightning-layout-item>
+
+                        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="4" class="slds-var-p-horizontal_x-small">
+                            <template if:true={oemSerialNumber}>
+                                <lightning-output-field if:true={serviceReportRecord.IsSavedByUser__c} field-name="OEM_Serial_Number__c" variant="label-stacked"></lightning-output-field>
+                                <lightning-input-field if:false={serviceReportRecord.IsSavedByUser__c} field-name="OEM_Serial_Number__c" variant="label-stacked"
+                                    value={serviceReportRecord.OEM_Serial_Number__c} disabled></lightning-input-field>
+                            </template>
+                            <template if:false={oemSerialNumber}>
+                                <lightning-input-field field-name="OEM_Serial_Number__c" variant="label-stacked" value={serviceReportRecord.OEM_Serial_Number__c}
+                                    onchange={handleChange}></lightning-input-field>
+                            </template>
+                        </lightning-layout-item>
+
+                        <!--
+                        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="4" class="slds-var-p-horizontal_x-small">
+                            <lightning-input-field field-name="SR_Start_Date__c" variant="label-stacked" onchange={handleChange}></lightning-input-field>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="4" class="slds-var-p-horizontal_x-small">
+                            <lightning-input-field field-name="SR_End_Date__c" variant="label-stacked" onchange={handleChange}></lightning-input-field>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="4" class="slds-var-p-horizontal_x-small">
+                            <lightning-input-field field-name="Action_Taken__c" variant="label-stacked" onchange={handleChange}></lightning-input-field>
+                        </lightning-layout-item>
+                        -->
+
+                        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="4" class="slds-var-p-horizontal_x-small">
+                            <lightning-input-field field-name="Hour_Meter__c" variant="label-stacked" onchange={handleChange} required={hourMeterRequired}
+                                value={serviceReportRecord.Hour_Meter__c}></lightning-input-field>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="4" class="slds-var-p-horizontal_x-small">
+                            <lightning-input-field field-name="SR_Remark__c" variant="label-stacked" onchange={handleChange} value={serviceReportRecord.SR_Remark__c}></lightning-input-field>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="4" class="slds-var-p-horizontal_x-small">
+                            <lightning-input-field field-name="Customer_Problem_Statement__c" variant="label-stacked" onchange={handleChange}
+                                value={serviceReportRecord.Customer_Problem_Statement__c}></lightning-input-field>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="4" class="slds-var-p-horizontal_x-small">
+                            <lightning-input-field field-name="Next_Visit_Proposed_Date__c" variant="label-stacked" onchange={handleChange}
+                                value={serviceReportRecord.Next_Visit_Proposed_Date__c}></lightning-input-field>
+                        </lightning-layout-item>
+
+
+
+                        <lightning-layout-item if:true={Service_Report_Observation} size="12" class="slds-var-p-horizontal_x-small slds-var-m-vertical_large">
+                            <div style="border: 1px solid gray; border-radius: 10px">
+                                <template if:true={isMobile}>
+                                    <template iterator:item={Service_Report_Observation}>
+                                        <lightning-layout key={item.value.key} multiple-rows="true" vertical-align="center" horizontal-align="center" class="slds-var-p-vertical_x-small"
+                                            style="border-bottom: 1px solid #d4d4d4">
+                                            <lightning-layout-item size="6" class="slds-var-p-horizontal_x-small slds-var-p-vertical_xx-small">
+                                                <lightning-combobox name="Cause__c" value={item.value.Cause__c} placeholder="Cause" variant="label-hidden" options={causeOptions}
+                                                    onchange={handleServiceReportChange} data-key={item.value.key} dropdown-alignment="auto"></lightning-combobox>
+                                            </lightning-layout-item>
+
+                                            <lightning-layout-item size="6" class="slds-var-p-horizontal_x-small slds-var-p-vertical_xx-small">
+                                                <template if:true={item.value.isCauseOther}>
+                                                    <lightning-input name="Sub_Cause__c" placeholder="Sub Cause" variant="label-hidden" value={item.value.Sub_Cause__c}
+                                                        onchange={handleServiceReportChange} data-key={item.value.key} maxlength="255"></lightning-input>
+                                                </template>
+                                                <template if:false={item.value.isCauseOther}>
+                                                    <lightning-combobox name="Sub_Cause__c" value={item.value.Sub_Cause__c} placeholder="Sub Cause" variant="label-hidden"
+                                                        options={item.value.subCauseOptions} onchange={handleServiceReportChange} data-key={item.value.key}
+                                                        dropdown-alignment="auto"></lightning-combobox>
+                                                </template>
+                                            </lightning-layout-item>
+
+                                            <lightning-layout-item size="12" class="slds-var-p-horizontal_x-small slds-var-p-vertical_xx-small">
+                                                <lightning-input name="Actual_Observation_by_Engineer__c" placeholder="Actual Observation by Engineer" variant="label-hidden"
+                                                    value={item.value.Actual_Observation_by_Engineer__c} onchange={handleServiceReportChange} data-name="Actual_Observation_by_Engineer__c"
+                                                    data-key={item.value.key}></lightning-input>
+                                            </lightning-layout-item>
+
+                                            <lightning-layout-item size="12" class="slds-var-p-horizontal_x-small slds-var-p-vertical_xx-small">
+                                                <lightning-input name="Correction__c" placeholder="Correction" variant="label-hidden" value={item.value.Correction__c}
+                                                    onchange={handleServiceReportChange} data-key={item.value.key}></lightning-input>
+                                            </lightning-layout-item>
+
+                                            <lightning-layout-item size="12" class="slds-var-p-horizontal_x-small slds-var-p-vertical_xx-small">
+                                                <div class="horizontal-flex" style="justify-content: flex-end">
+                                                    <template if:true={item.last}>
+                                                        <lightning-button icon-name="utility:add" onclick={handleAdd} data-key={item.value.key} label="Add" data-field="delete" alternative-text="Add"
+                                                            class="slds-var-p-right_xx-small" title="Add"></lightning-button>
+                                                    </template>
+                                                    <lightning-button icon-name="utility:delete" onclick={handleRemove} data-key={item.value.key} label="Remove" data-field="delete"
+                                                        alternative-text="Delete" class="slds-var-p-left_xx-small" title="Delete"></lightning-button>
+                                                </div>
+                                            </lightning-layout-item>
+                                        </lightning-layout>
+                                    </template>
+                                </template>
+                                <template if:false={isMobile}>
+                                    <lightning-layout class="slds-var-p-vertical_x-small" horizontal-align="spread" style="background: #d4d4d4; font-weight: bold">
+                                        <lightning-layout-item size="2" class="slds-var-p-horizontal_medium">Cause</lightning-layout-item>
+                                        <lightning-layout-item size="2" class="slds-var-p-horizontal_medium">Sub Cause</lightning-layout-item>
+                                        <lightning-layout-item size="3" class="slds-var-p-horizontal_medium">Actual Observation by Engineer</lightning-layout-item>
+                                        <lightning-layout-item size="3" class="slds-var-p-horizontal_medium">Correction</lightning-layout-item>
+                                        <lightning-layout-item size="1" class="slds-var-p-horizontal_medium"></lightning-layout-item>
+                                    </lightning-layout>
+                                    <template iterator:item={Service_Report_Observation}>
+                                        <lightning-layout key={item.value.key} vertical-align="center" horizontal-align="spread">
+                                            <lightning-layout-item size="2" class="slds-var-p-horizontal_x-small slds-var-p-vertical_xx-small">
+                                                <lightning-combobox name="Cause__c" value={item.value.Cause__c} placeholder="Select Cause" variant="label-hidden" options={causeOptions}
+                                                    onchange={handleServiceReportChange} data-key={item.value.key} dropdown-alignment="auto"></lightning-combobox>
+                                            </lightning-layout-item>
+
+                                            <lightning-layout-item size="2" class="slds-var-p-horizontal_x-small slds-var-p-vertical_xx-small">
+                                                <template if:true={item.value.isCauseOther}>
+                                                    <lightning-input name="Sub_Cause__c" placeholder="Sub Cause" variant="label-hidden" value={item.value.Sub_Cause__c}
+                                                        onchange={handleServiceReportChange} data-key={item.value.key} maxlength="255"></lightning-input>
+                                                </template>
+                                                <template if:false={item.value.isCauseOther}>
+                                                    <lightning-combobox name="Sub_Cause__c" value={item.value.Sub_Cause__c} placeholder="Sub Cause" variant="label-hidden"
+                                                        options={item.value.subCauseOptions} onchange={handleServiceReportChange} data-key={item.value.key}
+                                                        dropdown-alignment="auto"></lightning-combobox>
+                                                </template>
+                                            </lightning-layout-item>
+
+                                            <lightning-layout-item size="3" class="slds-var-p-horizontal_x-small slds-var-p-vertical_xx-small">
+                                                <lightning-input name="Actual_Observation_by_Engineer__c" placeholder="Actual Observation by Engineer" variant="label-hidden"
+                                                    value={item.value.Actual_Observation_by_Engineer__c} onchange={handleServiceReportChange} data-name="Actual_Observation_by_Engineer__c"
+                                                    data-key={item.value.key}></lightning-input>
+                                            </lightning-layout-item>
+
+                                            <lightning-layout-item size="3" class="slds-var-p-horizontal_x-small slds-var-p-vertical_xx-small">
+                                                <lightning-input name="Correction__c" placeholder="Correction" variant="label-hidden" value={item.value.Correction__c}
+                                                    onchange={handleServiceReportChange} data-key={item.value.key}></lightning-input>
+                                            </lightning-layout-item>
+
+                                            <lightning-layout-item size="1" class="slds-var-p-horizontal_x-small slds-var-p-vertical_xx-small">
+                                                <div class="horizontal-flex" style="justify-content: flex-end">
+                                                    <template if:true={item.last}>
+                                                        <lightning-icon icon-name="utility:add" onclick={handleAdd} data-key={item.value.key} label="Add" size="x-small" data-field="delete"
+                                                            alternative-text="Add" class="slds-var-p-right_xx-small" title="Add"></lightning-icon>
+                                                    </template>
+                                                    <lightning-icon icon-name="utility:delete" onclick={handleRemove} data-key={item.value.key} label="Remove" size="x-small" data-field="delete"
+                                                        alternative-text="Delete" class="slds-var-p-left_xx-small" title="Delete"></lightning-icon>
+                                                </div>
+                                            </lightning-layout-item>
+                                        </lightning-layout>
+                                    </template>
+                                </template>
+                            </div>
+                        </lightning-layout-item>
+
+
+                        <lightning-layout-item size="12" small-device-size="12" medium-device-size="12" large-device-size="12" class="slds-var-p-horizontal_x-small">
+                            <template if:true={checklistItems}>
+                                <lightning-card title="Activity Checklist" icon-name="utility:list">
+                                    <div class="slds-var-p-vertical_medium">
+                                        <template for:each={checklistItems} for:item="category">
+                                            <div key={category.Checklist_Category__c} class="category-section">
+                                                <h3>{category.Checklist_Category__c}</h3>
+                                                <table class="slds-table slds-table_bordered slds-table_cell-buffer" style="width: 100%">
+                                                    <thead>
+                                                        <tr>
+                                                            <th style="text-align: start;  width: 75%" scope="col">CHECK POINTS</th>
+                                                            <th style="text-align: center; width: 25%" scope="col">OBSERVATION</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <template for:each={category.checkpoints} for:item="checkpoint">
+                                                            <tr key={checkpoint.Checklist_Master__c}>
+                                                                <td>{checkpoint.Check_Point__c}</td>
+                                                                <td style="width: 25%">
+                                                                    <lightning-combobox name="Observation__c" value={checkpoint.Observation__c} variant="label-hidden" options={observationOptions}
+                                                                        onchange={handleChecklistChange} data-checklist-category={category.Checklist_Category__c}
+                                                                        data-checklist-master-id={checkpoint.Checklist_Master__c} placeholder="Select Observation"
+                                                                        dropdown-alignment="auto"></lightning-combobox>
+                                                                </td>
+                                                            </tr>
+                                                        </template>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </lightning-card>
+                            </template>
+                        </lightning-layout-item>
+
+
+
+                        <!--
+                        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="4" class="slds-var-p-horizontal_x-small">
+                            <lightning-input-field field-name="Customer_Feedback__c" variant="label-stacked" onchange={handleChange} disabled={isCustomerFeedback}></lightning-input-field>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="4" class="slds-var-p-horizontal_x-small">
+                            <lightning-input-field field-name="Customer_Remark__c" variant="label-stacked" onchange={handleChange} disabled={isRemarkFilled}></lightning-input-field>
+                        </lightning-layout-item>
+                        -->
+
+
+
+                        <template if:true={isSignatureModalOpen}>
+                            <section role="dialog" tabindex="-1" class="slds-modal slds-fade-in-open">
+                                <div class="slds-modal__container">
+                                    <header class="slds-modal__header">
+                                        <h2 class="slds-modal__title">Customer Signature</h2>
+                                        <lightning-button-icon icon-name="utility:close" onclick={handleSignatureModalCancelClick} variant="bare" class="slds-modal__close"
+                                            alternative-text="Close"></lightning-button-icon>
+                                    </header>
+
+                                    <div class="slds-modal__content slds-p-around_medium">
+                                        <lightning-layout multiple-rows>
+                                            <lightning-layout-item size="12" class="slds-var-p-horizontal_x-small">
+                                                <c-signature-pad enable-name-signing="true" name-input-label="Customer Contact Name" enable-signature-drawing="true" pad-label="Signature"
+                                                    stroke-thickness="2" pen-color="black" pad-color="white" existing-input-text={serviceReportRecord.Signature_by__c}
+                                                    existing-signature={serviceReportRecord.Signature__c} is-remote-support={isRemoteSupport} font="30px 'Great Vibes'"
+                                                    oninput={drawText}></c-signature-pad>
+                                            </lightning-layout-item>
+                                            <lightning-layout-item size="12" class="slds-var-p-horizontal_x-small">
+                                                <lightning-input name="Customer_Email__c" label="Customer Email" type="email" onchange={handleChange} required={isRemoteSupport} variant="label-stacked"
+                                                    value={serviceReportRecord.Customer_Email__c}></lightning-input>
+                                            </lightning-layout-item>
+                                            <lightning-layout-item size="12" class="slds-var-p-horizontal_x-small">
+                                                <lightning-input name="Customer_Contact_Number__c" label="Customer Contact Number" type="tel" onchange={handleChange} required={isRemoteSupport}
+                                                    variant="label-stacked" value={serviceReportRecord.Customer_Contact_Number__c} pattern="[0-9]{10}"
+                                                    message-when-pattern-mismatch="Please enter a valid 10-digit mobile number"></lightning-input>
+                                            </lightning-layout-item>
+                                            <lightning-layout-item size="12" class="slds-var-p-horizontal_x-small">
+                                                <lightning-input name="Customer_Designation__c" label="Customer Designation" onchange={handleChange} required={isRemoteSupport} variant="label-stacked"
+                                                    value={serviceReportRecord.Customer_Designation__c}></lightning-input>
+                                            </lightning-layout-item>
+                                            <lightning-layout-item size="12" class="slds-var-p-horizontal_x-small">
+                                                <lightning-input-field field-name="Customer_Feedback__c" variant="label-stacked" onchange={handleChange}
+                                                    value={serviceReportRecord.Customer_Feedback__c} disabled={isCustomerFeedback}></lightning-input-field>
+                                            </lightning-layout-item>
+                                            <lightning-layout-item size="12" class="slds-var-p-horizontal_x-small">
+                                                <lightning-input-field field-name="Customer_Remark__c" variant="label-stacked" onchange={handleChange} value={serviceReportRecord.Customer_Remark__c}
+                                                    disabled={isRemarkFilled}></lightning-input-field>
+                                            </lightning-layout-item>
+                                        </lightning-layout>
+                                    </div>
+
+                                    <footer class="slds-modal__footer">
+                                        <lightning-button class="slds-var-p-horizontal_x-small" variant="brand" label="Capture" onclick={handleSignatureModalCaptureClick}></lightning-button>
+                                        <!-- <lightning-button class="slds-var-p-horizontal_x-small" variant="neutral" label="Clear" onclick={handleSignatureModalClearClick}></lightning-button> -->
+                                        <lightning-button class="slds-var-p-horizontal_x-small" variant="neutral" label="Cancel" onclick={handleSignatureModalCancelClick}></lightning-button>
+                                    </footer>
+                                </div>
+                            </section>
+                            <div class="slds-backdrop slds-backdrop_open"></div>
+                        </template>
+
+
+
+
+
+                        <!--
+                        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="4" class="slds-var-p-horizontal_x-small">
+                            <c-signature-pad enable-name-signing="true" name-input-label="Customer Contact Name" enable-signature-drawing="true" pad-label="Signature" stroke-thickness="2"
+                                pen-color="black" pad-color="white" existing-input-text={serviceReportRecord.Signature_by__c} existing-signature={serviceReportRecord.Signature__c}
+                                is-remote-support={isRemoteSupport} font="30px 'Great Vibes'" oninput={drawText}></c-signature-pad>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="4" class="slds-var-p-horizontal_x-small">
+                            <lightning-input-field field-name="Customer_Email__c" onchange={handleChange} required={isRemoteSupport}></lightning-input-field>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="4" class="slds-var-p-horizontal_x-small">
+                            <lightning-input-field field-name="Customer_Contact_Number__c" onchange={handleChange} required={isRemoteSupport}></lightning-input-field>
+                        </lightning-layout-item>
+                        -->
+
+
+                        <lightning-layout-item flexibility="auto" class="slds-var-p-horizontal_x-small slds-text-align_center slds-var-p-bottom_large" size="12">
+                            <div style="display: flex; justify-content: center">
+                                <lightning-button label="Capture Signature" variant="brand-outline" class="slds-var-p-bottom_small" onclick={handleOpenCaptureSignatureClick}></lightning-button>
+                            </div>
+                            <lightning-button label="Save" variant="brand" class="slds-var-p-horizontal_x-small" onclick={handleSave}></lightning-button>
+                            <lightning-button label="Preview PDF" variant="brand-outline" class="slds-var-p-horizontal_x-small" onclick={handlePreviewPDF}
+                                disabled={isPreviewAndSendDisabled}></lightning-button>
+                        </lightning-layout-item>
+
+                    </lightning-layout>
+                </lightning-record-edit-form>
+            </lightning-card>
+        </template>
+
+    </div>
+
+</template>

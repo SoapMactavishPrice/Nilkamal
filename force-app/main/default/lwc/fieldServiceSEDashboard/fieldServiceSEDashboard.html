@@ -1,0 +1,385 @@
+<template>
+
+    <lightning-layout multiple-rows vertical-align="stretch" horizontal-align="spread">
+
+        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small">
+            <lightning-card title="Table of Open Case">
+                <div class="slds-m-around_medium">
+                    <template if:true={showSpinner}>
+                        <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+                    </template>
+                    <template if:true={hasNoCaseData}>
+                        <lightning-layout>
+                            <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3"></lightning-layout-item>
+                            <lightning-layout-item size="8" small-device-size="8" medium-device-size="6" large-device-size="6">
+                                <img src="/img/chatter/OpenRoad.svg" class="slds-illustration__svg slds-var-p-around_large" />
+                                <p style="text-align: center; font-size: large;">No Open Case Data Available.</p>
+                            </lightning-layout-item>
+                            <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3"></lightning-layout-item>
+                        </lightning-layout>
+                    </template>
+                    <template if:true={caseData.length}>
+                        <div class="table-container">
+                            <table class="slds-table slds-table_bordered slds-table_col-bordered slds-table_fixed-layout">
+                                <thead>
+                                    <tr>
+                                        <th>Type</th>
+                                        <th>0-2 Days</th>
+                                        <th>3-4 Days</th>
+                                        <th>5 Days & Above</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template for:each={caseData} for:item="caseItem">
+                                        <tr key={caseItem.type}>
+                                            <td>{caseItem.type}</td>
+                                            <td>{caseItem.zeroToTwo}</td>
+                                            <td>{caseItem.threeToFour}</td>
+                                            <td>{caseItem.fivePlus}</td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </template>
+                </div>
+            </lightning-card>
+        </lightning-layout-item>
+
+
+        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small">
+            <lightning-layout multiple-rows vertical-align="stretch" horizontal-align="spread">
+                <lightning-layout-item size="12" small-device-size="12" medium-device-size="12" large-device-size="12" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small">
+                    <lightning-card title="Spare GOAL vs ACHIEVE">
+                        <template if:true={showSpinner}>
+                            <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+                        </template>
+
+                        <template if:true={hasNoGoalData}>
+                            <lightning-layout>
+                                <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3"></lightning-layout-item>
+                                <lightning-layout-item size="8" small-device-size="8" medium-device-size="6" large-device-size="6">
+                                    <img src="/img/chatter/OpenRoad.svg" class="slds-illustration__svg slds-var-p-around_large" />
+                                    <p style="text-align: center; font-size: large;">No Goal Data Available.</p>
+                                </lightning-layout-item>
+                                <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3"></lightning-layout-item>
+                            </lightning-layout>
+                        </template>
+                        <template if:true={goalData.length}>
+                            <div class="table-container">
+                                <table class="slds-table slds-table_bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Financial Year</th>
+                                            <th>Sales Goal</th>
+                                            <th>Sales Achievement</th>
+                                            <th>% Achieved</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <template for:each={goalData} for:item="goal">
+                                            <tr key={goal.id}>
+                                                <td>{goal.name}</td>
+                                                <td>{goal.financialYear}</td>
+                                                <td>{goal.salesGoal}</td>
+                                                <td>{goal.salesAchievement}</td>
+                                                <td>{goal.percentageAchieved}%</td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </template>
+
+                    </lightning-card>
+                </lightning-layout-item>
+
+                <lightning-layout-item size="12" small-device-size="12" medium-device-size="12" large-device-size="12" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small">
+                    <lightning-card title="Service GOAL vs ACHIEVE">
+                        <template if:true={showSpinner}>
+                            <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+                        </template>
+
+                        <template if:true={hasServiceNoGoalData}>
+                            <lightning-layout>
+                                <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3"></lightning-layout-item>
+                                <lightning-layout-item size="8" small-device-size="8" medium-device-size="6" large-device-size="6">
+                                    <img src="/img/chatter/OpenRoad.svg" class="slds-illustration__svg slds-var-p-around_large" />
+                                    <p style="text-align: center; font-size: large;">No Goal Data Available.</p>
+                                </lightning-layout-item>
+                                <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3"></lightning-layout-item>
+                            </lightning-layout>
+                        </template>
+                        <template if:true={servicegoalData.length}>
+                            <div class="table-container">
+                                <table class="slds-table slds-table_bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Name</th>
+                                            <th>Financial Year</th>
+                                            <th>Service Goal</th>
+                                            <th>Service Achievement</th>
+                                            <th>% Achieved</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <template for:each={servicegoalData} for:item="goal">
+                                            <tr key={goal.id}>
+                                                <td>{goal.name}</td>
+                                                <td>{goal.financialYear}</td>
+                                                <td>{goal.serviceGoal}</td>
+                                                <td>{goal.serviceAchievement}</td>
+                                                <td>{goal.percentageAchieved}%</td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </template>
+
+                    </lightning-card>
+                </lightning-layout-item>
+            </lightning-layout>
+        </lightning-layout-item>
+
+
+        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small">
+            <lightning-card title="AMC &amp; Warranty Population Chart">
+                <template if:true={showSpinner}>
+                    <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+                </template>
+
+                <template if:true={hasNoAmcData}>
+                    <lightning-layout>
+                        <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3"></lightning-layout-item>
+                        <lightning-layout-item size="8" small-device-size="8" medium-device-size="6" large-device-size="6">
+                            <img src="/img/chatter/OpenRoad.svg" class="slds-illustration__svg slds-var-p-around_large" />
+                            <p style="text-align: center; font-size: large;">No AMC & Warranty Data Available.</p>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3"></lightning-layout-item>
+                    </lightning-layout>
+                </template>
+
+                <template if:true={amcData}>
+                    <div class="table-container">
+                        <table class="slds-table slds-table_bordered">
+                            <tr>
+                                <th style="width: 75%">Number of Assets</th>
+                                <td>{amcData.totalAssets}</td>
+                            </tr>
+                            <tr>
+                                <th>Assets under Warranty</th>
+                                <td>{amcData.assetsWithActiveWarranty}</td>
+                            </tr>
+                            <tr>
+                                <th>Assets under AMC</th>
+                                <td>{amcData.assetsWithActiveAMC}</td>
+                            </tr>
+                            <tr>
+                                <th>Renewal Due in 60 days</th>
+                                <td>{amcData.expiringAMCResult}</td>
+                            </tr>
+                            <tr>
+                                <th>Number of Assets coming out of warranty in 60 days</th>
+                                <td>{amcData.expiringWarrantyResult}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </template>
+            </lightning-card>
+        </lightning-layout-item>
+
+
+        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small">
+            <lightning-card title="AMC Business Chart">
+                <template if:true={showSpinner}>
+                    <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+                </template>
+
+                <template if:true={hasNoAmcBusinessData}>
+                    <lightning-layout>
+                        <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3"></lightning-layout-item>
+                        <lightning-layout-item size="8" small-device-size="8" medium-device-size="6" large-device-size="6">
+                            <img src="/img/chatter/OpenRoad.svg" class="slds-illustration__svg slds-var-p-around_large" />
+                            <p style="text-align: center; font-size: large;">No AMC Business Data Available.</p>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3"></lightning-layout-item>
+                    </lightning-layout>
+                </template>
+
+                <template if:true={amcBusinessData}>
+                    <div class="table-container">
+                        <table class="slds-table slds-table_bordered slds-table_col-bordered slds-table_fixed-layout">
+                            <thead>
+                                <tr class="slds-text-title_caps">
+                                    <th scope="col">New AMC'</th>
+                                    <th scope="col">Renewed AMC</th>
+                                    <th scope="col">New After Warranty (Within 90 Days)</th>
+                                </tr>
+                            </thead>
+                            <!-- <tbody>
+                                <tr>
+                                    <td>{amcBusinessData.totalNewAMCBusiness}</td>
+                                    <td>{amcBusinessData.totalRenewedAMCBusiness}</td>
+                                    <td>{amcBusinessData.totalNewAfterWarrantyBusinessWithin90daysFromWarrantyExpiry}</td>
+                                </tr>
+                            </tbody> -->
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div>Amount:{amcBusinessData.totalNewAMCBusiness}</div>
+                                        <div>Count: {amcBusinessData.newAMCCount}</div>
+                                    </td>
+                                    <td>
+                                        <div>Amount: {amcBusinessData.totalRenewedAMCBusiness}</div>
+                                        <div>Count: {amcBusinessData.renewedAMCCount}</div>
+                                    </td>
+                                    <td>
+                                        <div>Amount: {amcBusinessData.totalNewAfterWarrantyBusinessWithin90daysFromWarrantyExpiry}</div>
+                                        <div>Count: {amcBusinessData.newAfterWarrantyCount}</div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </template>
+            </lightning-card>
+        </lightning-layout-item>
+
+
+        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small">
+            <lightning-card title="Last 07 Days Case History">
+                <!-- <table class="slds-table slds-table_bordered slds-table_cell-buffer"> -->
+                <div class="table-container">
+                    <table class="slds-table slds-table_bordered slds-table_col-bordered slds-table_fixed-layout">
+                        <tr>
+                            <th scope="row" style="width: 75%">Cases Assigned in Last 7 Days</th>
+                            <td>{caseHistoryData.casesAssignedInLast7Days}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Cases Attended in Last 7 Days</th>
+                            <td>{caseHistoryData.casesAttendedInLast7Days}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Cases Closed in Last 7 Days</th>
+                            <td>{caseHistoryData.casesClosedInLast7Days}</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Open Cases as on Today</th>
+                            <td>{caseHistoryData.openCasesAsOnToday}</td>
+                        </tr>
+                    </table>
+                </div>
+            </lightning-card>
+        </lightning-layout-item>
+
+
+        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small">
+            <lightning-card title="Other than Waiting for Customer PO">
+                <template if:true={showSpinner}>
+                    <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+                </template>
+                <template if:true={hasNoCases}>
+                    <lightning-layout>
+                        <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3"></lightning-layout-item>
+                        <lightning-layout-item size="8" small-device-size="8" medium-device-size="6" large-device-size="6">
+                            <img src="/img/chatter/OpenRoad.svg" class="slds-illustration__svg slds-var-p-around_large" />
+                            <p style="text-align: center; font-size: large;">No Open Cases Available.</p>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3"></lightning-layout-item>
+                    </lightning-layout>
+                </template>
+
+                <template if:true={cases.length}>
+                    <div class="table-container">
+                        <!-- <table class="slds-table slds-table_bordered slds-table_cell-buffer"> -->
+                        <table class="slds-table slds-table_bordered slds-table_col-bordered slds-table_fixed-layout">
+                            <thead>
+                                <tr class="slds-text-title_caps">
+                                    <th scope="col">Case Number</th>
+                                    <th scope="col">Subject</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Reason</th>
+                                    <th scope="col">Priority</th>
+                                    <th scope="col">Created Date</th>
+
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={cases} for:item="cases">
+                                    <tr key={cases.id}>
+                                        <td>{cases.caseNumber}</td>
+                                        <td>{cases.subject}</td>
+                                        <td>{cases.status}</td>
+                                        <td>{cases.caseSubType}</td>
+                                        <td>{cases.priority}</td>
+                                        <td>{cases.createdDate}</td>
+
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </template>
+                <!-- <template if:true={error}>
+                <div class="slds-text-color_error">{error.body.message}</div>
+            </template> -->
+            </lightning-card>
+        </lightning-layout-item>
+
+
+        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small">
+            <lightning-card title="Returnable Quotes">
+                <template if:true={showSpinner}>
+                    <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+                </template>
+                <template if:true={hasNoReturnableQuoteLines}>
+                    <lightning-layout>
+                        <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3"></lightning-layout-item>
+                        <lightning-layout-item size="8" small-device-size="8" medium-device-size="6" large-device-size="6">
+                            <img src="/img/chatter/OpenRoad.svg" class="slds-illustration__svg slds-var-p-around_large" />
+                            <p style="text-align: center; font-size: large;">No Returnable Quotes Available.</p>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3"></lightning-layout-item>
+                    </lightning-layout>
+                </template>
+
+                <template if:true={returnableQuoteLines.length}>
+                    <div class="table-container">
+                        <!-- <table class="slds-table slds-table_bordered slds-table_cell-buffer"> -->
+                        <table class="slds-table slds-table_bordered slds-table_col-bordered slds-table_fixed-layout">
+                            <thead>
+                                <tr class="slds-text-title_caps">
+                                    <th scope="col">Customer Name</th>
+                                    <th scope="col">Material Code</th>
+                                    <th scope="col">Material Description</th>
+                                    <th scope="col">Quantity</th>
+                                    <th scope="col">Amount</th>
+
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={returnableQuoteLines} for:item="qt">
+                                    <tr key={qt.id}>
+                                        <td>{qt.customerName}</td>
+                                        <td>{qt.materialCode}</td>
+                                        <td>{qt.materialDescription}</td>
+                                        <td>{qt.quantity}</td>
+                                        <td>{qt.amount}</td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </template>
+                <!-- <template if:true={error}>
+                <div class="slds-text-color_error">{error.body.message}</div>
+            </template> -->
+            </lightning-card>
+        </lightning-layout-item>
+
+
+    </lightning-layout>
+
+</template>

@@ -1,0 +1,25 @@
+<template>
+    <lightning-card>
+        <div class="container">
+            <!-- Header with Navigation -->
+            <div class="header">
+                <lightning-button-icon icon-name="utility:left" variant="brand" class="nav-button" onclick={handlePrevious}>
+                </lightning-button-icon>
+                <h2 class="header-title">{formattedDate}</h2> <!-- Display the formatted date -->
+                <lightning-button-icon icon-name="utility:right" variant="brand" class="nav-button" onclick={handleNext}>
+                </lightning-button-icon>
+            </div>
+
+            <!-- List of Items -->
+            <div class="list-container">
+                <template for:each={items} for:item="item">
+                    <div key={item.id} class="list-item">
+                        <span class="bullet">•</span>
+                        <span>{item.name} | {item.installation} | {item.time}</span>
+                        <lightning-icon icon-name={item.icon} size="small" class="icon"></lightning-icon>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </lightning-card>
+</template>

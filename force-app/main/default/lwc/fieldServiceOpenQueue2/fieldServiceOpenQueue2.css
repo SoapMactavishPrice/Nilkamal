@@ -1,0 +1,74 @@
+@import 'c/utilCSS';
+
+
+
+
+.custom-case-card {
+    font-family: 'Arial, sans-serif';
+    border-radius: 5px;
+    padding: 10px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+
+.case-card {
+    background-color: white;
+    border: 0.5px solid gray;
+    padding: 5px;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 100%;
+}
+
+
+.custom-padding {
+    padding: 5px;
+}
+
+.custom-black-button {
+    --slds-c-button-brand-color-background: purple;
+    color: white !important;
+    border-color: black !important;
+    box-shadow: none !important;
+}
+
+.button-centered .slds-button__icon {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.symbol-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: #ffffff;
+    border: 1px solid #dddbda;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+.symbol-button:hover {
+    background-color: #f3f2f2;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Add Fields (+) Symbol Styling */
+.symbol-button[title="Add Fields"] {
+    color: #4bca81;
+    /* Green color for plus symbol */
+}
+
+/* Remove Fields (-) Symbol Styling */
+.symbol-button[title="Remove Fields"] {
+    color: #ff6b6b;
+    /* Red color for minus symbol */
+}

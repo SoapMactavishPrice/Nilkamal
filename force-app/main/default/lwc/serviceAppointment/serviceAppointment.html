@@ -1,0 +1,123 @@
+<template>
+    <!-- <template if:true={isMoreFieldsVisible}>
+        <lightning-button-icon icon-name="utility:back" alternative-text="Back" onclick={toggleMoreFields}
+            class="slds-m-top_medium">
+        </lightning-button-icon>
+    </template> -->
+
+    <lightning-card title={workOrderNumber} if:false={isSaved}>
+
+        <div class="slds-p-around_medium">
+            <!-- Service Appointment -->
+            <template if:false={isMoreFieldsVisible}>
+
+                <lightning-combobox label="Service Appointment" value={selectedServiceAppointment} placeholder="Select a Service Appointment" options={serviceAppointmentOptions}
+                    onchange={handleServiceAppointmentChange}>
+                </lightning-combobox>
+
+                <!-- Work Type -->
+                <lightning-input label="Work Type" value={workType} disabled variant="label-stacked">
+                </lightning-input>
+
+                <!-- Earliest Start Permitted -->
+                <lightning-input type="date" label="Earliest Start Permitted" value={earliestStartPermitted} onchange={handleStartDateChange}></lightning-input>
+
+                <!-- Due Date -->
+                <lightning-input type="date" label="Due Date" value={dueDate} onchange={handleDueDateChange}></lightning-input>
+
+                <!-- Address -->
+                <lightning-input label="Pin Code" value={pinCode} variant="label-stacked" onchange={handlePinCodeChange} disabled>
+                </lightning-input>
+
+                <!-- <lightning-record-picker label="Address" placeholder="Search Address..." value={address}
+                    object-api-name="Partner_Function_Address_Information__c" filter={addressFilter}
+                    onchange={handleAddressChange}>
+                </lightning-record-picker> -->
+
+
+                <!-- <lightning-combobox label="Territory" value={selectedTerritory} options={territoryOptions} onchange={handleTerritoryChange}></lightning-combobox> -->
+
+                <!-- Address -->
+                <lightning-input label="Zone" value={territory} variant="label-stacked" onchange={handleZoneChange} disabled>
+                </lightning-input>
+            </template>
+
+
+            <template if:true={isMoreFieldsVisible}>
+                <div class="tabs">
+                    <!-- Render tabs -->
+                    <template for:each={tabOptions} for:item="tab">
+                        <button key={tab.value} class={tab.class} data-value={tab.value} onclick={handleTabClick}>
+                            {tab.label}
+                        </button>
+                    </template>
+                </div>
+
+                <!-- Additional Fields -->
+                <!--  -->
+                <div class="availability">
+                    <template if:true={filteredData}>
+                        <template for:each={filteredData} for:item="day">
+                            <div key={day.date} class="day-container">
+                                <!-- <h3>{day.date}</h3> -->
+                                <!-- <p><lightning-formatted-date-time value={day.date} year="2-digit" month="short"
+                                        day="2-digit" hour="numeric" weekday="long"
+                                        era="short"></lightning-formatted-date-time></p> -->
+                                <p><lightning-formatted-date-time value={day.date} style="color: #0070d2;font-size:medium;"></lightning-formatted-date-time></p>
+
+                                <template for:each={day.users} for:item="user">
+                                    <button key={user.name} class="user-container" onclick={handleSlotClick} data-user={user.name} data-date={day.date} data-slot={user.availableSlots}>
+                                        <p style="font-weight: 600;">{user.name}</p>
+                                        <p>{user.availableSlots}</p>
+                                        <!-- Assume availableSlots is an array of times -->
+                                        <!-- <template for:each={user.availableSlots} for:item="slot">
+                                            <button key={slot} class="slot-button" onclick={handleSlotClick}
+                                                data-user={user.name} data-date={day.date} data-time={slot}>
+                                                {slot}
+                                            </button>
+                                        </template> -->
+                                    </button>
+                                </template>
+                            </div>
+                        </template>
+                    </template>
+                    <template if:false={filteredData}>
+                        <p>No availability data found.</p>
+                    </template>
+                </div>
+
+                <!--  -->
+                <!-- <lightning-input label="Additional Field 1" value={additionalField1}
+                    onchange={handleAdditionalField1Change}></lightning-input>
+                <lightning-input label="Additional Field 2" value={additionalField2}
+                    onchange={handleAdditionalField2Change}></lightning-input> -->
+            </template>
+
+            <!-- Get Appointments Button -->
+            <div class="slds-m-top_medium" if:false={isMoreFieldsVisible}>
+                <lightning-button label="Get Appointments" variant="brand" onclick={saveServiceAppointment}>
+                </lightning-button>
+            </div>
+            <!--  -->
+            <!-- <template if:false={isMoreFieldsVisible}>
+                <lightning-button label="More" variant="neutral" onclick={toggleMoreFields}
+                    class="slds-m-top_medium"></lightning-button>
+            </template> -->
+            <!--  -->
+        </div>
+    </lightning-card>
+    <template if:true={isSaved}>
+        <div class="success-screen">
+            <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                <circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none" />
+                <path class="checkmark-check" fill="none" d="M14 27l10 10L38 16" />
+            </svg>
+            <p style="text-align: center;margin-bottom:20px;">
+                The appointment is scheduled </br> from {formattedStartDate} </br>
+                to {formattedEndDate}.
+            </p>
+            <!-- <lightning-button onclick={viewServiceAppointment}>View Service Appointment</lightning-button> -->
+            <lightning-button variant="brand" label="View Service Appointment" title="Primary action" onclick={viewServiceAppointment} class="slds-m-left_x-small"></lightning-button>
+        </div>
+    </template>
+</template>

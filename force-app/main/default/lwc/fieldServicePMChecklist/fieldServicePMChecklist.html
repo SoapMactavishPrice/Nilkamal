@@ -1,0 +1,276 @@
+<template>
+    <!-- Spinner -->
+    <template if:true={showSpinner}>
+        <lightning-spinner alternative-text="Loading" size="medium" variant="brand"></lightning-spinner>
+    </template>
+
+    <!-- Header -->
+    <div class="pm-header slds-p-around_medium">
+        <div class="slds-grid slds-grid_align-spread slds-grid_vertical-align-center">
+            <div>
+                <h1 class="slds-text-heading_medium slds-text-color_default">
+                    Quarterly Preventative Maintenance Check List
+                </h1>
+                <template if:true={pmChecklistRecord.Name}>
+                    <p class="slds-text-body_small slds-text-color_weak slds-m-top_xx-small">
+                        {pmChecklistRecord.Name}
+                        &nbsp;·&nbsp;Last PM source: <strong>{lastPmSourceLabel}</strong>
+                    </p>
+                </template>
+            </div>
+        </div>
+    </div>
+
+    <!-- Groups Accordion -->
+    <lightning-accordion allow-multiple-sections-open active-section-name={activeGroupNames}
+        onsectiontoggle={handleGroupAccordionToggle} class="pm-groups">
+
+        <template for:each={groupsForTemplate} for:item="group">
+            <lightning-accordion-section name={group.key} label={group.groupAccordionLabel} key={group.key}>
+
+                <!-- Inner sections -->
+                <div data-group-key={group.key}>
+                    <lightning-accordion allow-multiple-sections-open active-section-name={group.innerActive}
+                        onsectiontoggle={handleInnerAccordionToggle}>
+
+                        <template for:each={group.sections} for:item="sec">
+                            <lightning-accordion-section name={sec.sectionId} label={sec.label} key={sec.key}>
+
+                                <!-- Reference link (e.g., Umbilical video) -->
+                                <template if:true={sec.hasReferenceLink}>
+                                    <div class="slds-m-bottom_small slds-m-left_medium">
+                                        <a href={sec.referenceLink} target="_blank" rel="noopener noreferrer"
+                                            class="pm-reference-link">
+                                            🔗 {sec.referenceLinkLabel}
+                                        </a>
+                                    </div>
+                                </template>
+
+                                <!-- Column headers -->
+                                <div class="pm-table-header slds-grid slds-m-bottom_xx-small slds-p-horizontal_small">
+                                    <div class="pm-col-title slds-text-title_caps">Parameter</div>
+                                    <div class="pm-col-spec slds-text-title_caps">Specified Range</div>
+                                    <div class="pm-col-actual slds-text-title_caps">Actual Reading</div>
+                                    <template if:true={sec.showLastPMColumn}>
+                                        <div class="pm-col-lastpm slds-text-title_caps">Last PM</div>
+                                    </template>
+                                    <template if:true={sec.showRemarks}>
+                                        <div class="pm-col-remark slds-text-title_caps">Remarks</div>
+                                    </template>
+                                </div>
+
+                                <!-- Regular rows -->
+                                <template for:each={sec.displayRows} for:item="row">
+                                    <div class="pm-row slds-grid slds-p-horizontal_small slds-p-vertical_xx-small"
+                                        key={row.key}>
+
+                                        <!-- Title -->
+                                        <div class="pm-col-title">
+                                            <span class="pm-row-title">{row.displayTitle}</span>
+                                            <template if:true={row.showUnit}>
+                                                <span class="pm-unit"> ({row.unitLabel})</span>
+                                            </template>
+                                            <template if:true={row.hasReferenceLink}>
+                                                <a href={row.referenceLinkUrl} target="_blank"
+                                                    rel="noopener noreferrer" class="pm-row-link">
+                                                    🔗
+                                                </a>
+                                            </template>
+                                        </div>
+
+                                        <!-- Specified Range -->
+                                        <div class="pm-col-spec">
+                                            <template if:true={row.showSpecifiedRange}>
+                                                <span class="pm-spec-text">{row.specifiedRange}</span>
+                                            </template>
+                                        </div>
+
+                                        <!-- Actual Reading -->
+                                        <div class="pm-col-actual">
+                                            <!-- Picklist -->
+                                            <template if:true={row.isPicklistRow}>
+                                                <lightning-combobox value={row.inputValue}
+                                                    options={row.picklistOptions}
+                                                    data-field-id={row.id}
+                                                    onchange={handleActualChange}
+                                                    variant="label-hidden"
+                                                    placeholder="Select..."
+                                                    class={row.actualInputClass}>
+                                                </lightning-combobox>
+                                            </template>
+
+                                            <!-- Number / Integer -->
+                                            <template if:true={row.isNumberRow}>
+                                                <lightning-input type="number"
+                                                    value={row.inputValue}
+                                                    data-field-id={row.id}
+                                                    onchange={handleActualChange}
+                                                    variant="label-hidden"
+                                                    step={row.inputStep}
+                                                    class={row.actualInputClass}>
+                                                </lightning-input>
+                                            </template>
+
+                                            <!-- Text / Manual -->
+                                            <template if:true={row.isTextRow}>
+                                                <lightning-input type="text"
+                                                    value={row.inputValue}
+                                                    data-field-id={row.id}
+                                                    onchange={handleActualChange}
+                                                    variant="label-hidden"
+                                                    class={row.actualInputClass}>
+                                                </lightning-input>
+                                            </template>
+
+                                            <!-- Error -->
+                                            <template if:true={row.hasError}>
+                                                <div class="pm-error-text">{row.errorMessage}</div>
+                                            </template>
+                                        </div>
+
+                                        <!-- Last PM reading (conditionally shown) -->
+                                        <template if:true={sec.showLastPMColumn}>
+                                            <div class="pm-col-lastpm">
+                                                <template if:true={row.showLastPM}>
+                                                    <span class="pm-lastpm-text">{row.lastPmDisplay}</span>
+                                                </template>
+                                            </div>
+                                        </template>
+
+                                        <!-- Remarks (conditionally shown) -->
+                                        <template if:true={sec.showRemarks}>
+                                            <div class="pm-col-remark">
+                                                <!-- Auto-remark (non-editable) -->
+                                                <template if:true={row.isAutoRemark}>
+                                                    <span class="pm-auto-remark">{row.autoRemarkText}</span>
+                                                </template>
+                                                <!-- Editable remark -->
+                                                <template if:true={row.isRemarkEditable}>
+                                                    <lightning-input type="text"
+                                                        value={row.remarksValue}
+                                                        data-field-id={row.id}
+                                                        onchange={handleRemarkChange}
+                                                        variant="label-hidden"
+                                                        placeholder="Remark...">
+                                                    </lightning-input>
+                                                </template>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </template>
+
+                                <!-- Image rows -->
+                                <template if:true={sec.hasImageRows}>
+                                    <template for:each={sec.displayImageRows} for:item="imgRow">
+                                        <div class="pm-image-row slds-p-horizontal_small slds-p-vertical_small"
+                                            key={imgRow.key}>
+                                            <template if:true={imgRow.title}>
+                                                <p class="slds-text-title_bold slds-m-bottom_x-small">
+                                                    {imgRow.title}
+                                                </p>
+                                            </template>
+                                            <div class="slds-grid slds-wrap slds-gutters_x-small">
+                                                <template for:each={imgRow.slots} for:item="slot">
+                                                    <div class="slds-col slds-size_1-of-2 slds-p-bottom_small"
+                                                        key={slot.key}>
+                                                        <p class="slds-text-body_small slds-m-bottom_xx-small">
+                                                            {slot.label}
+                                                            <span class="pm-max-size">
+                                                                (max {slot.maxSizeKB}KB)
+                                                            </span>
+                                                        </p>
+                                                        <!-- Upload input -->
+                                                        <input type="file" accept="image/*"
+                                                            data-slot-key={slot.key}
+                                                            onchange={handleImageUpload}
+                                                            class="pm-file-input" />
+
+                                                        <!-- Preview existing images -->
+                                                        <template if:true={slot.hasImages}>
+                                                            <template for:each={slot.images} for:item="img">
+                                                                <div class="pm-image-preview" key={img.contentDocumentId}>
+                                                                    <span class="pm-image-title">{img.title}</span>
+                                                                    <lightning-button-icon
+                                                                        icon-name="utility:delete"
+                                                                        alternative-text="Delete"
+                                                                        size="small"
+                                                                        variant="bare-inverse"
+                                                                        data-document-id={img.contentDocumentId}
+                                                                        data-slot-key={slot.key}
+                                                                        onclick={handleImageDelete}
+                                                                        class="pm-delete-btn">
+                                                                    </lightning-button-icon>
+                                                                </div>
+                                                            </template>
+                                                        </template>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </template>
+
+                                <!-- Batch rows (Ink Storage) -->
+                                <template if:true={sec.hasBatchRows}>
+                                    <template for:each={sec.displayBatchRows} for:item="batchRow">
+                                        <div class="pm-row pm-batch-row slds-grid slds-p-horizontal_small slds-p-vertical_xx-small"
+                                            key={batchRow.key}>
+                                            <!-- Title -->
+                                            <div class="pm-col-title">
+                                                <span class="pm-row-title">{batchRow.title}</span>
+                                            </div>
+                                            <!-- Batch No -->
+                                            <div class="pm-col-batch">
+                                                <lightning-input type="text"
+                                                    label="Batch No"
+                                                    value={batchRow.batchValue}
+                                                    data-field-id={batchRow.batchFieldId}
+                                                    onchange={handleBatchChange}
+                                                    variant="label-hidden"
+                                                    placeholder="Batch No">
+                                                </lightning-input>
+                                            </div>
+                                            <!-- Expiry Date -->
+                                            <div class="pm-col-expiry">
+                                                <lightning-input type="date"
+                                                    label="Exp Dt"
+                                                    value={batchRow.expiryValue}
+                                                    data-field-id={batchRow.expiryFieldId}
+                                                    onchange={handleExpiryChange}
+                                                    variant="label-hidden">
+                                                </lightning-input>
+                                            </div>
+                                            <!-- Remark -->
+                                            <div class="pm-col-remark">
+                                                <template if:true={batchRow.isRemarkEditable}>
+                                                    <lightning-input type="text"
+                                                        value={batchRow.remarkValue}
+                                                        data-field-id={batchRow.remarkFieldId}
+                                                        onchange={handleRemarkChange}
+                                                        variant="label-hidden"
+                                                        placeholder="Remark...">
+                                                    </lightning-input>
+                                                </template>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </template>
+
+                            </lightning-accordion-section>
+                        </template>
+
+                    </lightning-accordion>
+                </div>
+
+            </lightning-accordion-section>
+        </template>
+
+    </lightning-accordion>
+
+    <!-- Footer buttons -->
+    <div class="pm-footer slds-p-around_medium slds-grid slds-grid_align-center slds-gutters_small">
+        <lightning-button variant="neutral" label="Cancel" onclick={handleCancel}
+            class="slds-m-right_small"></lightning-button>
+        <lightning-button variant="brand" label="Save" onclick={handleSave}></lightning-button>
+    </div>
+</template>

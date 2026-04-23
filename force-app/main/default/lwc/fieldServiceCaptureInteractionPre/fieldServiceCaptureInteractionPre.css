@@ -1,0 +1,178 @@
+/* General styles for the container */
+.container {
+	display: flex;
+	flex-direction: column;
+	margin: 0 auto;
+	max-width: 1200px;
+	/* Limit the width for large screens */
+	padding: 10px;
+	box-sizing: border-box;
+}
+
+/* Header styling */
+.header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	background-color: #006eff;
+	color: #f8f8f8;
+	padding: 10px 15px;
+	border-radius: 5px;
+	font-size: 16px;
+}
+
+.header-title {
+	flex-grow: 1;
+	text-align: center;
+	margin: 0;
+}
+
+.nav-button {
+	flex-shrink: 0;
+	color: rgb(255, 255, 255);
+}
+
+/* List container styling */
+.list-container {
+	display: flex;
+	flex-direction: column;
+	margin-top: 10px;
+	background-color: #ffffff;
+	border-radius: 5px;
+	padding: 10px;
+	box-shadow: 0 2px 5px #ffffff1a;
+}
+
+/* List item styling */
+.list-item {
+	display: flex;
+	align-items: center;
+	padding: 10px;
+	border-bottom: 1px solid #ddd;
+	color: #000000;
+}
+
+.list-item:last-child {
+	border-bottom: none;
+	/* Remove border for the last item */
+}
+
+.bullet {
+	margin-right: 10px;
+	font-size: 18px;
+	color: #000000;
+}
+
+.icon {
+    margin-left: auto;
+    cursor: default; /* Default cursor for the icon */
+	transition: transform 0.2s, color 0.2s; /* Smooth transitions for hover effects */
+}
+
+.icon:hover {
+    cursor: pointer;
+    transform: scale(1.1); /* Slightly enlarge the icon */
+    color: var(--lwc-colorBrand); /* Change the icon color (uses Lightning Design System brand color) */
+
+}
+
+
+/* Mobile view */
+@media (max-width: 768px) {
+	.container {
+		padding: 5px;
+	}
+
+	.header {
+		font-size: 14px;
+		padding: 8px 10px;
+	}
+
+	.header-title {
+		font-size: 16px;
+	}
+
+	.list-container {
+		padding: 8px;
+	}
+
+	.list-item {
+		font-size: 14px;
+		padding: 8px;
+	}
+
+	.bullet {
+		font-size: 16px;
+	}
+}
+
+/* Tablet view */
+@media (min-width: 768px) {
+	.container {
+		padding: 10px;
+	}
+
+	.header {
+		font-size: 16px;
+		padding: 10px 15px;
+	}
+
+	.header-title {
+		font-size: 18px;
+	}
+
+	.list-item {
+		font-size: 16px;
+		padding: 10px;
+	}
+
+	.bullet {
+		font-size: 18px;
+	}
+}
+
+/* Desktop view */
+@media (min-width: 1025px) {
+	.container {
+		padding: 20px;
+	}
+
+	.header {
+		font-size: 18px;
+		padding: 15px 20px;
+	}
+
+	.header-title {
+		font-size: 20px;
+	}
+
+	.list-item {
+		font-size: 18px;
+		padding: 15px;
+	}
+
+	.bullet {
+		font-size: 20px;
+	}
+
+	.button-container {
+		display: flex;
+		justify-content: space-between;
+		margin-bottom: 1rem;
+	}
+
+	.lightning-button {
+		background-color: white;
+		border: 1px solid black;
+		color: black;
+		padding: 0.5rem 1rem;
+		border-radius: 5px;
+		cursor: pointer;
+		transition: all 0.3s ease;
+	}
+
+	.lightning-button:hover {
+		background-color: rgb(255, 255, 255);
+		color: white;
+	}
+}

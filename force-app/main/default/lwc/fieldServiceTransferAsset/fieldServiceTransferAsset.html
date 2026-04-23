@@ -1,0 +1,279 @@
+<template>
+
+    <template if:true={showSpinner}>
+        <lightning-spinner alternative-text="Loading" variant="brand" size="medium"></lightning-spinner>
+    </template>
+
+
+    <div class="container-max-width">
+
+        <lightning-card hide-header label="Asset Transfer">
+
+            <lightning-layout multiple-rows hide-header>
+
+                <lightning-layout-item size="12" small-device-size="12" medium-device-size="3" large-device-size="3" class="slds-var-p-horizontal_small">
+                    <template if:true={AssetId}>
+                        <lightning-record-picker name="AssetId" object-api-name="Asset" label="Asset (Serial Number)" placeholder="Search by Serial Number" value={AssetId}
+                            display-info={assetBySerialDisplayInfo} matching-info={assetBySerialMatchingInfo} onchange={handleFieldChange} data-name="AssetId" data-type="RecordPicker" required>
+                        </lightning-record-picker>
+                    </template>
+                    <template if:false={AssetId}>
+                        <lightning-record-picker name="AssetId" object-api-name="Asset" label="Asset (Serial Number)" placeholder="Search by Serial Number" value={AssetId}
+                            display-info={assetBySerialDisplayInfo} matching-info={assetBySerialMatchingInfo} onchange={handleFieldChange} data-name="AssetId" data-type="RecordPicker" required>
+                        </lightning-record-picker>
+                    </template>
+                </lightning-layout-item>
+
+
+                <lightning-layout-item size="12" small-device-size="12" medium-device-size="3" large-device-size="3" class="slds-var-p-horizontal_small">
+                    <template if:true={AccountId}>
+                        <lightning-record-picker name="AccountId" object-api-name="Account" label="Bill to Customer Name" placeholder="Bill to Customer Name" value={AccountId}
+                            display-info={customerByNameDisplayInfo} matching-info={customerByNameMatchingInfo} onchange={handleFieldChange} data-name="AccountId" data-type="RecordPicker" disabled>
+                        </lightning-record-picker>
+                    </template>
+                    <template if:false={AccountId}>
+                        <lightning-record-picker name="AccountId" object-api-name="Account" label="Bill to Customer Name" placeholder="Bill to Customer Name" value={AccountId}
+                            display-info={customerByNameDisplayInfo} matching-info={customerByNameMatchingInfo} onchange={handleFieldChange} data-name="AccountId" data-type="RecordPicker" disabled>
+                        </lightning-record-picker>
+                    </template>
+
+                    <lightning-layout if:true={addressDetails.AccountId} multiple-rows vertical-align="center">
+                        <lightning-layout-item size="4" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">Bill to Customer Code</lightning-layout-item>
+                        <lightning-layout-item size="8" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">{addressDetails.AccountId.customerCode}</lightning-layout-item>
+
+                        <lightning-layout-item size="4" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">Bill To Address</lightning-layout-item>
+                        <lightning-layout-item size="8" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">{addressDetails.AccountId.address}</lightning-layout-item>
+
+                        <lightning-layout-item size="4" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">Bill To City</lightning-layout-item>
+                        <lightning-layout-item size="8" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">{addressDetails.AccountId.city}</lightning-layout-item>
+
+                        <lightning-layout-item size="4" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">Bill To Region</lightning-layout-item>
+                        <lightning-layout-item size="8" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">{addressDetails.AccountId.region}</lightning-layout-item>
+
+                        <lightning-layout-item size="4" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">Bill To PinCode</lightning-layout-item>
+                        <lightning-layout-item size="8" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">{addressDetails.AccountId.pinCode}</lightning-layout-item>
+
+                        <lightning-layout-item size="4" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">Bill To Country</lightning-layout-item>
+                        <lightning-layout-item size="8" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">{addressDetails.AccountId.country}</lightning-layout-item>
+                    </lightning-layout>
+                </lightning-layout-item>
+
+
+                <lightning-layout-item size="12" small-device-size="12" medium-device-size="3" large-device-size="3" class="slds-var-p-horizontal_small">
+                    <template if:true={End_Customer__c}>
+                        <lightning-record-picker name="End_Customer__c" object-api-name="Account" label="Ship to Customer Name" placeholder="Ship to Customer Name" value={End_Customer__c}
+                            display-info={shipToByNameDisplayInfo} matching-info={shipToByNameMatchingInfo} onchange={handleFieldChange} data-name="End_Customer__c" data-type="RecordPicker" disabled>
+                        </lightning-record-picker>
+                    </template>
+                    <template if:false={End_Customer__c}>
+                        <lightning-record-picker name="End_Customer__c" object-api-name="Account" label="Ship to Customer Name" placeholder="Ship to Customer Name" value={End_Customer__c}
+                            display-info={shipToByNameDisplayInfo} matching-info={shipToByNameMatchingInfo} onchange={handleFieldChange} data-name="End_Customer__c" data-type="RecordPicker" disabled>
+                        </lightning-record-picker>
+                    </template>
+
+                    <lightning-layout if:true={addressDetails.End_Customer__c} multiple-rows vertical-align="center">
+                        <lightning-layout-item size="4" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">Ship to Customer Code</lightning-layout-item>
+                        <lightning-layout-item size="8" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">{addressDetails.End_Customer__c.customerCode}</lightning-layout-item>
+
+                        <lightning-layout-item size="4" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">Ship To Address</lightning-layout-item>
+                        <lightning-layout-item size="8" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">{addressDetails.End_Customer__c.address}</lightning-layout-item>
+
+                        <lightning-layout-item size="4" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">Ship To City</lightning-layout-item>
+                        <lightning-layout-item size="8" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">{addressDetails.End_Customer__c.city}</lightning-layout-item>
+
+                        <lightning-layout-item size="4" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">Ship To Region</lightning-layout-item>
+                        <lightning-layout-item size="8" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">{addressDetails.End_Customer__c.region}</lightning-layout-item>
+
+                        <lightning-layout-item size="4" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">Ship To PinCode</lightning-layout-item>
+                        <lightning-layout-item size="8" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">{addressDetails.End_Customer__c.pinCode}</lightning-layout-item>
+
+                        <lightning-layout-item size="4" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">Ship To Country</lightning-layout-item>
+                        <lightning-layout-item size="8" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">{addressDetails.End_Customer__c.country}</lightning-layout-item>
+                    </lightning-layout>
+                </lightning-layout-item>
+
+
+                <lightning-layout-item size="12" small-device-size="12" medium-device-size="3" large-device-size="3" class="slds-var-p-horizontal_small">
+                    <template if:true={ContactId}>
+                        <lightning-record-picker name="ContactId" object-api-name="Contact" label="Contact" placeholder="Contact" value={ContactId} display-info={contactDisplayInfo}
+                            matching-info={contactMatchingInfo} onchange={handleFieldChange} data-name="ContactId" data-type="RecordPicker" disabled>
+                        </lightning-record-picker>
+                    </template>
+                    <template if:false={ContactId}>
+                        <lightning-record-picker name="ContactId" object-api-name="Contact" label="Contact" placeholder="Contact" value={ContactId} display-info={contactDisplayInfo}
+                            matching-info={contactMatchingInfo} onchange={handleFieldChange} data-name="ContactId" data-type="RecordPicker" disabled>
+                        </lightning-record-picker>
+                    </template>
+
+                    <lightning-layout if:true={addressDetails.ContactId} multiple-rows vertical-align="center">
+                        <lightning-layout-item size="4" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">Mobile Number</lightning-layout-item>
+                        <lightning-layout-item size="8" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">{addressDetails.ContactId.mobilePhone}</lightning-layout-item>
+
+                        <lightning-layout-item size="4" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">Email Id</lightning-layout-item>
+                        <lightning-layout-item size="8" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">{addressDetails.ContactId.email}</lightning-layout-item>
+                    </lightning-layout>
+                </lightning-layout-item>
+
+
+            </lightning-layout>
+
+        </lightning-card>
+
+    </div>
+
+
+
+    <div class="container-max-width slds-var-p-top_small">
+
+        <lightning-card label="Asset Transfer">
+
+            <lightning-layout multiple-rows>
+
+                <lightning-layout-item size="12" small-device-size="12" medium-device-size="3" large-device-size="3" class="slds-var-p-horizontal_small"></lightning-layout-item>
+
+                <lightning-layout-item size="12" small-device-size="12" medium-device-size="3" large-device-size="3" class="slds-var-p-horizontal_small">
+                    <template if:true={New_AccountId}>
+                        <lightning-record-picker name="New_AccountId" object-api-name="Account" label="Bill to Customer Name (New)" value={New_AccountId} display-info={accountDisplayInfo}
+                            matching-info={accountMatchingInfo} onchange={handleFieldChange} data-type="RecordPicker" data-name="New_AccountId" required>
+                        </lightning-record-picker>
+                    </template>
+                    <template if:false={New_AccountId}>
+                        <lightning-record-picker name="New_AccountId" object-api-name="Account" label="Bill to Customer Name (New)" value={New_AccountId} display-info={accountDisplayInfo}
+                            matching-info={accountMatchingInfo} onchange={handleFieldChange} data-type="RecordPicker" data-name="New_AccountId" required>
+                        </lightning-record-picker>
+                    </template>
+
+                    <lightning-layout if:true={addressDetails.New_AccountId} multiple-rows vertical-align="center">
+                        <lightning-layout-item size="4" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">Bill to Customer Code</lightning-layout-item>
+                        <lightning-layout-item size="8" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">{addressDetails.New_AccountId.customerCode}</lightning-layout-item>
+
+                        <lightning-layout-item size="4" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">Bill To Address</lightning-layout-item>
+                        <lightning-layout-item size="8" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">{addressDetails.New_AccountId.address}</lightning-layout-item>
+
+                        <lightning-layout-item size="4" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">Bill To City</lightning-layout-item>
+                        <lightning-layout-item size="8" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">{addressDetails.New_AccountId.city}</lightning-layout-item>
+
+                        <lightning-layout-item size="4" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">Bill To Region</lightning-layout-item>
+                        <lightning-layout-item size="8" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">{addressDetails.New_AccountId.region}</lightning-layout-item>
+
+                        <lightning-layout-item size="4" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">Bill To PinCode</lightning-layout-item>
+                        <lightning-layout-item size="8" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">{addressDetails.New_AccountId.pinCode}</lightning-layout-item>
+
+                        <lightning-layout-item size="4" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">Bill To Country</lightning-layout-item>
+                        <lightning-layout-item size="8" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">{addressDetails.New_AccountId.country}</lightning-layout-item>
+                    </lightning-layout>
+                </lightning-layout-item>
+
+                <lightning-layout-item size="12" small-device-size="12" medium-device-size="3" large-device-size="3" class="slds-var-p-horizontal_small">
+                    <template if:true={New_End_Customer__c}>
+                        <lightning-record-picker name="New_End_Customer__c" object-api-name="Account" label="Ship to Customer Name (New)" value={New_End_Customer__c} display-info={accountDisplayInfo}
+                            matching-info={accountMatchingInfo} onchange={handleFieldChange} data-type="RecordPicker" data-name="New_End_Customer__c" required>
+                        </lightning-record-picker>
+                    </template>
+                    <template if:false={New_End_Customer__c}>
+                        <lightning-record-picker name="New_End_Customer__c" object-api-name="Account" label="Ship to Customer Name (New)" value={New_End_Customer__c} display-info={accountDisplayInfo}
+                            matching-info={accountMatchingInfo} onchange={handleFieldChange} data-type="RecordPicker" data-name="New_End_Customer__c" required>
+                        </lightning-record-picker>
+                    </template>
+
+                    <lightning-layout if:true={addressDetails.New_End_Customer__c} multiple-rows vertical-align="center">
+                        <lightning-layout-item size="4" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">Ship to Customer Code</lightning-layout-item>
+                        <lightning-layout-item size="8"
+                            class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">{addressDetails.New_End_Customer__c.customerCode}</lightning-layout-item>
+
+                        <lightning-layout-item size="4" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">Ship To Address</lightning-layout-item>
+                        <lightning-layout-item size="8" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">{addressDetails.New_End_Customer__c.address}</lightning-layout-item>
+
+                        <lightning-layout-item size="4" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">Ship To City</lightning-layout-item>
+                        <lightning-layout-item size="8" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">{addressDetails.New_End_Customer__c.city}</lightning-layout-item>
+
+                        <lightning-layout-item size="4" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">Ship To Region</lightning-layout-item>
+                        <lightning-layout-item size="8" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">{addressDetails.New_End_Customer__c.region}</lightning-layout-item>
+
+                        <lightning-layout-item size="4" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">Ship To PinCode</lightning-layout-item>
+                        <lightning-layout-item size="8" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">{addressDetails.New_End_Customer__c.pinCode}</lightning-layout-item>
+
+                        <lightning-layout-item size="4" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">Ship To Country</lightning-layout-item>
+                        <lightning-layout-item size="8" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">{addressDetails.New_End_Customer__c.country}</lightning-layout-item>
+                    </lightning-layout>
+                </lightning-layout-item>
+
+                <lightning-layout-item size="12" small-device-size="12" medium-device-size="3" large-device-size="3" class="slds-var-p-horizontal_small">
+                    <template if:true={New_ContactId}>
+                        <lightning-record-picker name="New_ContactId" object-api-name="Contact" label="Contact (New)" value={New_ContactId} filter={contactFilterInfo} display-info={contactDisplayInfo}
+                            matching-info={contactMatchingInfo} onchange={handleFieldChange} data-type="RecordPicker" data-name="New_ContactId" required>
+                        </lightning-record-picker>
+                    </template>
+                    <template if:false={New_ContactId}>
+                        <lightning-record-picker name="New_ContactId" object-api-name="Contact" label="Contact (New)" value={New_ContactId} filter={contactFilterInfo} display-info={contactDisplayInfo}
+                            matching-info={contactMatchingInfo} onchange={handleFieldChange} data-type="RecordPicker" data-name="New_ContactId" required>
+                        </lightning-record-picker>
+                    </template>
+
+                    <lightning-layout if:true={addressDetails.New_ContactId} multiple-rows vertical-align="center">
+                        <lightning-layout-item size="4" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">Mobile Number</lightning-layout-item>
+                        <lightning-layout-item size="8" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">{addressDetails.New_ContactId.mobilePhone}</lightning-layout-item>
+
+                        <lightning-layout-item size="4" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">Email Id</lightning-layout-item>
+                        <lightning-layout-item size="8" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small force-wrap">{addressDetails.New_ContactId.email}</lightning-layout-item>
+                    </lightning-layout>
+                </lightning-layout-item>
+
+
+
+                <!--
+                <lightning-layout-item size="12" small-device-size="12" medium-device-size="4" large-device-size="4" class="slds-var-p-horizontal_small">
+                    <lightning-card>
+                        <p class="slds-p-horizontal_small slds-text-title_bold">Bill To Address</p>
+                        <p class="slds-p-horizontal_small">{BillToTransferAddress}</p>
+                        <p class="slds-p-horizontal_small slds-text-title_bold">Bill To City</p>
+                        <p class="slds-p-horizontal_small">{BillToTransferCity}</p>
+                        <p class="slds-p-horizontal_small slds-text-title_bold">Bill To Region</p>
+                        <p class="slds-p-horizontal_small">{BillToTransferRegion}</p>
+                        <p class="slds-p-horizontal_small slds-text-title_bold">Bill To Pin Code</p>
+                        <p class="slds-p-horizontal_small">{BillToTransferPin}</p>
+                        <p class="slds-p-horizontal_small slds-text-title_bold">Bill To Country</p>
+                        <p class="slds-p-horizontal_small">{BillToTransferCountry}</p>
+                    </lightning-card>
+                </lightning-layout-item>
+                -->
+
+
+
+                <!--
+                <lightning-layout-item size="12" small-device-size="12" medium-device-size="4" large-device-size="4" class="slds-var-p-horizontal_small">
+                    <lightning-card title="">
+                        <div class="slds-p-horizontal_small">
+                            <lightning-input label="Ship To Address" value={ShipToTransferAddress} onchange={handleInputChange} name="ShipToTransferAddress">
+                            </lightning-input>
+
+                            <lightning-input label="Ship To City" value={ShipToTransferCity} onchange={handleInputChange} name="ShipToTransferCity">
+                            </lightning-input>
+
+                            <lightning-input label="Ship To Region" value={ShipToTransferReagion} onchange={handleInputChange} name="ShipToTransferReagion">
+                            </lightning-input>
+
+                            <lightning-input label="Ship To Pin Code" value={ShipToTransferPin} onchange={handleInputChange} name="ShipToTransferPin">
+                            </lightning-input>
+
+                            <lightning-input label="Ship To Country" value={ShipToTransferCountry} onchange={handleInputChange} name="ShipToTransferCountry">
+                            </lightning-input>
+                        </div>
+                    </lightning-card>
+                </lightning-layout-item>
+                -->
+
+
+
+                <lightning-layout-item size="12" class="slds-align_absolute-center slds-var-p-top_xx-large">
+                    <!-- <lightning-button label="Cancel" variant="brand-outline" class="slds-var-p-horizontal_small" onclick={handleCancel}></lightning-button> -->
+                    <lightning-button label="Transfer Asset" variant="brand" class="slds-var-p-horizontal_small slds-var-p-vertical_large" onclick={handleSave}></lightning-button>
+                </lightning-layout-item>
+
+            </lightning-layout>
+
+        </lightning-card>
+
+    </div>
+
+</template>

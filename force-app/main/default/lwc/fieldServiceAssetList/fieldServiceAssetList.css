@@ -1,0 +1,10 @@
+@import 'c/utilCSS';
+
+
+
+
+.datatable-container {
+    @media (max-width: 767px) {
+        height: 90vh;
+    }
+}

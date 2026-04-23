@@ -1,0 +1,697 @@
+:host {
+    /* Removes SF Card Header padding/margin top/bottom only */
+    --slds-c-card-header-spacing-block-end: 0px;
+    --slds-c-card-header-spacing-block-start: 0px;
+
+    /* Removes SF Card body padding/margin top/bottom only */
+    --slds-c-card-body-spacing-block-start: 0px;
+    --slds-c-card-body-spacing-block-end: 0px;
+
+    /*
+    --slds-c-card-body-spacing-blockstart: 0px;
+    --slds-c-card-body-spacing-blockend: 0px;
+
+    --slds-c-card-header-spacing-blockstart: 0px;
+    --slds-c-card-header-spacing-blockend: 0px;
+    */
+
+
+    --brand-color: #00c6ee;
+    --brand-color-dark: #00adef;
+    --brand-color-light: #00dbd6;
+
+    --black-clr: #000000;
+    --light-gray-clr: #F6F6F6;
+    --gray-clr: #D4D4D4;
+    --dark-gray-clr: #808080;
+    --white-clr: #FFFFFF;
+    --blue-clr: #1967d2;
+    --light-blue-clr: #6EA3F8;
+
+    --green-clr: #008000;
+    --orange-clr: #F58216;
+    --yellow-clr: #EAEA00;
+    --purple-clr: #800080;
+    --red-clr: #FF0000;
+
+    --borderWidthThinner: 0.5px;
+    --borderWidthThin: 1px;
+    --borderWidthThick: 2px;
+    --borderWidthThicker: 3px;
+
+    --borderRadiusCircle: 50%;
+
+    --fontWeightBold: 700;
+    --fontWeightMedium: 500;
+    --fontWeightRegular: 400;
+    --fontWeightLight: 300;
+
+
+    /*
+    --slds-c-button-brand-color-background: var(--brand-color);
+    --slds-c-button-brand-color-background-active: var(--brand-color-dark);
+    --slds-c-button-brand-color-background-hover: var(--brand-color-dark);
+    */
+
+}
+
+:host lightning-spinner {
+    position: fixed !important;
+}
+
+
+.small-col {
+    width: 0%;
+}
+
+
+.user-select-none {
+    user-select: none;
+}
+
+.user-select-all {
+    user-select: all;
+}
+
+.read-only-lightning-input {
+    pointer-events: none;
+    touch-action: none;
+}
+
+.container-max-width {
+    max-width: 1300px;
+    margin: auto;
+}
+
+* {
+    animation: fade-in 0.3s ease-out;
+    -webkit-animation: fade-in 0.3s ease-out;
+}
+
+.horizontal-flex {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    min-width: 0;
+}
+
+.vertical-flex {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+
+
+.truncate {
+    /*
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-height: 4.5rem;
+    line-height: 1.5rem;
+    */
+
+    display: -webkit-box;
+    line-clamp: 3;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: pre-wrap;
+    max-height: 5em;
+    cursor: pointer;
+}
+
+.expanded {
+    /*
+    max-height: none;
+    overflow: visible;
+    height: auto;
+    */
+
+    line-clamp: unset;
+    -webkit-line-clamp: unset;
+    white-space: pre-wrap;
+    cursor: pointer;
+}
+
+
+.force-wrap {
+    hyphens: auto;
+    word-wrap: break-word;
+    overflow-wrap: anywhere;
+    /* overflow-wrap: break-word; */
+}
+
+
+
+
+
+
+
+@media (max-width: 767px) {
+    /************************************************************* Radio Group Mobile Style START *************************************************************/
+
+    .radio-container {
+        display: flex;
+        align-items: center;
+    }
+
+    .radio-label {
+        font-size: larger;
+    }
+
+    .radio-control {
+        display: flex;
+        align-items: center;
+    }
+
+    /************************************************************* Radio Group Mobile Style END *************************************************************/
+}
+
+
+
+
+
+@media (min-width: 768px) {}
+
+
+
+
+
+/************************************************************* CUSTOM SCROLLBAR CSS START *************************************************************/
+
+::-webkit-scrollbar {
+    width: 0.5em;
+    height: 5px;
+}
+
+::-webkit-scrollbar:vertical {
+    display: none;
+}
+
+::-webkit-scrollbar-track {
+    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    -ms-border-radius: 10px;
+    -o-border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #D4D4D4;
+    outline: 1px solid #929292;
+    border-radius: 10px;
+    -webkit-border-radius: 10px;
+    -moz-border-radius: 10px;
+    -ms-border-radius: 10px;
+    -o-border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #b30000;
+}
+
+/************************************************************* CUSTOM SCROLLBAR CSS END *************************************************************/
+
+
+
+/************************************************************* MATERIAL CARD CSS START *************************************************************/
+
+.material-card-with-shadow {
+    /* box-shadow#28 */
+    box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;
+    background-color: white;
+    padding: 5px;
+    border-radius: 5px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    -ms-border-radius: 5px;
+    -o-border-radius: 5px;
+}
+
+.material-card-without-shadow {
+    /* box-shadow#27 */
+    box-shadow: rgba(0, 0, 0, 0.12) 0px 1px 3px, rgba(0, 0, 0, 0.24) 0px 1px 2px;
+    background-color: white;
+    padding: 5px;
+    border-radius: 5px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    -ms-border-radius: 5px;
+    -o-border-radius: 5px;
+}
+
+.material-card-with-shadow .no-round-corners,
+.material-card-without-shadow .no-round-corners {
+    border-radius: 0;
+    -webkit-border-radius: 0;
+    -moz-border-radius: 0;
+    -ms-border-radius: 0;
+    -o-border-radius: 0;
+}
+
+/************************************************************* MATERIAL CARD CSS END *************************************************************/
+
+
+
+
+/************************************************************* Calendar Style STARTS *************************************************************/
+.calendar-container {
+    user-select: none;
+}
+
+.calendar-header-container {
+    display: flex;
+    /* flex-direction: row; */
+    justify-content: space-around;
+    align-items: center;
+}
+
+.calendar-month-label,
+.day-label {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: large;
+    font-weight: var(--fontWeightBold);
+    cursor: pointer;
+}
+
+.calendar-week-header {
+    display: flex;
+    /* flex-direction: row; */
+    /* align-content: stretch; */
+    justify-content: space-around;
+    align-items: center;
+    font-weight: var(--fontWeightMedium);
+    flex-wrap: wrap;
+    text-transform: capitalize;
+}
+
+.calendar-week-header div {
+    /* width: 14.28%; */
+    width: calc(100% / 7);
+    padding: 10px;
+    border: var(--borderWidthThinner) solid var(--gray-clr);
+}
+
+.calendar-week-header div span {
+    font-size: larger;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.ellipsis {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    width: 100%;
+    display: block;
+    overflow: hidden;
+}
+
+.calendar-days-container {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    /* flex-direction: row; */
+    justify-content: space-around;
+}
+
+.calendar-day-container {
+    width: 14.28%;
+    width: calc(100% / 7);
+    display: flex;
+    cursor: pointer;
+    overflow: hidden;
+    flex-direction: column;
+    border: var(--borderWidthThinner) solid var(--gray-clr);
+    position: relative;
+}
+
+.calendar-day-date {
+    width: 2em;
+    height: 2em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: medium;
+    font-weight: var(--fontWeightMedium);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    -webkit-transform: translate(-50%, -50%);
+    -moz-transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    -o-transform: translate(-50%, -50%);
+    will-change: transform;
+}
+
+.calendar-day-strip-container {
+    position: absolute;
+    top: -3vw;
+    right: -3vw;
+    width: 6vw;
+    height: 6vw;
+    transform: rotate(-45deg);
+    -webkit-transform: rotate(-45deg);
+    -moz-transform: rotate(-45deg);
+    -ms-transform: rotate(-45deg);
+    -o-transform: rotate(-45deg);
+}
+
+.calendar-disabled-date {
+    cursor: not-allowed;
+    font-weight: var(--fontWeightLight);
+}
+
+.calendar-active-date {
+    transition: background-color 0.3s ease-in-out;
+    -webkit-transition: background-color 0.3s ease-in-out;
+    -moz-transition: background-color 0.3s ease-in-out;
+    -ms-transition: background-color 0.3s ease-in-out;
+    -o-transition: background-color 0.3s ease-in-out;
+}
+
+.calendar-active-date:hover {
+    background-color: var(--light-gray-clr);
+}
+
+.calendar-day-today,
+.calendar-day-selected {
+    font-weight: var(--fontWeightBold);
+    color: var(--white-clr);
+    border-radius: var(--borderRadiusCircle);
+    -webkit-border-radius: var(--borderRadiusCircle);
+    -moz-border-radius: var(--borderRadiusCircle);
+    -ms-border-radius: var(--borderRadiusCircle);
+    -o-border-radius: var(--borderRadiusCircle);
+}
+
+.calendar-day-today {
+    background-color: var(--green-clr) !important;
+}
+
+.calendar-day-selected {
+    background-color: var(--light-blue-clr);
+}
+
+.calendar-nav-button {
+    background-color: #0070d2;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 0 5px;
+}
+
+.calendar-nav-button:hover {
+    background-color: #005fb2;
+}
+
+
+
+@media (max-width: 768px) {
+    .calendar-day-container {
+        height: 12vw;
+    }
+
+    .calendar-day-event-count {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+    }
+
+    .calendar-day-strip-container {
+        position: absolute;
+        top: -3vw;
+        right: -3vw;
+        width: 6vw;
+        height: 6vw;
+        transform: rotate(-45deg);
+        -webkit-transform: rotate(-45deg);
+        -moz-transform: rotate(-45deg);
+        -ms-transform: rotate(-45deg);
+        -o-transform: rotate(-45deg);
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    .calendar-day-container {
+        height: 10vh;
+    }
+
+    .calendar-day-event-count {
+        position: absolute;
+        bottom: 0.2em;
+        right: 0.2em;
+        font-size: medium;
+    }
+}
+
+@media (min-width: 1025px) {
+    .calendar-day-container {
+        height: 10vh;
+    }
+
+    .calendar-day-event-count {
+        position: absolute;
+        bottom: 0.2em;
+        right: 0.2em;
+        font-size: medium;
+    }
+}
+
+.calendar-overlay {
+    position: absolute;
+    top: 0;
+    left: 2.5%;
+    z-index: 9999;
+    margin-top: 0.5rem;
+    width: 95%;
+}
+
+.calendar-close-btn {
+    position: absolute;
+    top: -50px;
+    right: 0.5rem;
+    background: white;
+    border: none;
+    font-size: 3rem;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.calendar-overlay.show {
+    animation: fade-in 0.3s ease-out;
+    -webkit-animation: fade-in 0.3s ease-out;
+}
+
+/************************************************************* Calendar Style ENDS *************************************************************/
+
+
+
+
+
+hr {
+    margin: 15px;
+}
+
+
+.dropdown-in-table-cell {
+    /* td lightning-combobox */
+    z-index: 1;
+    display: block;
+    position: fixed;
+    transform: translateY(-50%);
+    -webkit-transform: translateY(-50%);
+    -moz-transform: translateY(-50%);
+    -ms-transform: translateY(-50%);
+    -o-transform: translateY(-50%);
+}
+
+.dropdown-in-table-cell:hover,
+.dropdown-in-table-cell:active
+
+/* td lightning-combobox:hover,
+td lightning-combobox:active */
+    {
+    z-index: 2;
+}
+
+
+
+
+
+
+
+
+/************************************************************* KeyFrames START *************************************************************/
+@keyframes fade-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slide-in-from-top {
+    0% {
+        opacity: 0;
+        transform: translateY(-100%);
+        -webkit-transform: translateY(-100%);
+        -moz-transform: translateY(-100%);
+        -ms-transform: translateY(-100%);
+        -o-transform: translateY(-100%);
+    }
+
+    33% {
+        opacity: 0.33;
+        transform: translateY(-66%);
+        -webkit-transform: translateY(-66%);
+        -moz-transform: translateY(-66%);
+        -ms-transform: translateY(-66%);
+        -o-transform: translateY(-66%);
+    }
+
+    66% {
+        opacity: 0.66;
+        transform: translateY(-33%);
+        -webkit-transform: translateY(-33%);
+        -moz-transform: translateY(-33%);
+        -ms-transform: translateY(-33%);
+        -o-transform: translateY(-33%);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+        -webkit-transform: translateY(0);
+        -moz-transform: translateY(0);
+        -ms-transform: translateY(0);
+        -o-transform: translateY(0);
+    }
+}
+
+@keyframes slide-in-from-right {
+    0% {
+        opacity: 0;
+        transform: translateX(-100%);
+        -webkit-transform: translateX(-100%);
+        -moz-transform: translateX(-100%);
+        -ms-transform: translateX(-100%);
+        -o-transform: translateX(-100%);
+    }
+
+    33% {
+        opacity: 0.33;
+        transform: translateX(-66%);
+        -webkit-transform: translateX(-66%);
+        -moz-transform: translateX(-66%);
+        -ms-transform: translateX(-66%);
+        -o-transform: translateX(-66%);
+    }
+
+    66% {
+        opacity: 0.66;
+        transform: translateX(-33%);
+        -webkit-transform: translateX(-33%);
+        -moz-transform: translateX(-33%);
+        -ms-transform: translateX(-33%);
+        -o-transform: translateX(-33%);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+        -webkit-transform: translateX(0);
+        -moz-transform: translateX(0);
+        -ms-transform: translateX(0);
+        -o-transform: translateX(0);
+    }
+}
+
+@keyframes slide-in-from-bottom {
+    0% {
+        opacity: 0;
+        transform: translateY(100%);
+        -webkit-transform: translateY(100%);
+        -moz-transform: translateY(100%);
+        -ms-transform: translateY(100%);
+        -o-transform: translateY(100%);
+    }
+
+    33% {
+        opacity: 0.33;
+        transform: translateY(66%);
+        -webkit-transform: translateY(66%);
+        -moz-transform: translateY(66%);
+        -ms-transform: translateY(66%);
+        -o-transform: translateY(66%);
+    }
+
+    66% {
+        opacity: 0.66;
+        transform: translateY(33%);
+        -webkit-transform: translateY(33%);
+        -moz-transform: translateY(33%);
+        -ms-transform: translateY(33%);
+        -o-transform: translateY(33%);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+        -webkit-transform: translateY(0);
+        -moz-transform: translateY(0);
+        -ms-transform: translateY(0);
+        -o-transform: translateY(0);
+    }
+}
+
+@keyframes slide-in-from-top {
+    0% {
+        opacity: 0;
+        transform: translateY(-100%);
+        -webkit-transform: translateY(-100%);
+        -moz-transform: translateY(-100%);
+        -ms-transform: translateY(-100%);
+        -o-transform: translateY(-100%);
+    }
+
+    33% {
+        opacity: 0.33;
+        transform: translateY(-66%);
+        -webkit-transform: translateY(-66%);
+        -moz-transform: translateY(-66%);
+        -ms-transform: translateY(-66%);
+        -o-transform: translateY(-66%);
+    }
+
+    66% {
+        opacity: 0.66;
+        transform: translateY(-33%);
+        -webkit-transform: translateY(-33%);
+        -moz-transform: translateY(-33%);
+        -ms-transform: translateY(-33%);
+        -o-transform: translateY(-33%);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+        -webkit-transform: translateY(0);
+        -moz-transform: translateY(0);
+        -ms-transform: translateY(0);
+        -o-transform: translateY(0);
+    }
+}
+
+/************************************************************* KeyFrames END *************************************************************/

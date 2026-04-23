@@ -1,0 +1,26 @@
+@import 'c/utilCSS';
+
+
+
+
+
+
+
+@media(max-width: 768px) {
+
+	.search-container {
+		position: sticky;
+		top: 0;
+		z-index: 2;
+		background-color: white;
+	}
+
+	.accordion .accordion-item .accordion-item-header {
+		position: sticky;
+		top: 0;
+		z-index: 3;
+		background-color: white;
+	}
+
+
+}

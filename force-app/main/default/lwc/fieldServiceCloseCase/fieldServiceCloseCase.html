@@ -1,0 +1,73 @@
+<template>
+
+    <template if:true={showSpinner}>
+        <lightning-spinner alternative-text="Loading" variant="brand" size="medium"></lightning-spinner>
+    </template>
+
+    <div class="container-max-width">
+
+        <lightning-card variant="narrow" label="Close Case" hide-header>
+
+            <lightning-layout multiple-rows>
+                <lightning-layout-item size="12" small-device-size="12" medium-device-size="4" large-device-size="4" class="slds-var-p-horizontal_x-small slds-var-p-top_large">
+                    <div class="slds-text-heading_small">
+                        <a onclick={handleActivityChecklistClick} data-name="checklists">Checklists</a>
+                    </div>
+                    <div>Total - {caseChecklistAnalysis.total}</div>
+                    <div>Ok - {caseChecklistAnalysis.markedYes}</div>
+                    <div>Not Ok - {caseChecklistAnalysis.markedNo}</div>
+                    <div>Not Applicable - {caseChecklistAnalysis.markedNA}</div>
+                    <div>Blank - {caseChecklistAnalysis.blank}</div>
+                </lightning-layout-item>
+
+
+                <!--
+                <lightning-layout-item size="12" small-device-size="12" medium-device-size="4" large-device-size="4" class="slds-var-p-horizontal_x-small slds-var-p-top_large">
+                    <div class="slds-text-heading_small">
+                        <a onclick={handleOpenReport} data-name="activities">Activities Logged</a>
+                    </div>
+                    <div>Total - {countOfActivities}</div>
+                </lightning-layout-item>
+                -->
+
+
+                <lightning-layout-item size="12" small-device-size="12" medium-device-size="4" large-device-size="4" class="slds-var-p-horizontal_x-small slds-var-p-top_large">
+                    <div class="slds-text-heading_small">
+                        <a onclick={handleOpenReport} data-name="spareRequests">Spare Request(s) Raised</a>
+                    </div>
+                    <div>Total - {caseSpareRequestAnalysis.total}</div>
+                    <div>FOC & Returnable: {caseSpareRequestAnalysis.focReturnable}</div>
+                    <div>FOC & Non-Returnable: {caseSpareRequestAnalysis.focNonReturnable}</div>
+                    <div>Chargeable: {caseSpareRequestAnalysis.chargeable}</div>
+                </lightning-layout-item>
+
+
+                <lightning-layout-item size="12" small-device-size="12" medium-device-size="4" large-device-size="4" class="slds-var-p-horizontal_x-small slds-var-p-top_large">
+                    <div class="slds-text-heading_small">
+                        <a onclick={handleOpenReport} data-name="serviceRequests">Service Request(s) Raised</a>
+                    </div>
+                    <div>Total - {serviceRequestCount}</div>
+                </lightning-layout-item>
+
+
+                <lightning-layout-item size="12" small-device-size="12" medium-device-size="3" large-device-size="3" class="slds-var-p-horizontal_x-small slds-var-p-vertical_large">
+                    <lightning-combobox name="Reason" class="close-case-reason" label="Case Closure Reason" value={reason} options={reasonOptions} placeholder="Select Reason"
+                        onchange={handleReasonChange} required></lightning-combobox>
+                </lightning-layout-item>
+
+                <lightning-layout-item size="12" small-device-size="12" medium-device-size="9" large-device-size="9" class="slds-var-p-horizontal_x-small slds-var-p-vertical_large">
+                    <lightning-textarea name="Comment" class="close-case-comment" value={comment} label="Case Closure Comment" onchange={handleCommentChange} required></lightning-textarea>
+                </lightning-layout-item>
+
+
+                <lightning-layout-item size="12" class="slds-var-p-horizontal_x-small slds-var-p-vertical_large slds-text-align_center">
+                    <lightning-button label="Close Case" variant="brand" onclick={handleCloseCase}></lightning-button>
+                </lightning-layout-item>
+
+            </lightning-layout>
+
+        </lightning-card>
+
+    </div>
+
+</template>

@@ -1,0 +1,572 @@
+<apex:page standardStylesheets="false" applyHtmlTag="false" applyBodyTag="false" showHeader="false" controller="ServiceReportPdfController" renderAs="pdf">
+    <!-- <apex:stylesheet value="{!$Resource.ServiceReportFooter}" />
+<c:PDFHeaderFooter type="footer" position="right" showPageNumbers="true" /> -->
+    
+    <head>
+        <style>
+            @page {
+            padding-top: 70px;
+            margin-bottom:70px;
+            
+            @top-center {
+            content: element(header);
+            }
+            @bottom-right {
+            content: element(footer);
+            }
+            }
+            
+            div.header {
+            padding: 10px;
+            display: block;
+            position: running(header);
+            }
+            div.footer {
+            width: 98%;
+            padding: 5px;
+            display: block;
+            text-align: right;
+            position: running(footer);
+            }
+            .pagenumber:before {
+            content: counter(page);
+            }
+            .pagecount:before {
+            content: counter(pages);
+            }
+            
+            body {
+            padding-top: 20px;
+            }
+            
+            
+            .pdf-table-input{
+            width: 100%;
+            border: 1px solid #000;
+            border-top: 1px solid #000;;
+            border-bottom: 1px solid #000;;
+            }
+            .table-container {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 14px;
+            }
+            .table-container td {
+            border: 1px solid #000;
+            padding: 8px;
+            }
+            .table-container td.label {
+            font-weight: bold;
+            text-align: right;
+            }
+            /* General styling for text alignment and table borders */
+            .main-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 9px;
+            }
+            .main-table td {
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: center;
+            }
+            .maintenance-schedule {
+            text-align: center;
+            font-weight: bold;
+            margin-top: 10px;
+            }
+            .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            }
+            .schedule-table td {
+            border: 1px solid #000;
+            padding: 5px;
+            text-align: center;
+            }
+            .signature-section {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            }
+            .signature-box {
+            width: 48%;
+            border: 1px solid black;
+            padding: 10px;
+            text-align: left;
+            }
+            .signature-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            }
+            table {
+            width: 100%;
+            border-collapse: collapse;
+            }
+            td, th {
+            /* border: 1px solid black; */
+            padding: 5px;
+            text-align: center;
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            vertical-align: middle;
+            }
+            th {
+            font-weight: bold;
+            background-color: #f2f2f2;
+            }
+            .header-cell {
+            text-align: left;
+            font-weight: bold;
+            padding: 3px 5px;
+            margin-top:9px !important;
+            }
+            .title-row td {
+            font-weight: bold;
+            text-align: left;
+            }
+        </style>
+    </head>
+    <body>
+        <apex:outputPanel rendered="{!isPreview}">
+            <img src="{!URLFOR($Resource.Watermark)}" width="100%" height="100%" style="position: fixed;background-repeat:repeat;left: 0cm; top:0cm; z-index:0"
+                 />
+        </apex:outputPanel>
+        <!-- <apex:outputText value="{0,date,dd MMM yyyy}">
+<apex:param value="{!serviceAppointments.Check_In_Date_Time__c}"/>
+</apex:outputText> -->
+        <!-- <apex:outputText value="{0,date,dd MMM yyyy}">
+<apex:param value="{!today}"/>
+</apex:outputText> -->
+        <!-- Header Section -->
+        
+        <div class="header">
+            <table style=" width:100%;border:none;margin-top:10px; border-collapse: collapse; ">
+                <tr>
+                    <td style="padding-left:90px;border-collapse:collapse;text-align:center;">
+                        <strong style="width:100%; font-size:15px; font-family:Times New Roman;"><i>Nilkamal Limited</i></strong>
+                        <strong>
+                            <p style="margin:0px;font-size:10px;">SERVICE DIVISION</p>
+                        </strong>
+                    </td>
+                    <td style="padding:5px 5px;font-size:16px;border-collapse: collapse;width:10%;">
+                        <img style="width:100px;height:50px" alt="logo" src="{!$Resource.NilkamalLogo}"/>
+                    </td>
+                </tr>
+                <h6 style="font-family : Microsoft Sans Serif; text-align:center; font-size: 10px;margin:0px;padding:0px;">Regd. / Administrative Office : Nilkamal Houce, Plot No. 77/78, Street No.14, M.I.D.C., Andheri (E) , Mumbai - 93.
+                    <br/>Tel: (022) 4235 8825 Mobile : 80077 73280 Fax : 98230 38284 E-mail : mhe.services@nilkamal.com
+                </h6>
+            </table>
+        </div>
+        
+        <div class="footer">
+            <div>Page <span class="pagenumber"/> of <span class="pagecount"/></div>
+        </div>
+        
+        <table style="width: 100%;border-collapse: collapse; margin-bottom: 10px;padding:10%;">
+            <tr>
+                <td style="text-align: left; width: 33%; font-size: 12px;">No. {!record.Name}</td>
+                <td style="text-align: center; width: 34%; font-size: 12px;">SERVICE REPORT</td>
+                <td style="width: 33%; font-size: 12px;text-align: right;">
+                    Date :
+                    <apex:outputText value="{0,date,dd MMM yyyy}">
+                        <apex:param value="{!today}"/>
+                    </apex:outputText>
+                </td>
+            </tr>
+        </table>
+        <!-- HA change -->
+        <table style="width: 100%; font-size: 12px; border-collapse: collapse; margin: 20px 0">
+            <tr>
+                <td style="border: 1px solid #000; padding: 8px;"><b>Customer Name </b></td>
+                <td colspan="3" style="border: 1px solid #000; padding: 8px;">{!record.Case__r.Account.Name}</td>
+                <td style="border: 1px solid #000; padding: 8px;"><b>Party Code </b></td>
+                <td style="border: 1px solid #000; padding: 8px;">{!record.Case__r.Account.SAP_Customer_code__c}</td>
+            </tr>
+            <tr>
+                <td style="border: 1px solid #000;padding: 8px;"><b>Customer Address </b></td>
+                <td colspan="5" style="border: 1px solid #000;padding: 8px;"> {!record.case__r.Asset.Ship_to_Address__c},{!record.case__r.Asset.Ship_to_City__c},{!record.case__r.Asset.Ship_to_Pin__c},{!record.case__r.Asset.Ship_to_Country__c}
+                </td>
+            </tr>
+            <tr>
+                <td style="border: 1px solid #000; padding: 8px;"><b>Contact Person </b></td>
+                <td colspan="2" style="border: 1px solid #000; padding: 8px;">{!record.Case__r.Contact.Name}</td>
+                <td style="border: 1px solid #000; padding: 8px;"><b>Tel/Mobile No. </b></td>
+                <td colspan="2" style="border: 1px solid #000; padding: 8px;">{!record.Case__r.ContactMobile}</td>
+            </tr>
+            <tr>
+                <td style="border: 1px solid #000; padding: 8px;"><b>NKL Model No. </b></td>
+                <td colspan="2" style="border: 1px solid #000; padding: 8px;">{!record.Product__r.ProductCode}</td>
+                <td style="border: 1px solid #000; padding: 8px;"><b>NKL Sr. No. </b></td>
+                <td colspan="2" style="border: 1px solid #000; padding: 8px;">{!record.Case__r.Asset.SerialNumber}</td>
+            </tr>
+            <tr>
+                <td style="border: 1px solid #000; padding: 8px;"><b>OEM Model No. </b></td>
+                <td colspan="2" style="border: 1px solid #000; padding: 8px;">{!record.Product__r.OEM_Material_Code__c}</td>
+                <td style="border: 1px solid #000; padding: 8px;"><b>OEM Sr. No. </b></td>
+                <td colspan="2" style="border: 1px solid #000; padding: 8px;">{!record.Case__r.Asset.OEM_Serial_Number__c}</td>
+            </tr>
+            <tr>
+                <td style="border: 1px solid #000; padding: 8px;"><b>Product </b></td>
+                <td colspan="2" style="border: 1px solid #000; padding: 8px;">{!record.Product__r.ProductCode}</td>
+                <td style="border: 1px solid #000; padding: 8px;"><b>Hour Meter </b></td>
+                <td colspan="2" style="border: 1px solid #000; padding: 8px;">{!record.Hour_Meter__c}</td>
+            </tr>
+            <!-- <tr>
+<td style="border: 1px solid #000; padding: 8px;">Type of Service :</td>
+<td colspan="2" style="border: 1px solid #000; padding: 8px;"></td>
+<td colspan="1" style="border: 1px solid #000; padding: 8px;">Complaint Details :</td>
+<td colspan="2" style="border: 1px solid #000; padding: 8px;"></td>
+</tr> -->
+            <!-- </table> -->
+            <!-- HA change End-->
+            <!-- <table class="table-container" style=" width: 100%;border-collapse: collapse;margin: 20px 0; margin-top:-20px;font-size: 12px;"> -->
+            <tr>
+                <td class="label" style="border: 1px solid #000;padding: 8px;width:20%;"><b>Type of Service </b></td>
+                <td colspan="5" style="border: 1px solid #000;padding: 8px;width:85%;"> {!record.Case__r.Case_Sub_Type__c}</td>
+            </tr>
+            <!-- </table> -->
+            
+            <!-- <table class="table-container" style=" width: 100%;border-collapse: collapse;margin: 20px 0; margin-top:-20px;font-size: 12px;"> -->
+            <tr>
+                <td class="label" style="border: 1px solid #000;padding: 8px;border-right: 1px solid #000;width:20%;"><b>Complaint Details </b></td>
+                <td colspan="5" style="border: 1px solid #000;padding: 8px;">{!record.Case__r.Description}</td>
+            </tr>
+            <!-- </table> -->
+        </table>
+        <!-- <table class="table-container" style=" width: 100%;border-collapse: collapse;margin: 20px 0; margin-top:-20px;font-size: 12px;">
+<td class="label" style="border: 1px solid #000;padding: 8px;border-right: 1px solid #000;"></td>
+</table> -->
+        <!--<table class="table-container" style=" width: 100%;border-collapse: collapse;margin: 20px 0; margin-top:-20px;font-size: 9px;">
+<td class="label" style="border: 1px solid #000;padding: 8px;border-right: 1px solid #000;">Root Cause Analysis : {!record.Root_Cause_Analysis__c}</td>
+</table>	-->
+        <apex:outputPanel rendered="{!sroList.size > 0}">
+            <!-- <div style="margin: 5px 0"> -->
+            <table class="table-container" style="width: 100%; border-collapse: collapse; font-size: 12px; margin: 5px 0px; border: 1px solid #000">
+                <thead class="label" style="border: 1px solid #000;">
+                    <tr style="page-break-inside:avoid">
+                        <td style="border: 1px solid #000; padding: 8px; font-weight: bold;">Cause</td>
+                        <td style="border: 1px solid #000; padding: 8px; font-weight: bold;">Sub Cause</td>
+                        <td style="border: 1px solid #000; padding: 8px; font-weight: bold;">Actual Observation by Engineer</td>
+                        <td style="border: 1px solid #000; padding: 8px; font-weight: bold;">Correction</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <apex:repeat value="{!sroList}" var="rca">
+                        <tr style="page-break-inside:avoid">
+                            <td style="border: 1px solid #000; padding: 8px;">{!rca.Cause__c}</td>
+                            <td style="border: 1px solid #000; padding: 8px;">{!rca.Sub_Cause__c}</td>
+                            <td style="border: 1px solid #000; padding: 8px;">{!rca.Actual_Observation_by_Engineer__c}</td>
+                            <td style="border: 1px solid #000; padding: 8px;">{!rca.Correction__c}</td>
+                        </tr>
+                    </apex:repeat>
+                </tbody>
+            </table>
+            <!-- </div> -->
+        </apex:outputPanel>
+        <!-- <table class="table-container" style=" width: 100%;border-collapse: collapse;margin: 20px 0; margin-top:-20px;font-size: 12px;">
+<td class="label" style="border: 1px solid #000;padding: 8px;border-right: 1px solid #000;"><b>Action Taken :</b> {!record.Action_Taken__c}</td>
+</table> -->
+        <apex:outputPanel rendered="{!spareRequests.size > 0}">
+            <!-- <div style="margin: 5px 0"> -->
+            <table class="table-container" style="width: 100%; border-collapse: collapse; font-size: 12px; margin: 5px 0px; border: 1px solid #000">
+                <tr style="page-break-inside:avoid">
+                    <th style="border: 1px solid black;padding: 8px;text-align: center;">Fig No.</th>
+                    <th style="border: 1px solid black;padding: 8px;text-align: center;">Part No.</th>
+                    <th style="border: 1px solid black;padding: 8px;text-align: center;">Description</th>
+                    <th style="border: 1px solid black;padding: 8px;text-align: center;">Qty</th>
+                    <!--th style="border: 1px solid black;padding: 8px;text-align: center;">Fig No.</th>
+<th style="border: 1px solid black;padding: 8px;text-align: center;">Part No.</th>
+<th style="border: 1px solid black;padding: 8px;text-align: center;">Description</th>
+<th style="border: 1px solid black;padding: 8px;text-align: center;">Qnty.</th>-->
+                </tr>
+                <apex:variable var="rowNo" value="{!0}" />
+                <apex:repeat value="{!spareRequests}" var="spareRequest">
+                    <tr style="page-break-inside:avoid">
+                        <td style="border: 1px solid black;padding: 8px;text-align: left;">
+                            <apex:variable var="rowNo" value="{!rowNo + 1}" />
+                            {!rowNo}
+                        </td>
+                        <td style="border: 1px solid black;padding: 8px;text-align: left;">{!spareRequest.Name}</td>
+                        <td style="border: 1px solid black;padding: 8px;text-align: left;">{!spareRequest.Item_Description__c}</td>
+                        <td style="border: 1px solid black;padding: 8px;text-align: left;">{!spareRequest.Quantity_Required__c}</td>
+                        <!-- <td style="border: 1px solid black;padding: 8px;text-align: left;">Flg no2</td>
+<td style="border: 1px solid black;padding: 8px;text-align: left;">Part No2</td>
+<td style="border: 1px solid black;padding: 8px;text-align: left;">Test Description2</td>
+<td style="border: 1px solid black;padding: 8px;text-align: left;">Test Qty2</td> -->
+                    </tr>
+                </apex:repeat>
+            </table>
+            <!-- </div> -->
+        </apex:outputPanel>
+        <!-- <div style="page-break-inside:avoid;">
+<table class="table-container" style=" width: 100%;border-collapse: collapse;margin: 20px 0; margin-top:-20px;font-size: 12px;">
+<td class="label" style="border: 1px solid #000;padding: 8px;border-right: 1px solid #000; text-align:center">E-mail : mhe.services@nilkamal.com / Toll Free No.: 8007773280</td>
+</table>
+</div> -->
+        <div>
+            <table style="width: 100%; border-collapse: collapse; margin-bottom:10px">
+                <tr>
+                    <!-- Left Column -->
+                    <td style="width: 48%; vertical-align: top; font-size: 12px; padding-right: 10px;">
+                        <apex:repeat value="{!col1}" var="categoryList">
+                            <table class="report-table" style="border-collapse: collapse;width: 100%;-fs-table-paginate: paginate; border-spacing: 0">
+                                <thead style="border-collapse: collapse;border-spacing: 0;">
+                                    <tr>
+                                        <th colspan="2">
+                                            <div class="section-title" style="font-weight: bold; margin-bottom:5px;">
+                                                {!categoryList[0].Checklist_Category__c}:
+                                            </div>
+                                        </th>
+                                    </tr>
+                                    <tr style="border-collapse: collapse;">
+                                        <th style="border: 0.5px solid black; padding: 4px; text-align: left; width: 80%;">
+                                            Check Point
+                                        </th>
+                                        <th style="border: 0.5px solid black; padding: 4px; text-align: left; width: 20%;">
+                                            Observation
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <apex:repeat value="{!categoryList}" var="checklist">
+                                    <tbody style="border-collapse: collapse;">
+                                        <tr style="page-break-inside: avoid;">
+                                            <td style="border: 0.5px solid black; padding: 8px; text-align: left;">
+                                                {!checklist.Check_Point__c}
+                                            </td>
+                                            <td style="border: 0.5px solid black; padding: 8px; text-align: left;">
+                                                {!checklist.Observation__c}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </apex:repeat>
+                            </table>
+                            <br/>
+                        </apex:repeat>
+                    </td>
+                    <!-- Right Column -->
+                    <td style="width: 48%; vertical-align: top; font-size: 12px;">
+                        <apex:repeat value="{!col2}" var="categoryList">
+                            <table class="report-table" style="border-collapse: collapse;width: 100%;-fs-table-paginate: paginate; border-spacing: 0">
+                                <thead style="border-collapse: collapse;">
+                                    <tr>
+                                        <th colspan="2">
+                                            <div class="section-title" style="font-weight: bold; margin-bottom:5px;">
+                                                {!categoryList[0].Checklist_Category__c}:
+                                            </div>
+                                        </th>
+                                    </tr>
+                                    <tr style="border-collapse: collapse;">
+                                        <th style="border: 0.5px solid black; padding: 4px; text-align: left; width: 80%;">
+                                            Check Point
+                                        </th>
+                                        <th style="border: 0.5px solid black; padding: 4px; text-align: left; width: 20%;">
+                                            Observation
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <apex:repeat value="{!categoryList}" var="checklist">
+                                    <tbody style="border-collapse: collapse;">
+                                        <tr style="page-break-inside: avoid;">
+                                            <td style="border: 0.5px solid black; padding: 8px; text-align: left;">
+                                                {!checklist.Check_Point__c}
+                                            </td>
+                                            <td style="border: 0.5px solid black; padding: 8px; text-align: left;">
+                                                {!checklist.Observation__c}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </apex:repeat>
+                            </table>
+                            <br/>
+                        </apex:repeat>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div style="page-break-inside:avoid;">
+            <table class="table-container" style=" width: 100%;border-collapse: collapse;margin: 20px 0;font-size: 12px;">
+                <td style="border: 1px solid #000;padding: 8px;border: 1px solid #000; text-align: left"><b>Customer's Remarks: </b>{!record.Customer_Remark__c}</td>
+            </table>
+            <table class="table-container" style=" width: 100%;border-collapse: collapse;margin: 20px 0; margin-top:-20px;font-size: 12px;">
+                <td style="border: 1px solid #000;padding: 8px;border: 1px solid #000; text-align: left"><b>Engineer's Remarks: </b>{!record.SR_Remark__c}</td>
+            </table>
+        </div>
+        <div style="page-break-inside:avoid;">
+            <table class="table-container" style=" width: 100%;border-collapse: collapse;margin: 20px 0; margin-top:-20px;font-size: 12px;">
+                <tr>
+                    <td style="border: 1px solid #000; padding: 8px;"><b>Service Rating </b></td>
+                    <td style="border: 1px solid #000; padding: 8px;">
+                        <apex:outputText rendered="{!record.isAverageFeedback__c}">Average</apex:outputText>
+                        <apex:outputText rendered="{!record.isGoodFeedback__c}">Good</apex:outputText>
+                        <apex:outputText rendered="{!record.isVeryGoodFeedback__c}">Very Good</apex:outputText>
+                        <apex:outputText rendered="{!record.isExcellentFeedback__c}">Excellent</apex:outputText>
+                    </td>
+                    <td style="border: 1px solid #000; padding: 8px;"><b>Completion of Service From</b></td>
+                    <td style="border: 1px solid #000; padding: 8px;">{!serviceCheckInDate}</td>
+                    <td style="border: 1px solid #000; padding: 8px;"><b>TO</b></td>
+                    <td style="border: 1px solid #000; padding: 8px;">{!serviceCheckOutDate}</td>
+                </tr>
+                <tr>
+                    <!-- <td style="border: 1px solid #000; padding: 8px;"><b>Complaint Status</b></td> -->
+                    <!-- <td colspan="2" style="border: 1px solid #000; padding: 8px;"></td> -->
+                    <td colspan="1" style="border: 1px solid #000; padding: 8px;"><b>Next Visit Proposed Date </b></td>
+                    <td colspan="5" style="border: 1px solid #000; padding: 8px;">
+                        <apex:outputText value="{0,date,dd MMM yyyy}">
+                            <apex:param value="{!record.Next_Visit_Proposed_Date__c}" />
+                        </apex:outputText>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="label" style="border: 1px solid #000;padding: 8px;border: 1px solid #000;"><b>Customer Email ID </b></td>
+                    <td style="border-bottom: 1px solid #000;"> {!record.Case__r.ContactEmail}</td>
+                    <td class="label" style="border: 1px solid #000;padding: 8px;border: 1px solid #000;border-left: 1px solid #000;">Engg. In Time </td>
+                    <td style="border-bottom: 1px solid #000; padding: 8px; border-left: 1px solid #000;">
+                        {!serviceCheckIn}
+                    </td>
+                    <td class="label"  style="border-bottom: 1px solid #000;padding: 8px; border-top: 1px solid #000;border-left: 1px solid #000;">Engg. Out Time </td>
+                    <td style="border: 1px solid #000; padding: 8px; border-bottom: 1px solid #000; border-left: 1px solid #000;">
+                        {!serviceCheckOut}
+                    </td>
+                </tr>
+            </table>
+        </div>
+        
+        <!-- <div style="page-break-inside:avoid;">
+<table class="table-container" style=" width: 100%;border-collapse: collapse;margin: 20px 0; margin-top:-20px;font-size: 12px;">
+<tr>
+<td class="label" style="border: 1px solid #000;padding: 8px;"><b>Service Rating :</b></td>
+<td style="border: 1px solid #000;padding: 8px;">AQWER123456</td>
+<td class="label" style="border: 1px solid #000;padding: 8px;">Average</td>
+<td style="border: 1px solid #000;padding: 8px;">
+<apex:outputField value="{!record.isAverageFeedback__c}"/>
+</td>
+<td class="label" style="border: 1px solid #000;padding: 8px;">Good</td>
+<td style="border: 1px solid #000;padding: 8px;">
+<apex:outputField value="{!record.isGoodFeedback__c}"/>
+</td>
+<td class="label" style="border: 1px solid #000;padding: 8px;">Very Good</td>
+<td style="border: 1px solid #000;padding: 8px;">
+<apex:outputField value="{!record.isVeryGoodFeedback__c}"/>
+</td>
+<td class="label" style="border: 1px solid #000;padding: 8px;">Excellent</td>
+<td style="border: 1px solid #000;padding: 8px;">
+<apex:outputField value="{!record.isExcellentFeedback__c}"/>
+</td>
+</tr>
+<tr>
+<td class="label" style="border: 1px solid #000;padding: 8px;border-right: 1px solid #000;">Customer Email ID :</td>
+<td colspan="2" style="border-bottom: 1px solid #000;"> {!record.Case__r.ContactEmail}</td>
+<td class="label" style="border: 1px solid #000;padding: 8px;border-right: 1px solid #000;border-left: 1px solid #000;">Engg. In Time :</td>
+<td colspan="2" style="border-bottom: 1px solid #000; padding: 8px; border-left: 1px solid #000;">
+{!serviceCheckIn}
+</td>
+<td class="label"  style="border-bottom: 1px solid #000;padding: 8px; border-top: 1px solid #000;border-left: 1px solid #000;">Engg. Out Time :</td>
+<td colspan="2" style="border-right: 1px solid #000; padding: 8px; border-bottom: 1px solid #000; border-left: 1px solid #000;">{!serviceCheckOut}
+</td>
+</tr>
+</table>
+</div> -->
+        <div style="page-break-inside:avoid;">
+            <table class="table-container" style=" width: 100%;border-collapse: collapse;margin: 20px 0; margin-top:-20px;font-size: 12px;">
+                <td class="label" style="border: 1px solid #000;padding: 8px;border-right: 1px solid #000; text-align:center">E-mail : mhe.services@nilkamal.com / Toll Free No.: 8007773280</td>
+            </table>
+        </div>
+        <!-- <div style="page-break-inside:avoid;"> -->
+        <table class="table-container" style="page-break-inside:avoid;width: 100%;border-collapse: collapse;margin: 20px 0;margin-top:-20px;font-size: 12px;">
+            <tr>
+                <!-- <td class="label" style="border: 1px solid #000;padding: 8px; width:40%">
+<p style="text-align:center;">Customer's Acceptance </p>
+<p style="text-align:left;line-height:1;border:1px solid #000;padding:0px;">Name : {!record.Case__r.Contact.Name}</p>
+<p style="text-align:left;line-height:1;">Designation : {!record.Customer_Designation__c}</p>
+<p style="text-align:left;line-height:1;">Mobile No : {!record.Case__r.ContactMobile} </p>
+<p style="text-align:left;line-height:1;">Sign : {!record.Signature_by__c}</p>
+<apex:outputText value="{!record.Signature__c}" escape="false" />
+</td> -->
+                <td class="label" style="border: 1px solid #000; padding: 8px; width: 40%;">
+                    <div style="line-height: 1; margin: 0; padding: 0;">
+                        <p style="text-align:center; margin-top: 5px; padding: 2px;">Customer's Acceptance</p>
+                        <p style="text-align:left; margin: 0; padding: 2px;">Name : {!record.Signature_by__c}</p>
+                        <p style="text-align:left; margin: 0; padding: 2px;">Designation : {!record.Customer_Designation__c}</p>
+                        <p style="text-align:left; margin: 0; padding: 2px;">Mobile No : {!record.Customer_Contact_Number__c}</p>
+                        <p style="text-align:left; margin: 0; padding: 2px;">Email : {!record.Customer_Email__c}</p>
+                        <p style="text-align:left; margin: 0; padding: 2px;">Sign :</p>
+                        <apex:outputText value="{!record.Signature__c}" escape="false" />
+                    </div>
+                </td>
+                
+                <td class="label" style="border: 1px solid #000;padding: 0px; width:60%">
+                    <!-- <p style="text-align:left; border-bottom: 1px solid black;padding:2px;">Completion of Service From : {!serviceCheckInDate} To {!serviceCheckOutDate}
+</p> -->
+                    <!-- <p style="text-align:left; padding: 2px;">Service Charges in Rs. : {!serviceRequestTotal}</p> -->
+                    <table class="report-table" style="width: 100%;border-collapse: collapse;">
+                        <tr>
+                            <th style="border: 1px solid black;padding: 4px;text-align: left;width:33%; border-left:none;">Service Engineer Name</th>
+                            <th style="border: 1px solid black;padding: 4px;text-align: left;width:33%;border-right:none;">Mobile No</th>
+                            <th style="border: 1px solid black;padding: 4px;text-align: left; width:33%">Email Id</th>
+                        </tr>
+                        <tr>
+                            <td style="border: 1px solid black;padding: 20px;text-align: left; border-left:none;">{!record.case__r.Owner.Name}</td>
+                            <!-- <td style="border: 1px solid black;padding: 20px;text-align: left;">
+<apex:outputText value="{!record.Signature__c}" escape="false" />
+<apex:outputText value="{!serviceResource.Signature__c}" escape="false" />
+</td> -->
+                            <td style="border: 1px solid black;padding: 20px;text-align: left;border-right:none;">{!record.case__r.Owner.Phone}</td>
+                            <td style="border: 1px solid black;padding: 20px;text-align: left;border-right:none;">{!record.case__r.Owner.Email}</td>
+                            <!-- <p style="text-align:center;border-bottom: 1px solid black;padding-bottom:5px;">Head Office Service Department</p>
+<p style="text-align:left;border-bottom: 1px solid black; padding:5px;">Quotation No.,Date &nbsp; Amount :</p>
+<p style="text-align:left;padding:5px;margin:0px;">Service Invoice No., Date &nbsp; Amount :</p> -->
+                        </tr>
+                        <apex:outputText rendered="{!NOT(ISNULL(additionalResourceServiceAppointments))}">
+                            <apex:repeat value="{!additionalResourceServiceAppointments}" var="additionalResource">
+                                <tr>
+                                    <td style="border: 1px solid black;padding: 20px;text-align: left; border-left:none;">{!additionalResource.Owner.Name}</td>
+                                    <td style="border: 1px solid black;padding: 20px;text-align: left;border-right:none;">{!additionalResource.Owner.Phone}</td>
+                                    <td style="border: 1px solid black;padding: 20px;text-align: left;border-right:none;">{!additionalResource.Owner.Email}</td>
+                                </tr>
+                            </apex:repeat>
+                        </apex:outputText>
+                    </table>
+                </td>
+            </tr>
+        </table>
+        <!-- </div> -->
+        <!--last Table-->
+        <div style="page-break-inside:avoid;">
+            <table class="table-container"
+                   style=" width: 100%;border-collapse: collapse;margin: 10px 0; margin-top:-20px;font-size: 12px;">
+                <tr>
+                    <td class="label" style="border: 1px solid #000;margin: 0px;padding: 0; width:45%">
+                        <!-- <p style="text-align:center; border-bottom: 1px solid black;padding:2px;margin:0px">Regional Office Comments </p>
+<p style="padding: 5px;margin: 0px; text-align: left; border-bottom: 1px solid black;">Payment Status :</p> -->
+                                    Date :
+                                    <apex:outputText value="{0,date,dd MMM yyyy}">
+                                        <apex:param value="{!record.SR_End_Date__c}"/>
+                                    </apex:outputText>
+                                </td>
+                                <td style="padding: 0 0 10px 0;">
+                                    Sign :{!record.Signature_by__c}
+                                    <!-- <apex:outputText value="{!record.Signature__c}" escape="false" /> -->
+                                </td>
+                    <!-- <td class="label" style="border: 1px solid #000;padding: 0px; width:55%">
+<table style="display: flex; width:100%;justify-content: space-between;height:30px">
+<tr>
+<td style="height:50px; padding: 0 0 10px 0;">
+Date :
+<apex:outputText value="{0,date,dd MMM yyyy}">
+<apex:param value="{!record.SR_End_Date__c}"/>
+</apex:outputText>
+</td>
+<td style="padding: 0 0 10px 0;"> Sign :{!record.Signature_by__c}</td>
+</tr>
+</table>
+</td> -->
+                </tr>
+            </table>
+        </div>
+        
+    </body>
+</apex:page>

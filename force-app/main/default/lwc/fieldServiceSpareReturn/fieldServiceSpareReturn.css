@@ -1,0 +1,266 @@
+@import 'c/utilCSS';
+
+
+
+
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+
+.row {
+    display: flex;
+    user-select: none;
+    pointer-events: none;
+    touch-action: none;
+}
+
+/* Sticky Search Bar */
+.searchinput {
+    width: 100%;
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 10;
+    padding: 10px;
+
+}
+
+
+.glider .image-container {
+    text-align: center;
+    margin: auto;
+}
+
+.glider img {
+    max-height: 50vh;
+    border: 0.1px solid gray;
+    padding: 5px;
+    border-radius: 5px;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    -ms-border-radius: 5px;
+    -o-border-radius: 5px;
+}
+
+
+.thumbnail {
+    width: 50px;
+    height: 50px;
+}
+
+/* Label Adjustments */
+.label {
+    width: 10%;
+    ;
+
+}
+
+.input {
+    width: 20%;
+    color: #01060ae8;
+    font-size: 0.875rem;
+}
+
+/* Responsive Styles */
+@media only screen and (max-width: 480px) {
+    .container {
+        gap: 5px;
+        /* Reduced gap between rows */
+        padding: 5px;
+        /* Reduced padding */
+    }
+
+    .row {
+        margin-bottom: -9px;
+        /* Reduced margin between rows */
+        align-items: baseline;
+        margin: inherit;
+    }
+
+    .label {
+        width: 40%;
+
+    }
+
+    .input {
+        width: 60%;
+    }
+
+    .searchinput {
+        width: 100%;
+        position: sticky;
+        top: 0;
+        background: white;
+        z-index: 1000;
+        padding: 10px;
+
+    }
+
+    .thumbnail {
+        width: 50px;
+        height: 50px;
+
+
+    }
+
+    /* Improved Spacing for Product Items */
+    .spare-part {
+        margin-bottom: 1rem;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background: #f9f9f9;
+        /* Light background for better visibility */
+    }
+
+    /* .product-image-container {
+        height: 100px;
+        width: 100px;
+    }*/
+
+    .slds-box p {
+        font-size: 0.875rem;
+    }
+
+    body {
+        overscroll-behavior: none;
+        touch-action: manipulation;
+        /* Prevents unintended gestures */
+    }
+
+    /* Extra Fix: Prevents accidental scrolling on mobile */
+    html,
+    body {
+        touch-action: manipulation;
+    }
+
+    .quantity-field {
+        margin-top: 10px;
+        /* Space between price and quantity */
+        width: auto;
+        /* Adjust width as per your design */
+    }
+
+
+    .spare-part-fixed {
+        position: relative;
+        /* Ensures absolute positioning works within this div */
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+    }
+
+
+    .checkbox-container {
+        position: absolute;
+        top: 10px;
+        /* Adjust as needed */
+        right: 10px;
+        /* Adjust as needed */
+    }
+
+    .product-details {
+        display: flex;
+        flex-direction: column;
+        /* Stack items vertically */
+        flex-wrap: wrap;
+        /* Allow wrapping if necessary */
+        word-wrap: break-word;
+        /* Ensure long words wrap */
+        overflow-wrap: break-word;
+        /* Ensures proper text breaking */
+        /*max-width: 85%;  Ensure it does not overflow */
+    }
+
+}
+
+.slds-carousel__image {
+    max-width: 100%;
+    height: auto;
+    object-fit: cover;
+}
+
+.custom-carousel {
+    position: relative;
+    max-width: 100%;
+    margin: auto;
+    overflow: hidden;
+}
+
+.carousel-images {
+    display: flex;
+    animation: slide 9s infinite;
+}
+
+.carousel-slide {
+    min-width: 100%;
+    height: auto;
+}
+
+.carousel-image {
+    width: 50%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+}
+
+
+
+@keyframes slide {
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(-200%);
+    }
+}
+
+.single-image img {
+    animation: none !important;
+}
+
+
+
+
+
+/*
+.custom-carousel {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+}
+
+.carousel-images {
+    display: flex;
+    transition: transform 0.5s ease-in-out;
+}
+
+.carousel-slide {
+    min-width: 100%;
+    transition: transform 0.5s ease-in-out;
+}
+
+.carousel-image {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+@keyframes slide {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-100%); }
+}
+
+.carousel-images.single-image {
+    animation: none;
+}
+
+.carousel-images.multiple-images {
+    animation: slide 10s infinite linear;
+}*/

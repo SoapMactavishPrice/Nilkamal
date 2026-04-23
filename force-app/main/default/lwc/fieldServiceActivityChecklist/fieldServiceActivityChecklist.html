@@ -1,0 +1,55 @@
+<template>
+    <lightning-card title="Activity Checklist" icon-name="utility:list">
+        <template if:true={showSpinner}>
+            <lightning-spinner alternative-text="Loading" variant="brand" size="medium"></lightning-spinner>
+        </template>
+        <div class="slds-p-around_medium">
+            <template if:true={checklistItems}>
+                <template for:each={checklistItems} for:item="category">
+                    <div key={category.Checklist_Category__c} class="category-section">
+                        <h3>{category.Checklist_Category__c}</h3>
+                        <table class="slds-table slds-table_bordered slds-table_cell-buffer">
+                            <thead>
+                                <tr>
+                                    <!-- <th scope="col">SR. NO.</th> -->
+                                    <th style="text-align: start;" scope="col">CHECK POINTS</th>
+                                    <th style="text-align: center;width:25%;" scope="col">OBSERVATION</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={category.checkpoints} for:item="checkpoint">
+                                    <tr key={checkpoint.Checklist_Master__c}>
+                                        <!-- <td>{checkpoint.srNo}</td> -->
+                                        <td>{checkpoint.Check_Point__c}</td>
+                                        <td>
+                                            <lightning-combobox name="Observation__c" value={checkpoint.Observation__c} variant="label-hidden" options={observationOptions}
+                                                onchange={handleChecklistChange} data-checklist-category={category.Checklist_Category__c} data-checklist-master-id={checkpoint.Checklist_Master__c}
+                                                placeholder="Select Observation" dropdown-alignment="auto"></lightning-combobox>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </template>
+                <div class="slds-grid slds-grid_align-center slds-m-top_medium">
+                    <div class="slds-col slds-text-align_center">
+                        <lightning-button label="Save" variant="brand" onclick={submit}>
+                        </lightning-button>
+                    </div>
+                </div>
+
+            </template>
+            <template if:false={checklistItems}>
+                <lightning-layout>
+                    <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3"></lightning-layout-item>
+                    <lightning-layout-item size="8" small-device-size="8" medium-device-size="6" large-device-size="6">
+                        <img src="/img/chatter/OpenRoad.svg" class="slds-illustration__svg slds-var-p-around_large" />
+                        <p style="text-align: center; font-size: large;">No checklist items available.</p>
+                    </lightning-layout-item>
+                    <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3"></lightning-layout-item>
+                </lightning-layout>
+            </template>
+        </div>
+    </lightning-card>
+</template>

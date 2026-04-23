@@ -1,0 +1,134 @@
+<template>
+    <template if:true={showSpinner}>
+        <lightning-spinner alternative-text="Loading" variant="brand" size="medium"></lightning-spinner>
+    </template>
+    <lightning-layout multiple-rows>
+        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-around_x-small" style="margin: auto;">
+            <template if:true={isFormVisible}>
+                <lightning-card title="New Case" icon-name="custom:custom63" variant="narrow" hide-header="true">
+                    <lightning-layout multiple-rows>
+                        <template if:false={isNoAssetFound}>
+                            <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-around_small">
+                                <p><strong>Warranty Status:</strong>
+                                    <lightning-badge label={warrantyStatus} class={warrantyStatus}></lightning-badge>
+                                </p>
+                            </lightning-layout-item>
+
+                            <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-around_small">
+                                <p><strong>AMC Status:</strong>
+                                    <lightning-badge label={amcStatus} class={amcStatus}></lightning-badge>
+                                </p>
+                            </lightning-layout-item>
+                        </template>
+
+                        <!-- <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-horizontal_small">
+                    <lightning-input label="Warranty Status" value={warrantyStatus} readonly={isReadOnly}></lightning-input>
+                </lightning-layout-item> -->
+
+                        <!-- <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-horizontal_small">
+                    <lightning-input label="AMC Status" value={amcStatus} readonly={isReadOnly}></lightning-input>
+                </lightning-layout-item> -->
+
+
+                        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-horizontal_small">
+                            <lightning-input label="Serial Number" data-field="serialNumber" value={serialNumber} readonly={isReadOnly} onchange={handleInputChange}
+                                variant="label-stacked"></lightning-input>
+                        </lightning-layout-item>
+
+                        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-horizontal_small">
+                            <lightning-input label="Customer Name" data-field="customerName" value={customerName} readonly={isReadOnly} onchange={handleInputChange}
+                                variant="label-stacked"></lightning-input>
+                        </lightning-layout-item>
+
+                        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-horizontal_small">
+                            <lightning-input label="Invoice Number" data-field="invoiceNumber" value={invoiceNumber} readonly={isReadOnly} onchange={handleInputChange}
+                                variant="label-stacked"></lightning-input>
+                        </lightning-layout-item>
+
+                        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-horizontal_small">
+                            <lightning-input label="Asset Name" value={assetName} data-field="assetName" readonly={isReadOnly} onchange={handleInputChange} variant="label-stacked"></lightning-input>
+                        </lightning-layout-item>
+
+                        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-horizontal_small">
+                            <lightning-input label="Contact Name" value={name} data-field="name" readonly={isReadOnly} onchange={handleInputChange} variant="label-stacked"></lightning-input>
+                        </lightning-layout-item>
+                        <template if:true={isNoAssetFound}>
+                            <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-horizontal_small">
+                                <lightning-input label="Email" value={email} data-field="email" onchange={handleInputChange} variant="label-stacked"></lightning-input>
+                            </lightning-layout-item>
+
+                            <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-horizontal_small">
+                                <lightning-input label="Contact No" value={contactNo} data-field="contactNo" onchange={handleInputChange} variant="label-stacked"></lightning-input>
+                            </lightning-layout-item>
+                        </template>
+
+                        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-horizontal_small">
+                            <lightning-combobox label="Case Type" value={issue} data-field="issue" options={issueOptions} onchange={handleInputChange} variant="label-stacked"></lightning-combobox>
+                        </lightning-layout-item>
+
+                        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-horizontal_small">
+                            <lightning-input label="Location" value={location} data-field="location" onchange={handleInputChange} variant="label-stacked"></lightning-input>
+                        </lightning-layout-item>
+
+                        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-horizontal_small">
+                            <lightning-textarea label="Comment" value={comment} data-field="comment" onchange={handleInputChange} variant="label-stacked"></lightning-textarea>
+                        </lightning-layout-item>
+                        <!-- <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-horizontal_small">
+                    <div id="recaptchaCheckbox"></div>
+                </lightning-layout-item> -->
+                        <!-- <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-horizontal_small">
+                    <iframe src={navigateTo} name="captchaFrame" onload={captchaLoaded}></iframe>
+                    <template if:true={validReCAPTCHA}>
+                        Valid Request
+                    </template>
+                </lightning-layout-item> -->
+                    </lightning-layout>
+
+                    <div style="text-align: center;">
+                        <lightning-button label="Save" onclick={handleSave} variant="brand"></lightning-button>
+                    </div>
+                </lightning-card>
+            </template>
+        </lightning-layout-item>
+    </lightning-layout>
+    <!-- <template if:false={fetchAsset}>
+        <lightning-layout>
+            <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3"></lightning-layout-item>
+            <lightning-layout-item size="8" small-device-size="8" medium-device-size="6" large-device-size="6">
+                <img src="/img/chatter/OpenRoad.svg" class="slds-illustration__svg slds-var-p-around_large" />
+                <p style="text-align: center;font-size:x-large;">No Asset Found With This Serial Number</p>
+            </lightning-layout-item>
+            <lightning-layout-item size="2" small-device-size="2" medium-device-size="6" large-device-size="3"></lightning-layout-item>
+        </lightning-layout>
+    </template> -->
+    <template if:true={isSuccessMessageVisible}>
+        <div class="wrapperAlert">
+            <div class="contentAlert">
+                <div class="topHalf">
+                    <p><svg viewBox="0 0 512 512" width="100" title="check-circle">
+                            <path
+                                d="M504 256c0 136.967-111.033 248-248 248S8 392.967 8 256 119.033 8 256 8s248 111.033 248 248zM227.314 387.314l184-184c6.248-6.248 6.248-16.379 0-22.627l-22.627-22.627c-6.248-6.249-16.379-6.249-22.628 0L216 308.118l-70.059-70.059c-6.248-6.248-16.379-6.248-22.628 0l-22.627 22.627c-6.248 6.248-6.248 16.379 0 22.627l104 104c6.249 6.249 16.379 6.249 22.628.001z" />
+                        </svg></p>
+                    <h1>Successfully Case Generated.</h1>
+
+                    <ul class="bg-bubbles">
+                        <li></li>
+                        <li></li>
+                        <li></li>
+                        <li></li>
+                        <li></li>
+                        <li></li>
+                        <li></li>
+                        <li></li>
+                        <li></li>
+                        <li></li>
+                    </ul>
+                </div>
+                <!-- <div class="bottomHalf">
+                <p>Well Done!, you actually managed to accomplish something today...</p>
+                <button id="alertMO">Moving On</button>
+            </div> -->
+            </div>
+        </div>
+    </template>
+</template>

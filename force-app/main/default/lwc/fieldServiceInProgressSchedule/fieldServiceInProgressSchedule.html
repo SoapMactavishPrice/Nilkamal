@@ -1,0 +1,150 @@
+<template>
+
+    <template if:true={showSpinner}>
+        <lightning-spinner alternative-text="Loading" variant="brand" size="medium"></lightning-spinner>
+    </template>
+
+    <lightning-card hide-header="true" variant="narrow">
+
+        <lightning-layout multiple-rows>
+
+            <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6">
+                <div class="calendar-container">
+                    <div class="calendar-view">
+                        <div class="calendar-header-container">
+                            <lightning-button-icon icon-name="utility:chevronleft" variant="container" onclick={handlePreviousMonthClick} alternative-text="Prev" title="Previous Month">
+                                <div>Prev</div>
+                            </lightning-button-icon>
+                            <div lwc:dom="manual" class="calendar-month-label"></div>
+                            <lightning-button-icon icon-name="utility:chevronright" variant="container" onclick={handleNextMonthClick} alternative-text="Next" title="Next Month">
+                                <div>Next</div>
+                            </lightning-button-icon>
+                        </div>
+                        <div class="calendar-week-header">
+                            <div class="ellipsis"><span>Mon</span></div>
+                            <div class="ellipsis"><span>Tue</span></div>
+                            <div class="ellipsis"><span>Wed</span></div>
+                            <div class="ellipsis"><span>Thu</span></div>
+                            <div class="ellipsis"><span>Fri</span></div>
+                            <div class="ellipsis"><span>Sat</span></div>
+                            <div class="ellipsis"><span>Sun</span></div>
+                        </div>
+                        <div class="calendar-days-view">
+                            <div lwc:dom="manual" class="calendar-days-container drop-target-parent"></div>
+                        </div>
+                    </div>
+                </div>
+            </lightning-layout-item>
+
+            <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6">
+                <template if:true={scheduleVisibleList}>
+                    <div class="slds-scrollable">
+                        <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                            <thead>
+                                <tr class="slds-line-height_reset">
+                                    <th scope="col" class="slds-truncate" style="width: 5%" title="Sr No">Sr No</th>
+                                    <th scope="col" class="slds-truncate" style="width: 20%" title="Cust Name">Cust Name</th>
+                                    <th scope="col" class="slds-truncate" style="width: 15%" title="Case Number">Case Number</th>
+                                    <th scope="col" class="slds-truncate" style="width: 15%" title="Status">Status</th>
+                                    <th scope="col" class="slds-truncate" style="width: 10%" title="Type">Type</th>
+                                    <th scope="col" class="slds-truncate" style="width: 25%" title="Address">Address</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template iterator:item={scheduleVisibleList}>
+                                    <tr key={item.value.id} class="slds-hint-parent">
+                                        <td class="slds-truncate">{item.value.srNo}</td>
+                                        <td class="slds-truncate"><a onclick={handleCustomerClick} data-id={item.value.id}>{item.value.custName}</a></td>
+                                        <td class="slds-truncate">{item.value.caseNumber}</td>
+                                        <td class="slds-truncate">{item.value.status}</td>
+                                        <td class="slds-truncate">{item.value.woType}</td>
+                                        <td class="slds-truncate">{item.value.addressString}</td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </template>
+            </lightning-layout-item>
+        </lightning-layout>
+    </lightning-card>
+
+
+
+    <!-- showScheduleModal - {showScheduleModal} -->
+    <template lwc:if={showScheduleModal}>
+        <div>
+            <section role="dialog" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container" style="user-select: none">
+
+                    <header class="slds-modal__header">
+                        <span class="slds-modal__close">
+                            <lightning-icon icon-name="utility:close" alternative-text="close" onclick={handleCloseScheduleModal}></lightning-icon>
+                        </span>
+                        <h2 class="slds-text-heading_medium slds-hyphenate slds-text-align_center">Schedule Details</h2>
+                    </header>
+
+                    <div class="slds-modal__content slds-p-around_small">
+                        <template if:true={showSpinner}>
+                            <lightning-spinner alternative-text="Loading" variant="brand" size="small"></lightning-spinner>
+                        </template>
+                        <div>
+                            <lightning-layout multiple-rows vertical-align="stretch" class="slds-text-heading_small">
+                                <lightning-layout-item size="4" class="slds-var-p-around_xx-small slds-border_bottom">Cust Name</lightning-layout-item>
+                                <lightning-layout-item size="8" class="slds-var-p-around_xx-small slds-border_bottom">
+                                    <div class="slds-wrap">{selectedSchedule.custName}</div>
+                                </lightning-layout-item>
+                                <lightning-layout-item size="4" class="slds-var-p-around_xx-small slds-border_bottom">Address</lightning-layout-item>
+                                <lightning-layout-item size="8" class="slds-var-p-around_xx-small slds-border_bottom">
+                                    <div lwc:if={selectedSchedule.address} class="slds-wrap">
+                                        <lightning-formatted-address street={selectedSchedule.address.street} city={selectedSchedule.address.city} country={selectedSchedule.address.country}
+                                            latitude={selectedSchedule.address.latitude} longitude={selectedSchedule.address.longitude} show-static-map>
+                                        </lightning-formatted-address>
+                                    </div>
+                                    <div lwc:else class="slds-wrap">{selectedSchedule.addressString}</div>
+                                </lightning-layout-item>
+                                <lightning-layout-item size="4" class="slds-var-p-around_xx-small slds-border_bottom">Type</lightning-layout-item>
+                                <lightning-layout-item size="8" class="slds-var-p-around_xx-small slds-border_bottom">
+                                    <div class="slds-wrap">{selectedSchedule.woType}</div>
+                                </lightning-layout-item>
+                                <lightning-layout-item size="4" class="slds-var-p-around_xx-small slds-border_bottom">Contact Details</lightning-layout-item>
+                                <lightning-layout-item size="8" class="slds-var-p-around_xx-small slds-border_bottom">
+                                    <div class="slds-wrap"><lightning-formatted-name first-name={selectedSchedule.contact.firstName} last-name={selectedSchedule.contact.lastName}
+                                            salutation={selectedSchedule.contact.salutation}></lightning-formatted-name></div>
+                                    <div class="slds-wrap"><lightning-formatted-phone value={selectedSchedule.contact.mobilePhone}></lightning-formatted-phone></div>
+                                    <div class="slds-wrap"><lightning-formatted-email value={selectedSchedule.contact.email}></lightning-formatted-email></div>
+                                </lightning-layout-item>
+                            </lightning-layout>
+                        </div>
+                    </div>
+
+                    <footer class="slds-modal__footer">
+                        <lightning-layout horizontal-align="space" vertical-align="start" multiple-rows>
+                            <!-- Service Report, Activity Logging, Activity Checklist, Spare Request, Spare Return -->
+                            <lightning-layout-item flexibility="auto">
+                                <lightning-button label="Service Report" title="Service Report" variant="base" onclick={handleServiceReportClick}></lightning-button>
+                            </lightning-layout-item>
+                            <lightning-layout-item flexibility="auto">
+                                <lightning-button label="Activity Logging" title="Activity Logging" variant="base" onclick={handleActivityLoggingClick}></lightning-button>
+                            </lightning-layout-item>
+                            <lightning-layout-item flexibility="auto">
+                                <lightning-button label="Activity Checklist" title="Activity Checklist" variant="base" onclick={handleActivityChecklistClick}></lightning-button>
+                            </lightning-layout-item>
+                            <lightning-layout-item flexibility="auto">
+                                <lightning-button label="Spare Request" title="Spare Request" variant="base" onclick={handleSpareRequestClick}></lightning-button>
+                            </lightning-layout-item>
+                            <lightning-layout-item flexibility="auto">
+                                <lightning-button label="Spare Return" title="Spare Return" variant="base" onclick={handleSpareReturnClick}></lightning-button>
+                            </lightning-layout-item>
+                        </lightning-layout>
+                    </footer>
+
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </div>
+
+    </template>
+
+
+</template>

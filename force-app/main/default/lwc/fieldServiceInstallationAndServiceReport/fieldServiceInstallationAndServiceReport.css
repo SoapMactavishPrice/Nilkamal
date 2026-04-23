@@ -1,0 +1,83 @@
+@import 'c/utilCSS';
+
+
+
+
+.category-section {
+    margin-bottom: 1rem;
+}
+
+h3 {
+    text-align: left;
+    font-size: 1.1rem;
+    margin-bottom: 0.3rem;
+    color: #0070d2;
+}
+
+.table-container {
+    width: 100%;
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    padding: 0.3rem;
+    text-align: left;
+    vertical-align: middle;
+    white-space: wrap;
+}
+
+th {
+    background-color: #f4f6f9;
+    font-weight: bold;
+}
+
+tr:nth-child(odd) {
+    background-color: #f9f9f9;
+}
+
+/* tr:hover {
+    background-color: #f1f1f1;
+} */
+tbody tr:hover {
+    background-color: none !important;
+}
+
+.slds-table tr:hover {
+    background-color: transparent !important;
+}
+
+.slds-table:not(.slds-no-row-hover) tbody tr:hover>td {
+    background-color: transparent !important;
+}
+
+.slds-table_cell-buffer tr>td:first-child {
+    padding-left: 0px !important;
+}
+
+.slds-table_cell-buffer tr>td:last-child {
+    padding-right: 0px !important;
+}
+
+.slds-dropdown_fluid,
+.slds-dropdown--fluid {
+    max-width: 50% !important;
+}
+
+@media screen and (max-width: 768px) {
+    table {
+        /* display: block; */
+        overflow-x: auto;
+        white-space: wrap;
+    }
+
+    th,
+    td {
+        font-size: 0.9rem;
+    }
+}

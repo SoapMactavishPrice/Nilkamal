@@ -1,0 +1,429 @@
+<template>
+
+    <template if:true={showSpinner}>
+        <lightning-spinner alternative-text="Loading" variant="brand" size="medium"></lightning-spinner>
+    </template>
+
+    <template if:false={isEmptySpareRequests}>
+        <lightning-card class="desktop-table-view" variant="narrow">
+            <lightning-button label="Create Quote" title="Create Quote" slot="actions" onclick={handleCreateQuoteClick}></lightning-button>
+            <div slot="title" class="slds-grid slds-align-center">
+                <lightning-icon icon-name="utility:back" alternative-text="Back" variant="border-filled" size="medium" onclick={handleBack} class="slds-m-right_small">
+                </lightning-icon>
+                <h2 class="slds-text-heading_small slds-m-top_xx-small">Spare Requests</h2>
+            </div>
+
+            <div class="slds-card__body">
+                <div class="slds-p-around_medium div-scroll">
+
+                    <!-- <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_col-bordered slds-border_left slds-border_right common-tablefont-size"> -->
+                    <table class="slds-table slds-table_bordered slds-no-row-hover slds-table_col-bordered slds-table_cell-buffer fixed-table">
+                        <thead>
+                            <tr class="slds-line-height_reset">
+                                <th class="common-css-table-header text-center fixed-table-header" scope="col">
+                                    <div class="">Spare Material Code</div>
+                                </th>
+                                <th class="common-css-table-header text-center fixed-table-header" scope="col">
+                                    <div class="slds-truncate">OEM Material Code</div>
+                                </th>
+                                <th class="common-css-table-header text-center fixed-table-header" scope="col">
+                                    <div class="">Description</div>
+                                </th>
+                                <th class="common-css-table-header text-center fixed-table-header" scope="col">
+                                    <div class="">HSN Code</div>
+                                </th>
+                                <th class="common-css-table-header text-center fixed-table-header" scope="col" style="width: 15%;">
+                                    <div class="">Quantity</div>
+                                </th>
+                                <!-- <th class="common-css-table-header text-center fixed-table-header" scope="col">
+                                    <div class="slds-truncate">Spare Status</div>
+                                </th> -->
+                                <th class="common-css-table-header text-center fixed-table-header" scope="col">
+                                    <div class="">Billing Type</div>
+                                </th>
+                                <th class="common-css-table-header text-center fixed-table-header" scope="col">
+                                    <div class="">Category</div>
+                                </th>
+                                <th class="common-css-table-header text-center fixed-table-header" scope="col">
+                                    <div class="">Basic/Unit Price (INR)</div>
+                                </th>
+                                <th class="common-css-table-hea der text-center fixed-table-header" scope="col">
+                                    <div class="">Total Basic Price (INR)</div>
+                                </th>
+                                <th class="common-css-table-header text-center fixed-table-header" scope="col" style="width: 10%;">
+                                    <div class="">Warranty Period </div>
+                                </th>
+                                <!-- <th class="common-css-table-header text-center fixed-table-header" scope="col" style="width: 10%;">
+                                    <div class="">No. of PM Visit</div>
+                                </th>
+                                <th class="common-css-table-header text-center fixed-table-header" scope="col" style="width: 10%;">
+                                    <div class="">No. of Breakdown Visit</div>
+                                </th> -->
+                                <th class="common-css-table-header text-center fixed-table-header" scope="col">
+                                    <div class="">Action</div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template for:each={spareRequests} for:item="spare" for:index="index">
+                                <tr key={spare.Id} class="slds-line-height_reset">
+                                    <!-- <td>
+                                        <lightning-input label="Product Name" value={spare.Name} onchange={handleChange} data-id={spare.Id} class="slds-truncate" variant="label-hidden" name="Name"
+                                            read-only></lightning-input>
+                                    </td> -->
+                                    <td style="text-align: center;">
+                                        <span>{spare.Name}</span>
+                                    </td>
+                                    <td style="text-align: center;">
+                                        <span if:true={spare.OEM_Material_Code__c}>{spare.OEM_Material_Code__c}</span>
+                                    </td>
+                                    <!-- <td>
+                                    <lightning-input label="Model" value={spare.Work_Order__r.Name} onchange={handleChange} data-id={spare.Id} class="slds-truncate" variant="label-hidden"
+                                        name="Work_Order__r.Name"></lightning-input>
+                                </td> -->
+                                    <td style="text-align: center;">
+                                        <span>{spare.Item_Description__c}
+                                            <!-- <lightning-helptext content={spare.Item_Description__c}></lightning-helptext> -->
+                                        </span>
+                                    </td>
+                                    <td style="width:8%;">
+                                        <template if:true={spare.Item_Master__r}>
+                                            <template if:true={spare.Item_Master__r.HSN_Code__r}>
+                                                <span>{spare.Item_Master__r.HSN_Code__r.Name}</span>
+                                            </template>
+                                        </template>
+
+                                    </td>
+                                    <!-- <td>
+                                    <lightning-input label="Description" value={spare.Item_Description__c} onchange={handleChange} data-id={spare.Id} class="slds-truncate" variant="label-hidden"
+                                        name="Item_Description__c"></lightning-input>
+                                </td> -->
+                                    <!-- <td>
+                                    <lightning-input label="Price" type="number" value={spare.Billed_Value__c} onchange={handleChange} data-id={spare.Id} class="slds-truncate" variant="label-hidden"
+                                        name="Billed_Value__c" read-only></lightning-input>
+                                </td> -->
+                                    <!-- <td>
+                                        <lightning-input type="number" placeholder="Quantity" value={spare.Quantity_Required__c} data-id={spare.Id} class="slds-m-left_small quantity-field"
+                                            onchange={handleChange} name="Quantity_Required__c" variant="label-hidden"></lightning-input>
+                                    </td> -->
+                                    <!-- <td>
+                                        <span>{spare.Quantity_Required__c}</span>
+                                    </td> -->
+                                    <td class="slds-text-align_center">
+                                        <div class="quantity-container">
+                                            <button class="decrement" data-index={index} onclick={handleQuantityButtonClick} data-delta="-1">-
+                                            </button>
+
+                                            <lightning-input type="number" value={spare.Quantity_Required__c} min="0" step="1" data-index={index} data-field="Quantity_Required__c"
+                                                onchange={handleFieldChange} onkeydown={handleKeyDown} class="quantity-input" variant="label-hidden" style="width:50px;">
+                                            </lightning-input>
+
+                                            <button class="increment" data-index={index} onclick={handleQuantityButtonClick} data-delta="1">+
+                                            </button>
+                                        </div>
+                                    </td>
+
+                                    <!-- <td>
+                                        <lightning-combobox placeholder="Status" value={spare.Spare_Status__c} data-id={spare.Id} class="slds-m-left_small quantity-field" onchange={handleChange}
+                                            name="Spare_Status__c" options={statusOptions} variant="label-hidden"></lightning-combobox>
+                                    </td> -->
+                                    <!-- <td>
+                                        <lightning-input placeholder="Reason For Spare Request" value={spare.Reason_for_Spare_Request__c} data-id={spare.Id} class="slds-m-left_small quantity-field"
+                                            onchange={handleChange} name="Reason_for_Spare_Request__c" variant="label-hidden"></lightning-input>
+                                    </td> -->
+                                    <td>
+                                        <span>{spare.Billing_Type__c}</span>
+                                    </td>
+                                    <td>
+                                        <span>{spare.Category__c}</span>
+                                    </td>
+                                    <td>
+                                        <span>{spare.Billed_Value__c}</span>
+                                    </td>
+                                    <!-- <td>
+                                        <lightning-input type="number" value={spare.Billed_Value__c} data-index={index} data-field="Billed_Value__c" onchange={handleFieldChange}>
+                                        </lightning-input>
+                                    </td> -->
+                                    <!-- <td>
+                                        <span>{spare.Total_Value__c}</span>
+                                    </td> -->
+                                    <td>
+                                        <div class="quantity-container">
+                                            <lightning-formatted-number value={spare.Total_Value__c} style="display: block; text-align: center;">
+                                            </lightning-formatted-number>
+                                        </div>
+
+                                    </td>
+                                    <td style="width: 8%">
+                                        <div class="quantity-container">
+                                            <!-- <div style="text-wrap:auto" title={spare.warranty}>{spare.warranty}</div> -->
+                                            <template if:true={spare.isEditable}>
+                                                <lightning-combobox 
+                                                name="Warranty_Period__c"
+                                                placeholder="Select Period"
+                                                variant="label-hidden"
+                                                value={spare.Warranty_Period__c}
+                                                data-id={spare.Id}
+                                                data-index={index}
+                                                options={warrantyOptions}
+                                                onchange={handleChange}>
+                                            </lightning-combobox>
+                                            </template>
+                                        </div>
+                                    </td>
+                                    <!-- <td style="width: 8%">
+                                        <template if:true={spare.isEditable}>
+                                            <lightning-input type="number" placeholder="Enter visits" variant="label-hidden" value={spare.Number_of_PM_Visit__c} data-id={spare.Id}
+                                                onchange={handlePmChange} data-index={index} step="1" message-when-bad-input="Please enter numbers only">
+                                            </lightning-input>
+                                        </template>
+                                    </td>
+                                    <td style="width: 8%">
+                                        <template if:true={spare.isEditable}>
+                                            <lightning-input type="number" placeholder="Enter visits" variant="label-hidden" value={spare.Number_of_Breakdown_Visit__c} data-id={spare.Id}
+                                                onchange={handlebreakChange} data-index={index} step="1" message-when-bad-input="Please enter numbers only">
+                                            </lightning-input>
+                                        </template>
+
+                                    </td> -->
+                                    <td class="slds-text-align_center">
+                                        <lightning-button-icon icon-name="utility:delete" alternative-text="Delete" variant="bare" class="slds-text-color_error" data-id={spare.Id}
+                                            onclick={handleDeleteClick}>
+                                        </lightning-button-icon>
+                                        <!-- <button class="custom-delete-button" data-id={spare.Id} onclick={handleDeleteClick}>
+                                            ❌
+                                        </button> -->
+                                        <!-- <img src="/resource/trash_icon" data-id={spare.Id} onclick={handleDeleteClick} style="cursor:pointer;" title="Delete" /> -->
+
+                                    </td>
+                                </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+                <div slot="footer" class="slds-p-around_medium slds-align_absolute-center">
+                    <lightning-button label="Cancel" variant="neutral" onclick={handleCancel} class="slds-m-right_medium">
+                    </lightning-button>
+                    <lightning-button label="Save" variant="brand" onclick={handleSave}>
+                    </lightning-button>
+                </div>
+                <!-- <div style="text-align: center;" class="slds-p-around_medium">
+                    <lightning-button label="Save" onclick={handleSave} class="slds-m-top_medium" style="text-align: center;margin:auto;"></lightning-button>
+                </div> -->
+            </div>
+        </lightning-card>
+        <!--  -->
+        <!-- <lightning-card hide-header="true" variant="narrow" class="mobile-accordion-view">
+            <div class="slds-card__body">
+                <lightning-accordion allow-multiple-sections-open active-section-name={firstSpareId}>
+                    <template for:each={spareRequests} for:item="spare" for:index="index">
+                        <lightning-accordion-section key={spare.Id} label={spare.Name} name={spare.Id}>
+                            <lightning-layout multiple-rows>
+                                <lightning-layout-item size="6" small-device-size="6" medium-device-size="6" large-device-size="6" class="slds-var-p-around_x-small">
+                                    <p>
+                                        <lightning-input label="Quantity" type="number" value={spare.Quantity_Required__c} onchange={handleChange} data-id={spare.Id} name="Quantity_Required__c"
+                                            variant="label-stacked" disabled></lightning-input>
+                                    </p>
+                                </lightning-layout-item>
+                                <lightning-layout-item size="6" small-device-size="6" medium-device-size="6" large-device-size="6" class="slds-var-p-around_x-small">
+                                    <p>
+                                        <lightning-input label="Billed Value" type="number" value={spare.Billed_Value__c} onchange={handleChange} data-id={spare.Id} name="Billed_Value__c"
+                                            variant="label-stacked" disabled></lightning-input>
+                                    </p>
+                                </lightning-layout-item>
+                                <lightning-layout-item size="6" small-device-size="6" medium-device-size="6" large-device-size="6" class="slds-var-p-around_x-small">
+                                    <p>
+                                        <lightning-input label="Total Value" type="number" value={spare.Total_Value__c} onchange={handleChange} data-id={spare.Id} name="Total_Value__c"
+                                            variant="label-stacked" disabled></lightning-input>
+                                    </p>
+                                </lightning-layout-item>
+                            </lightning-layout>
+                        </lightning-accordion-section>
+                    </template>
+                </lightning-accordion>
+                <div slot="footer" class="slds-p-around_medium slds-align_absolute-center">
+                    <lightning-button label="Cancel" variant="neutral" onclick={handleCancel} class="slds-m-right_medium">
+                    </lightning-button>
+                    <lightning-button label="Save" variant="brand" onclick={handleSave}>
+                    </lightning-button>
+                </div>
+            </div>
+        </lightning-card> -->
+        <!--  -->
+        <!--  -->
+        <!-- <lightning-card hide-header="true" variant="narrow" class="mobile-accordion-view">
+            <div class="slds-card__body">
+                <lightning-accordion allow-multiple-sections-open active-section-name={firstSpareId}>
+                    <template for:each={spareRequests} for:item="spare">
+                        <lightning-accordion-section key={spare.Id} label={spare.Name} name={spare.Id}>
+                            <lightning-layout multiple-rows>
+                                <lightning-layout-item size="6" small-device-size="6" medium-device-size="6" large-device-size="6" class="slds-var-p-around_x-small">
+                                    <p>
+                                        <strong>Quantity:</strong> {spare.Quantity_Required__c}
+                                    </p>
+                                </lightning-layout-item>
+
+                                <lightning-layout-item size="6" small-device-size="6" medium-device-size="6" large-device-size="6" class="slds-var-p-around_x-small">
+                                    <p>
+                                        <strong>Billed Value:</strong> {spare.Billed_Value__c}
+                                    </p>
+                                </lightning-layout-item>
+
+                                <lightning-layout-item size="6" small-device-size="6" medium-device-size="6" large-device-size="6" class="slds-var-p-around_x-small">
+                                    <p>
+                                        <strong>Total Value:</strong> {spare.Total_Value__c}
+                                    </p>
+                                </lightning-layout-item>
+                            </lightning-layout>
+                        </lightning-accordion-section>
+                    </template>
+                </lightning-accordion>
+            </div>
+        </lightning-card> -->
+        <!--  -->
+        <!-- Mobile Accordion View -->
+        <lightning-card variant="narrow" class="mobile-accordion-view">
+            <lightning-button label="Create Quote" title="Create Quote" slot="actions" onclick={handleCreateQuoteClick}></lightning-button>
+            <div slot="title" class="slds-grid slds-align-center">
+                <lightning-icon icon-name="utility:back" alternative-text="Back" variant="border-filled" size="small" onclick={handleBack} class="slds-m-right_small">
+                </lightning-icon>
+                <h2 class="slds-text-heading_small slds-m-top_xx-small">Spare Requests</h2>
+            </div>
+            <div class="slds-card__body">
+                <lightning-accordion allow-multiple-sections-open active-section-name={activeSections}>
+                    <template for:each={spareRequests} for:item="spare" for:index="index">
+                        <lightning-accordion-section key={spare.Id} label={spare.Name} name={spare.Id}>
+                            <lightning-layout multiple-rows>
+                                <lightning-layout-item size="6" class="slds-var-p-around_x-small" if:true={spare.OEM_Material_Code__c}>
+                                    <p><strong>OEM Material Code:</strong> {spare.OEM_Material_Code__c}</p>
+                                </lightning-layout-item>
+                                <lightning-layout-item size="6" class="slds-var-p-around_x-small">
+                                    <p><strong>Description:</strong> {spare.Item_Description__c}</p>
+                                </lightning-layout-item>
+                                <lightning-layout-item size="6" class="slds-var-p-around_x-small">
+                                    <p><strong>HSN Code:</strong>
+                                        <template if:true={spare.Item_Master__r.HSN_Code__c}>
+                                            {spare.Item_Master__r.HSN_Code__r.Name}
+                                        </template>
+                                    </p>
+                                </lightning-layout-item>
+                                <lightning-layout-item size="6" class="slds-var-p-around_x-small">
+                                    <p><strong>Billing Type:</strong> {spare.Billing_Type__c}</p>
+                                </lightning-layout-item>
+                                <lightning-layout-item size="6" class="slds-var-p-around_x-small">
+                                    <p><strong>Category:</strong> {spare.Category__c}</p>
+                                </lightning-layout-item>
+
+                                <!-- Quantity with +/- buttons -->
+                                <lightning-layout-item size="6" class="slds-var-p-around_x-small">
+                                    <div class="quantity-container">
+                                        <button class="decrement" alternative-text="Decrease" variant="bare" data-id={spare.Id} data-index={index} onclick={handleQuantityButtonClick} data-delta="-1">-
+                                        </button>
+
+                                        <lightning-input label="Quantity" type="number" value={spare.Quantity_Required__c} min="0" step="1" data-index={index} data-field="Quantity_Required__c"
+                                            onchange={handleFieldChange} onkeydown={handleKeyDown} class="quantity-input" variant="label-hidden">
+                                        </lightning-input>
+
+                                        <button class="increment" alternative-text="Increase" variant="bare" data-id={spare.Id} data-index={index} onclick={handleQuantityButtonClick} data-delta="1">+
+                                        </button>
+                                    </div>
+                                </lightning-layout-item>
+
+                                <!-- Billed Value -->
+                                <!-- <lightning-layout-item size="6" class="slds-var-p-around_x-small">
+                                    <lightning-input label="Billed Value" type="number" value={spare.Billed_Value__c} data-index={index} data-field="Billed_Value__c" onchange={handleFieldChange}
+                                        variant="label-stacked">
+                                    </lightning-input>
+                                </lightning-layout-item> -->
+                                <lightning-layout-item size="6" class="slds-var-p-around_x-small">
+                                    <p><strong>Basic/Unit Price (INR):</strong>
+                                        <template if:true={spare.Billed_Value__c}>
+                                            {spare.Billed_Value__c}
+                                        </template>
+                                    </p>
+                                </lightning-layout-item>
+
+                                <!-- Total Value (read-only) -->
+                                <lightning-layout-item size="6" class="slds-var-p-around_x-small">
+                                    <!-- <lightning-input label="Total Value" type="number" value={spare.Total_Value__c} variant="label-stacked" disabled>
+                                    </lightning-input> -->
+                                    <p><strong>Total Basic Price (INR):</strong>
+                                        <template if:true={spare.Total_Value__c}>
+                                            {spare.Total_Value__c}
+                                        </template>
+                                    </p>
+                                </lightning-layout-item>
+                                <lightning-layout-item size="6" class="slds-var-p-around_x-small" if:true={spare.isEditable}>
+                                    <p><strong>Warranty Period:</strong></p>
+                                    <lightning-input type="number" placeholder="Period" variant="label-hidden" value={spare.Warranty_Period__c} data-id={spare.Id} onchange={handleChange}
+                                        data-index={index} step="1" message-when-bad-input="Please enter numbers only">
+                                    </lightning-input>
+                                </lightning-layout-item>
+                                <lightning-layout-item size="6" class="slds-var-p-around_x-small" if:true={spare.isEditable}>
+                                    <p><strong>Number of PM Visits:</strong></p>
+                                    <lightning-input type="number" placeholder="Enter visits" variant="label-hidden" value={spare.Number_of_PM_Visit__c} data-id={spare.Id} onchange={handlePmChange}
+                                        data-index={index} step="1" message-when-bad-input="Please enter numbers only">
+                                    </lightning-input>
+                                </lightning-layout-item>
+                                <lightning-layout-item size="6" class="slds-var-p-around_x-small" if:true={spare.isEditable}>
+                                    <p><strong>Number of Breakdown Visits:</strong></p>
+                                    <lightning-input type="number" placeholder="Enter visits" variant="label-hidden" value={spare.Number_of_Breakdown_Visit__c} data-id={spare.Id}
+                                        onchange={handlebreakChange} data-index={index} step="1" message-when-bad-input="Please enter numbers only">
+                                    </lightning-input>
+                                </lightning-layout-item>
+
+
+
+                            </lightning-layout>
+                            <!-- Delete Button -->
+                            <div style="text-align: end;">
+                                <lightning-layout-item size="6" class="slds-var-p-around_x-small slds-text-align_center ">
+                                    <lightning-button label="Delete" variant="destructive" icon-name="utility:delete" onclick={handleDeleteClick} data-id={spare.Id}>
+                                    </lightning-button>
+                                </lightning-layout-item>
+                            </div>
+                        </lightning-accordion-section>
+                    </template>
+                </lightning-accordion>
+
+                <div slot="footer" class="slds-p-around_medium slds-align_absolute-center">
+                    <lightning-button label="Cancel" variant="neutral" onclick={handleCancel} class="slds-m-right_medium">
+                    </lightning-button>
+                    <lightning-button label="Save" variant="brand" onclick={handleSave}>
+                    </lightning-button>
+                </div>
+            </div>
+        </lightning-card>
+    </template>
+    <template if:true={isEmptySpareRequests}>
+        <lightning-layout>
+            <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3"></lightning-layout-item>
+            <lightning-layout-item size="8" small-device-size="8" medium-device-size="6" large-device-size="6">
+                <img src="/img/chatter/OpenRoad.svg" class="slds-illustration__svg slds-var-p-around_large" />
+                <p style="text-align: center; font-size: x-large;">No Spare Requests Found.</p>
+            </lightning-layout-item>
+            <lightning-layout-item size="2" small-device-size="2" medium-device-size="6" large-device-size="3"></lightning-layout-item>
+        </lightning-layout>
+    </template>
+    <template if:true={showDeleteModal}>
+        <section role="dialog" tabindex="-1" aria-labelledby="modal-heading-01" aria-modal="true" aria-describedby="modal-content-id-1" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <header class="slds-modal__header">
+                    <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" title="Close" onclick={closeDeleteModal}>
+                        <lightning-icon icon-name="utility:close" alternative-text="Close" size="small"></lightning-icon>
+                        <span class="slds-assistive-text">Close</span>
+                    </button>
+                    <h2 id="modal-heading-01" class="slds-text-heading_medium slds-hyphenate">Confirm Delete</h2>
+                </header>
+                <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1">
+                    <p>Are you sure you want to delete this Spare request? This action cannot be undone.</p>
+                </div>
+                <footer class="slds-modal__footer">
+                    <lightning-button label="Cancel" variant="neutral" onclick={closeDeleteModal} class="slds-m-right_medium"></lightning-button>
+                    <lightning-button label="Delete" variant="destructive" onclick={confirmDelete}></lightning-button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+</template>

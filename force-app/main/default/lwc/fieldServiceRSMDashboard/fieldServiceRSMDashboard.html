@@ -1,0 +1,1252 @@
+<template>
+    <lightning-layout multiple-rows>
+
+        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small">
+            <lightning-card title="Quote Stages">
+                <div class="slds-p-around_medium">
+                    <lightning-combobox name="dateFilter" label="Date Range" value={selectedDateFilter} options={dateFilterOptions} onchange={handleDateFilterChange}>
+                    </lightning-combobox>
+                </div>
+                <div class="chart-container">
+                    <!-- <canvas lwc:dom="manual" class="pie-chart-js-canvas" style="max-height: 300px;"></canvas> -->
+                    <div lwc:dom="manual" class="pie-chart-js-canvas" style="max-height: 300px;"></div>
+                </div>
+            </lightning-card>
+        </lightning-layout-item>
+
+
+        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small">
+            <lightning-card title="List of Assets with Warranty Expiring Soon">
+                <template if:true={showSpinner}>
+                    <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+                </template>
+
+                <template if:true={hasNoAssets}>
+                    <lightning-layout>
+                        <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3"></lightning-layout-item>
+                        <lightning-layout-item size="8" small-device-size="8" medium-device-size="6" large-device-size="6">
+                            <img src="/img/chatter/OpenRoad.svg" class="slds-illustration__svg slds-var-p-around_large" />
+                            <p style="text-align: center; font-size: large;">No Assets with Warranty Expiring Soon.</p>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3"></lightning-layout-item>
+                    </lightning-layout>
+                </template>
+
+                <template if:true={assets.length}>
+                    <div class="slds-scrollable_x table-container">
+                        <!-- <template if:true={assets}> -->
+                        <table class="slds-table slds-table_bordered slds-table_cell-buffer">
+                            <thead>
+                                <tr class="slds-text-title_caps">
+                                    <th scope="col">Serial Number</th>
+                                    <th scope="col">Customer Name</th>
+                                    <th scope="col">Pin Code</th>
+                                    <th scope="col">Warranty Start Date</th>
+                                    <th scope="col">Warranty End Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={assets} for:item="asset">
+                                    <tr key={asset.assetId} class="slds-hint-parent">
+                                        <td>{asset.serialNumber}</td>
+                                        <td>{asset.accountName}</td>
+                                        <td>{asset.pinCodeName}</td>
+                                        <td><lightning-formatted-date-time value={asset.warrantyStartDate} day="numeric" month="short" year="numeric"></lightning-formatted-date-time></td>
+                                        <td><lightning-formatted-date-time value={asset.warrantyEndDate} day="numeric" month="short" year="numeric"></lightning-formatted-date-time></td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </template>
+                <!-- <template if:false={assets}>
+                    <p>No assets found.</p>
+                </template> -->
+            </lightning-card>
+        </lightning-layout-item>
+
+
+        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small">
+            <lightning-card title="AMC Renewal Due in Coming 60 Days">
+                <template if:true={showSpinner}>
+                    <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+                </template>
+
+                <template if:true={hasNoAmcRenewalDue}>
+                    <lightning-layout>
+                        <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3"></lightning-layout-item>
+                        <lightning-layout-item size="8" small-device-size="8" medium-device-size="6" large-device-size="6">
+                            <img src="/img/chatter/OpenRoad.svg" class="slds-illustration__svg slds-var-p-around_large" />
+                            <p style="text-align: center; font-size: large;">No AMC Renewal Due in Coming 60 Days.</p>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3"></lightning-layout-item>
+                    </lightning-layout>
+                </template>
+
+                <template if:true={amcAssets.length}>
+                    <div class="slds-scrollable_x table-container">
+                        <table class="slds-table slds-table_bordered slds-table_cell-buffer">
+                            <thead>
+                                <tr class="slds-text-title_caps">
+                                    <th scope="col" class="horizontal-flex" style="justify-content: space-between; cursor: pointer" onclick={handleColumnSort} data-field="accountName"
+                                        data-columns="amcAssetsColumns" data-data="amcAssets">
+                                        <span>Customer Name</span>
+                                        <template lwc:if={amcAssetsColumns.accountName.isAsc}><lightning-icon icon-name="utility:arrowup" size="xx-small"></lightning-icon></template>
+                                        <template lwc:elseif={amcAssetsColumns.accountName.isDesc}><lightning-icon icon-name="utility:arrowdown" size="xx-small"></lightning-icon></template>
+                                        <template lwc:else><lightning-icon icon-name="utility:sort" size="xx-small"></lightning-icon></template>
+                                    </th>
+                                    <th scope="col" class="horizontal-flex" style="justify-content: space-between; cursor: pointer" onclick={handleColumnSort} data-field="serialNumber"
+                                        data-columns="amcAssetsColumns" data-data="amcAssets">
+                                        <span>Serial Number</span>
+                                        <template lwc:if={amcAssetsColumns.serialNumber.isAsc}><lightning-icon icon-name="utility:arrowup" size="xx-small"></lightning-icon></template>
+                                        <template lwc:elseif={amcAssetsColumns.serialNumber.isDesc}><lightning-icon icon-name="utility:arrowdown" size="xx-small"></lightning-icon></template>
+                                        <template lwc:else><lightning-icon icon-name="utility:sort" size="xx-small"></lightning-icon></template>
+                                    </th>
+                                    <th scope="col" class="horizontal-flex" style="justify-content: space-between; cursor: pointer" onclick={handleColumnSort} data-field="productDescription"
+                                        data-columns="amcAssetsColumns" data-data="amcAssets">
+                                        <span>Description</span>
+                                        <template lwc:if={amcAssetsColumns.productDescription.isAsc}><lightning-icon icon-name="utility:arrowup" size="xx-small"></lightning-icon></template>
+                                        <template lwc:elseif={amcAssetsColumns.productDescription.isDesc}><lightning-icon icon-name="utility:arrowdown" size="xx-small"></lightning-icon></template>
+                                        <template lwc:else><lightning-icon icon-name="utility:sort" size="xx-small"></lightning-icon></template>
+                                    </th>
+                                    <th scope="col" class="horizontal-flex" style="justify-content: space-between; cursor: pointer" onclick={handleColumnSort} data-field="amcStartDate"
+                                        data-columns="amcAssetsColumns" data-data="amcAssets">
+                                        <span>AMC Start Date</span>
+                                        <template lwc:if={amcAssetsColumns.amcStartDate.isAsc}><lightning-icon icon-name="utility:arrowup" size="xx-small"></lightning-icon></template>
+                                        <template lwc:elseif={amcAssetsColumns.amcStartDate.isDesc}><lightning-icon icon-name="utility:arrowdown" size="xx-small"></lightning-icon></template>
+                                        <template lwc:else><lightning-icon icon-name="utility:sort" size="xx-small"></lightning-icon></template>
+                                    </th>
+                                    <th scope="col" class="horizontal-flex" style="justify-content: space-between; cursor: pointer" onclick={handleColumnSort} data-field="amcEndDate"
+                                        data-columns="amcAssetsColumns" data-data="amcAssets">
+                                        <span>AMC Expire Date</span>
+                                        <template lwc:if={amcAssetsColumns.amcEndDate.isAsc}><lightning-icon icon-name="utility:arrowup" size="xx-small"></lightning-icon></template>
+                                        <template lwc:elseif={amcAssetsColumns.amcEndDate.isDesc}><lightning-icon icon-name="utility:arrowdown" size="xx-small"></lightning-icon></template>
+                                        <template lwc:else><lightning-icon icon-name="utility:sort" size="xx-small"></lightning-icon></template>
+                                    </th>
+                                    <th scope="col" class="horizontal-flex" style="justify-content: space-between; cursor: pointer" onclick={handleColumnSort} data-field="seName"
+                                        data-columns="amcAssetsColumns" data-data="amcAssets">
+                                        <span>Service Engineer</span>
+                                        <template lwc:if={amcAssetsColumns.seName.isAsc}><lightning-icon icon-name="utility:arrowup" size="xx-small"></lightning-icon></template>
+                                        <template lwc:elseif={amcAssetsColumns.seName.isDesc}><lightning-icon icon-name="utility:arrowdown" size="xx-small"></lightning-icon></template>
+                                        <template lwc:else><lightning-icon icon-name="utility:sort" size="xx-small"></lightning-icon></template>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={amcAssets} for:item="amcAsset">
+                                    <tr key={amcAsset.assetId} class="slds-hint-parent">
+                                        <td>{amcAsset.accountName}</td>
+                                        <td>{amcAsset.serialNumber}</td>
+                                        <td>{amcAsset.productDescription}</td>
+                                        <td>
+                                            <lightning-formatted-date-time value={amcAsset.amcStartDate} day="numeric" month="short" year="numeric"></lightning-formatted-date-time>
+                                        </td>
+                                        <td>
+                                            <lightning-formatted-date-time value={amcAsset.amcEndDate} day="numeric" month="short" year="numeric"></lightning-formatted-date-time>
+                                        </td>
+                                        <td>{amcAsset.seName}</td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </template>
+                <!-- <template if:false={amcAssets}>
+                    <p>No AMC assets found.</p>
+                </template> -->
+            </lightning-card>
+        </lightning-layout-item>
+
+
+        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small">
+            <lightning-card title="AMC Not Renewed in Last 90 Days">
+                <template if:true={showSpinner}>
+                    <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+                </template>
+
+                <template if:true={hasNoAmcExpiredAssets}>
+                    <lightning-layout>
+                        <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3"></lightning-layout-item>
+                        <lightning-layout-item size="8" small-device-size="8" medium-device-size="6" large-device-size="6">
+                            <img src="/img/chatter/OpenRoad.svg" class="slds-illustration__svg slds-var-p-around_large" />
+                            <p style="text-align: center; font-size: large;">No AMC Expired Assets Found.</p>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3"></lightning-layout-item>
+                    </lightning-layout>
+                </template>
+
+                <template if:true={amcExpiredAssets.length}>
+                    <div class="slds-scrollable_x table-container">
+                        <table class="slds-table slds-table_bordered slds-table_cell-buffer">
+                            <thead>
+                                <tr class="slds-text-title_caps">
+                                    <th scope="col" class="horizontal-flex" style="justify-content: space-between; cursor: pointer" onclick={handleColumnSort} data-field="accountName"
+                                        data-columns="amcExpiredAssetsColumns" data-data="amcExpiredAssets">
+                                        <span>Customer Name</span>
+                                        <template lwc:if={amcExpiredAssetsColumns.accountName.isAsc}><lightning-icon icon-name="utility:arrowup" size="xx-small"></lightning-icon></template>
+                                        <template lwc:elseif={amcExpiredAssetsColumns.accountName.isDesc}><lightning-icon icon-name="utility:arrowdown" size="xx-small"></lightning-icon></template>
+                                        <template lwc:else><lightning-icon icon-name="utility:sort" size="xx-small"></lightning-icon></template>
+                                    </th>
+                                    <th scope="col" class="horizontal-flex" style="justify-content: space-between; cursor: pointer" onclick={handleColumnSort} data-field="serialNumber"
+                                        data-columns="amcExpiredAssetsColumns" data-data="amcExpiredAssets">
+                                        <span>Serial Number</span>
+                                        <template lwc:if={amcExpiredAssetsColumns.serialNumber.isAsc}><lightning-icon icon-name="utility:arrowup" size="xx-small"></lightning-icon></template>
+                                        <template lwc:elseif={amcExpiredAssetsColumns.serialNumber.isDesc}><lightning-icon icon-name="utility:arrowdown" size="xx-small"></lightning-icon></template>
+                                        <template lwc:else><lightning-icon icon-name="utility:sort" size="xx-small"></lightning-icon></template>
+                                    </th>
+                                    <th scope="col" class="horizontal-flex" style="justify-content: space-between; cursor: pointer" onclick={handleColumnSort} data-field="productDescription"
+                                        data-columns="amcExpiredAssetsColumns" data-data="amcExpiredAssets">
+                                        <span>Description</span>
+                                        <template lwc:if={amcExpiredAssetsColumns.productDescription.isAsc}><lightning-icon icon-name="utility:arrowup" size="xx-small"></lightning-icon></template>
+                                        <template lwc:elseif={amcExpiredAssetsColumns.productDescription.isDesc}><lightning-icon icon-name="utility:arrowdown"
+                                                size="xx-small"></lightning-icon></template>
+                                        <template lwc:else><lightning-icon icon-name="utility:sort" size="xx-small"></lightning-icon></template>
+                                    </th>
+                                    <th scope="col" class="horizontal-flex" style="justify-content: space-between; cursor: pointer" onclick={handleColumnSort} data-field="amcStartDate"
+                                        data-columns="amcExpiredAssetsColumns" data-data="amcExpiredAssets">
+                                        <span>AMC Start Date</span>
+                                        <template lwc:if={amcExpiredAssetsColumns.amcStartDate.isAsc}><lightning-icon icon-name="utility:arrowup" size="xx-small"></lightning-icon></template>
+                                        <template lwc:elseif={amcExpiredAssetsColumns.amcStartDate.isDesc}><lightning-icon icon-name="utility:arrowdown" size="xx-small"></lightning-icon></template>
+                                        <template lwc:else><lightning-icon icon-name="utility:sort" size="xx-small"></lightning-icon></template>
+                                    </th>
+                                    <th scope="col" class="horizontal-flex" style="justify-content: space-between; cursor: pointer" onclick={handleColumnSort} data-field="amcEndDate"
+                                        data-columns="amcExpiredAssetsColumns" data-data="amcExpiredAssets">
+                                        <span>AMC End Date</span>
+                                        <template lwc:if={amcExpiredAssetsColumns.amcEndDate.isAsc}><lightning-icon icon-name="utility:arrowup" size="xx-small"></lightning-icon></template>
+                                        <template lwc:elseif={amcExpiredAssetsColumns.amcEndDate.isDesc}><lightning-icon icon-name="utility:arrowdown" size="xx-small"></lightning-icon></template>
+                                        <template lwc:else><lightning-icon icon-name="utility:sort" size="xx-small"></lightning-icon></template>
+                                    </th>
+                                    <th scope="col" class="horizontal-flex" style="justify-content: space-between; cursor: pointer" onclick={handleColumnSort} data-field="seName"
+                                        data-columns="amcExpiredAssetsColumns" data-data="amcExpiredAssets">
+                                        <span>Service Engineer</span>
+                                        <template lwc:if={amcExpiredAssetsColumns.seName.isAsc}><lightning-icon icon-name="utility:arrowup" size="xx-small"></lightning-icon></template>
+                                        <template lwc:elseif={amcExpiredAssetsColumns.seName.isDesc}><lightning-icon icon-name="utility:arrowdown" size="xx-small"></lightning-icon></template>
+                                        <template lwc:else><lightning-icon icon-name="utility:sort" size="xx-small"></lightning-icon></template>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={amcExpiredAssets} for:item="asset">
+                                    <tr key={asset.assetId} class="slds-hint-parent">
+                                        <td>{asset.accountName}</td>
+                                        <td>{asset.serialNumber}</td>
+                                        <td>{asset.productDescription}</td>
+                                        <td><lightning-formatted-date-time value={asset.amcStartDate} day="numeric" month="short" year="numeric"></lightning-formatted-date-time></td>
+                                        <td><lightning-formatted-date-time value={asset.amcEndDate} day="numeric" month="short" year="numeric"></lightning-formatted-date-time></td>
+                                        <td>{asset.seName}</td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </template>
+            </lightning-card>
+        </lightning-layout-item>
+
+
+        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small">
+            <lightning-card title="Customer Wise Outstanding Report">
+
+            </lightning-card>
+        </lightning-layout-item>
+
+
+        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small">
+            <lightning-card title="Non-Conversion of Warranty to AMC in Last 90 Days">
+                <template if:true={showSpinner}>
+                    <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+                </template>
+
+                <template if:true={hasNoWarrantyExpiredAssets}>
+                    <lightning-layout>
+                        <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3"></lightning-layout-item>
+                        <lightning-layout-item size="8" small-device-size="8" medium-device-size="6" large-device-size="6">
+                            <img src="/img/chatter/OpenRoad.svg" class="slds-illustration__svg slds-var-p-around_large" />
+                            <p style="text-align: center; font-size: large;">No Warranty Expired Assets Found.</p>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3"></lightning-layout-item>
+                    </lightning-layout>
+                </template>
+
+                <template if:true={warrantyExpiredAssets.length}>
+                    <div class="slds-scrollable_x table-container">
+                        <table class="slds-table slds-table_bordered slds-table_cell-buffer">
+                            <thead>
+                                <tr class="slds-text-title_caps">
+                                    <th scope="col" class="horizontal-flex" style="justify-content: space-between; cursor: pointer" onclick={handleColumnSort} data-field="accountName"
+                                        data-columns="warrantyExpiredAssetsColumns" data-data="warrantyExpiredAssets">
+                                        <span>Customer Name</span>
+                                        <template lwc:if={warrantyExpiredAssetsColumns.accountName.isAsc}><lightning-icon icon-name="utility:arrowup" size="xx-small"></lightning-icon></template>
+                                        <template lwc:elseif={warrantyExpiredAssetsColumns.accountName.isDesc}><lightning-icon icon-name="utility:arrowdown"
+                                                size="xx-small"></lightning-icon></template>
+                                        <template lwc:else><lightning-icon icon-name="utility:sort" size="xx-small"></lightning-icon></template>
+                                    </th>
+                                    <th scope="col" class="horizontal-flex" style="justify-content: space-between; cursor: pointer" onclick={handleColumnSort} data-field="serialNumber"
+                                        data-columns="warrantyExpiredAssetsColumns" data-data="warrantyExpiredAssets">
+                                        <span>Serial Number</span>
+                                        <template lwc:if={warrantyExpiredAssetsColumns.serialNumber.isAsc}><lightning-icon icon-name="utility:arrowup" size="xx-small"></lightning-icon></template>
+                                        <template lwc:elseif={warrantyExpiredAssetsColumns.serialNumber.isDesc}><lightning-icon icon-name="utility:arrowdown"
+                                                size="xx-small"></lightning-icon></template>
+                                        <template lwc:else><lightning-icon icon-name="utility:sort" size="xx-small"></lightning-icon></template>
+                                    </th>
+                                    <th scope="col" class="horizontal-flex" style="justify-content: space-between; cursor: pointer" onclick={handleColumnSort} data-field="productDescription"
+                                        data-columns="warrantyExpiredAssetsColumns" data-data="warrantyExpiredAssets">
+                                        <span>Description</span>
+                                        <template lwc:if={warrantyExpiredAssetsColumns.productDescription.isAsc}><lightning-icon icon-name="utility:arrowup"
+                                                size="xx-small"></lightning-icon></template>
+                                        <template lwc:elseif={warrantyExpiredAssetsColumns.productDescription.isDesc}><lightning-icon icon-name="utility:arrowdown"
+                                                size="xx-small"></lightning-icon></template>
+                                        <template lwc:else><lightning-icon icon-name="utility:sort" size="xx-small"></lightning-icon></template>
+                                    </th>
+                                    <th scope="col" class="horizontal-flex" style="justify-content: space-between; cursor: pointer" onclick={handleColumnSort} data-field="warrantyStartDate"
+                                        data-columns="warrantyExpiredAssetsColumns" data-data="warrantyExpiredAssets">
+                                        <span>Warranty Start Date</span>
+                                        <template lwc:if={warrantyExpiredAssetsColumns.warrantyStartDate.isAsc}><lightning-icon icon-name="utility:arrowup" size="xx-small"></lightning-icon></template>
+                                        <template lwc:elseif={warrantyExpiredAssetsColumns.warrantyStartDate.isDesc}><lightning-icon icon-name="utility:arrowdown"
+                                                size="xx-small"></lightning-icon></template>
+                                        <template lwc:else><lightning-icon icon-name="utility:sort" size="xx-small"></lightning-icon></template>
+                                    </th>
+                                    <th scope="col" class="horizontal-flex" style="justify-content: space-between; cursor: pointer" onclick={handleColumnSort} data-field="warrantyEndDate"
+                                        data-columns="warrantyExpiredAssetsColumns" data-data="warrantyExpiredAssets">
+                                        <span>Warranty End Date</span>
+                                        <template lwc:if={warrantyExpiredAssetsColumns.warrantyEndDate.isAsc}><lightning-icon icon-name="utility:arrowup" size="xx-small"></lightning-icon></template>
+                                        <template lwc:elseif={warrantyExpiredAssetsColumns.warrantyEndDate.isDesc}><lightning-icon icon-name="utility:arrowdown"
+                                                size="xx-small"></lightning-icon></template>
+                                        <template lwc:else><lightning-icon icon-name="utility:sort" size="xx-small"></lightning-icon></template>
+                                    </th>
+                                    <th scope="col" class="horizontal-flex" style="justify-content: space-between; cursor: pointer" onclick={handleColumnSort} data-field="seName"
+                                        data-columns="warrantyExpiredAssetsColumns" data-data="warrantyExpiredAssets">
+                                        <span>Service Engineer</span>
+                                        <template lwc:if={warrantyExpiredAssetsColumns.seName.isAsc}><lightning-icon icon-name="utility:arrowup" size="xx-small"></lightning-icon></template>
+                                        <template lwc:elseif={warrantyExpiredAssetsColumns.seName.isDesc}><lightning-icon icon-name="utility:arrowdown" size="xx-small"></lightning-icon></template>
+                                        <template lwc:else><lightning-icon icon-name="utility:sort" size="xx-small"></lightning-icon></template>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={warrantyExpiredAssets} for:item="asset">
+                                    <tr key={asset.assetId} class="slds-hint-parent">
+                                        <td>{asset.accountName}</td>
+                                        <td>{asset.serialNumber}</td>
+                                        <td>{asset.productDescription}</td>
+                                        <td><lightning-formatted-date-time value={asset.warrantyStartDate} day="numeric" month="short" year="numeric"></lightning-formatted-date-time></td>
+                                        <td><lightning-formatted-date-time value={asset.warrantyEndDate} day="numeric" month="short" year="numeric"></lightning-formatted-date-time></td>
+                                        <td>{asset.seName}</td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </template>
+            </lightning-card>
+        </lightning-layout-item>
+
+
+        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small">
+            <lightning-card title="Non Active Customer / Asset">
+                <template if:true={showSpinner}>
+                    <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+                </template>
+
+                <template if:true={hasNonActiveCustomersData}>
+                    <lightning-layout>
+                        <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3"></lightning-layout-item>
+                        <lightning-layout-item size="8" small-device-size="8" medium-device-size="6" large-device-size="6">
+                            <img src="/img/chatter/OpenRoad.svg" class="slds-illustration__svg slds-var-p-around_large" />
+                            <p style="text-align: center; font-size: large;">No Non-Active Customers Data Available</p>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3"></lightning-layout-item>
+                    </lightning-layout>
+                </template>
+
+                <template if:false={hasNonActiveCustomersData}>
+
+                    <div class="slds-scrollable_x table-container">
+                        <!-- <table class="slds-table slds-table_bordered slds-table_cell-buffer">
+                            <thead>
+                                <tr class="slds-text-title_caps">
+                                    <th scope="col" class="horizontal-flex" style="justify-content: space-between; cursor: pointer" onclick={handleColumnSort} data-field="serviceEngineerName"
+                                        data-columns="nonActiveCustomersColumns" data-data="nonActiveCustomers">
+                                        <span>Service Engineer</span>
+                                        <template lwc:if={nonActiveCustomersColumns.serviceEngineerName.isAsc}><lightning-icon icon-name="utility:arrowup" size="xx-small"></lightning-icon></template>
+                                        <template lwc:elseif={nonActiveCustomersColumns.serviceEngineerName.isDesc}><lightning-icon icon-name="utility:arrowdown"
+                                                size="xx-small"></lightning-icon></template>
+                                        <template lwc:else><lightning-icon icon-name="utility:sort" size="xx-small"></lightning-icon></template>
+                                    </th>
+                                    <th scope="col" class="horizontal-flex" style="justify-content: space-between; cursor: pointer" onclick={handleColumnSort} data-field="x90days"
+                                        data-columns="nonActiveCustomersColumns" data-data="nonActiveCustomers">
+                                        <span>Within Last 90 Days</span>
+                                        <template lwc:if={nonActiveCustomersColumns.x90days.isAsc}><lightning-icon icon-name="utility:arrowup" size="xx-small"></lightning-icon></template>
+                                        <template lwc:elseif={nonActiveCustomersColumns.x90days.isDesc}><lightning-icon icon-name="utility:arrowdown" size="xx-small"></lightning-icon></template>
+                                        <template lwc:else><lightning-icon icon-name="utility:sort" size="xx-small"></lightning-icon></template>
+                                    </th>
+                                    <th scope="col" class="horizontal-flex" style="justify-content: space-between; cursor: pointer" onclick={handleColumnSort} data-field="x180days"
+                                        data-columns="nonActiveCustomersColumns" data-data="nonActiveCustomers">
+                                        <span>Within Last 180 Days</span>
+                                        <template lwc:if={nonActiveCustomersColumns.x180days.isAsc}><lightning-icon icon-name="utility:arrowup" size="xx-small"></lightning-icon></template>
+                                        <template lwc:elseif={nonActiveCustomersColumns.x180days.isDesc}><lightning-icon icon-name="utility:arrowdown" size="xx-small"></lightning-icon></template>
+                                        <template lwc:else><lightning-icon icon-name="utility:sort" size="xx-small"></lightning-icon></template>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={nonActiveCustomers} for:item="asset">
+                                    <tr key={asset.id} class="slds-hint-parent">
+                                        <td>{asset.serviceEngineerName}</td>
+                                        <td>{asset.x90days}</td>
+                                        <td>{asset.x180days}</td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table> -->
+                        <table class="slds-table slds-table_bordered slds-table_cell-buffer">
+                            <thead>
+                                <tr class="slds-text-title_caps">
+                                    <th scope="col" class="horizontal-flex" style="justify-content: space-between; cursor: pointer" onclick={handleColumnSort} data-field="serviceEngineerName"
+                                        data-columns="nonActiveCustomersColumns" data-data="nonActiveCustomers">
+                                        <span>Service Engineer</span>
+                                        <template lwc:if={nonActiveCustomersColumns.serviceEngineerName.isAsc}>
+                                            <lightning-icon icon-name="utility:arrowup" size="xx-small"></lightning-icon>
+                                        </template>
+                                        <template lwc:elseif={nonActiveCustomersColumns.serviceEngineerName.isDesc}>
+                                            <lightning-icon icon-name="utility:arrowdown" size="xx-small"></lightning-icon>
+                                        </template>
+                                        <template lwc:else>
+                                            <lightning-icon icon-name="utility:sort" size="xx-small"></lightning-icon>
+                                        </template>
+                                    </th>
+                                    <th scope="col" class="horizontal-flex" style="justify-content: space-between; cursor: pointer" onclick={handleColumnSort} data-field="x90days_assets"
+                                        data-columns="nonActiveCustomersColumns" data-data="nonActiveCustomers">
+                                        <span>Assets (90 Days)</span>
+                                        <template lwc:if={nonActiveCustomersColumns.x90days_assets.isAsc}>
+                                            <lightning-icon icon-name="utility:arrowup" size="xx-small"></lightning-icon>
+                                        </template>
+                                        <template lwc:elseif={nonActiveCustomersColumns.x90days_assets.isDesc}>
+                                            <lightning-icon icon-name="utility:arrowdown" size="xx-small"></lightning-icon>
+                                        </template>
+                                        <template lwc:else>
+                                            <lightning-icon icon-name="utility:sort" size="xx-small"></lightning-icon>
+                                        </template>
+                                    </th>
+                                    <th scope="col" class="horizontal-flex" style="justify-content: space-between; cursor: pointer" onclick={handleColumnSort} data-field="x90days_accounts"
+                                        data-columns="nonActiveCustomersColumns" data-data="nonActiveCustomers">
+                                        <span>Customers (90 Days)</span>
+                                        <template lwc:if={nonActiveCustomersColumns.x90days_accounts.isAsc}>
+                                            <lightning-icon icon-name="utility:arrowup" size="xx-small"></lightning-icon>
+                                        </template>
+                                        <template lwc:elseif={nonActiveCustomersColumns.x90days_accounts.isDesc}>
+                                            <lightning-icon icon-name="utility:arrowdown" size="xx-small"></lightning-icon>
+                                        </template>
+                                        <template lwc:else>
+                                            <lightning-icon icon-name="utility:sort" size="xx-small"></lightning-icon>
+                                        </template>
+                                    </th>
+                                    <th scope="col" class="horizontal-flex" style="justify-content: space-between; cursor: pointer" onclick={handleColumnSort} data-field="x180days_assets"
+                                        data-columns="nonActiveCustomersColumns" data-data="nonActiveCustomers">
+                                        <span>Assets (180 Days)</span>
+                                        <template lwc:if={nonActiveCustomersColumns.x180days_assets.isAsc}>
+                                            <lightning-icon icon-name="utility:arrowup" size="xx-small"></lightning-icon>
+                                        </template>
+                                        <template lwc:elseif={nonActiveCustomersColumns.x180days_assets.isDesc}>
+                                            <lightning-icon icon-name="utility:arrowdown" size="xx-small"></lightning-icon>
+                                        </template>
+                                        <template lwc:else>
+                                            <lightning-icon icon-name="utility:sort" size="xx-small"></lightning-icon>
+                                        </template>
+                                    </th>
+                                    <th scope="col" class="horizontal-flex" style="justify-content: space-between; cursor: pointer" onclick={handleColumnSort} data-field="x180days_accounts"
+                                        data-columns="nonActiveCustomersColumns" data-data="nonActiveCustomers">
+                                        <span>Customers (180 Days)</span>
+                                        <template lwc:if={nonActiveCustomersColumns.x180days_accounts.isAsc}>
+                                            <lightning-icon icon-name="utility:arrowup" size="xx-small"></lightning-icon>
+                                        </template>
+                                        <template lwc:elseif={nonActiveCustomersColumns.x180days_accounts.isDesc}>
+                                            <lightning-icon icon-name="utility:arrowdown" size="xx-small"></lightning-icon>
+                                        </template>
+                                        <template lwc:else>
+                                            <lightning-icon icon-name="utility:sort" size="xx-small"></lightning-icon>
+                                        </template>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={nonActiveCustomers} for:item="asset">
+                                    <tr key={asset.id} class="slds-hint-parent">
+                                        <td>{asset.serviceEngineerName}</td>
+                                        <td>{asset.x90days_assets}</td>
+                                        <td>{asset.x90days_accounts}</td>
+                                        <td>{asset.x180days_assets}</td>
+                                        <td>{asset.x180days_accounts}</td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+
+
+                    </div>
+
+                    <!--
+                    <div class="slds-p-around_medium">
+                        <lightning-layout multiple-rows="true">
+                            <lightning-layout-item size="6" padding="around-small">
+                                <lightning-card title="Last 180 Days">
+                                    <div class="slds-text-heading_large slds-text-align_center">
+                                        {nonActiveCustomers.x180days}
+                                    </div>
+                                </lightning-card>
+                            </lightning-layout-item>
+                            <lightning-layout-item size="6" padding="around-small">
+                                <lightning-card title="Last 7 Days">
+                                    <div class="slds-text-heading_large slds-text-align_center">
+                                        {nonActiveCustomers.x7days}
+                                    </div>
+                                </lightning-card>
+                            </lightning-layout-item>
+                        </lightning-layout>
+                    </div>
+                    -->
+                </template>
+            </lightning-card>
+        </lightning-layout-item>
+
+
+        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small">
+            <lightning-card title="Pin Code wise Non Active Customers">
+                <template if:true={showSpinner}>
+                    <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+                </template>
+
+                <template if:true={hasNoPinCodeWiseNonActiveAssets}>
+                    <lightning-layout>
+                        <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3"></lightning-layout-item>
+                        <lightning-layout-item size="8" small-device-size="8" medium-device-size="6" large-device-size="6">
+                            <img src="/img/chatter/OpenRoad.svg" class="slds-illustration__svg slds-var-p-around_large" />
+                            <p style="text-align: center; font-size: large;">No Non-Active Customers Data Available</p>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3"></lightning-layout-item>
+                    </lightning-layout>
+                </template>
+
+                <template if:true={amcExpiredAssets.length}>
+                    <div class="slds-scrollable_x table-container">
+                        <!-- <table class="slds-table slds-table_bordered slds-table_cell-buffer">
+                            <thead>
+                                <tr class="slds-text-title_caps">
+                                    <th scope="col" class="horizontal-flex" style="justify-content: space-between; cursor: pointer" onclick={handleColumnSort} data-field="pinCode"
+                                        data-columns="pincodeWiseNonActiveAssetsColumns" data-data="pincodeWiseNonActiveAssets">
+                                        <span>Pin Code</span>
+                                        <template lwc:if={pincodeWiseNonActiveAssetsColumns.pinCode.isAsc}><lightning-icon icon-name="utility:arrowup" size="xx-small"></lightning-icon></template>
+                                        <template lwc:elseif={pincodeWiseNonActiveAssetsColumns.pinCode.isDesc}><lightning-icon icon-name="utility:arrowdown"
+                                                size="xx-small"></lightning-icon></template>
+                                        <template lwc:else><lightning-icon icon-name="utility:sort" size="xx-small"></lightning-icon></template>
+                                    </th>
+                                    <th scope="col" class="horizontal-flex" style="justify-content: space-between; cursor: pointer" onclick={handleColumnSort} data-field="serviceEngineerName"
+                                        data-columns="pincodeWiseNonActiveAssetsColumns" data-data="pincodeWiseNonActiveAssets">
+                                        <span>Service Engineer</span>
+                                        <template lwc:if={pincodeWiseNonActiveAssetsColumns.serviceEngineerName.isAsc}><lightning-icon icon-name="utility:arrowup"
+                                                size="xx-small"></lightning-icon></template>
+                                        <template lwc:elseif={pincodeWiseNonActiveAssetsColumns.serviceEngineerName.isDesc}><lightning-icon icon-name="utility:arrowdown"
+                                                size="xx-small"></lightning-icon></template>
+                                        <template lwc:else><lightning-icon icon-name="utility:sort" size="xx-small"></lightning-icon></template>
+                                    </th>
+                                    <th scope="col" class="horizontal-flex" style="justify-content: space-between; cursor: pointer" onclick={handleColumnSort} data-field="x90days"
+                                        data-columns="pincodeWiseNonActiveAssetsColumns" data-data="pincodeWiseNonActiveAssets">
+                                        <span>Within Last 90 Days</span>
+                                        <template lwc:if={pincodeWiseNonActiveAssetsColumns.x90days.isAsc}><lightning-icon icon-name="utility:arrowup" size="xx-small"></lightning-icon></template>
+                                        <template lwc:elseif={pincodeWiseNonActiveAssetsColumns.x90days.isDesc}><lightning-icon icon-name="utility:arrowdown"
+                                                size="xx-small"></lightning-icon></template>
+                                        <template lwc:else><lightning-icon icon-name="utility:sort" size="xx-small"></lightning-icon></template>
+                                    </th>
+                                    <th scope="col" class="horizontal-flex" style="justify-content: space-between; cursor: pointer" onclick={handleColumnSort} data-field="x180days"
+                                        data-columns="pincodeWiseNonActiveAssetsColumns" data-data="pincodeWiseNonActiveAssets">
+                                        <span>Within Last 180 Days</span>
+                                        <template lwc:if={pincodeWiseNonActiveAssetsColumns.x180days.isAsc}><lightning-icon icon-name="utility:arrowup" size="xx-small"></lightning-icon></template>
+                                        <template lwc:elseif={pincodeWiseNonActiveAssetsColumns.x180days.isDesc}><lightning-icon icon-name="utility:arrowdown"
+                                                size="xx-small"></lightning-icon></template>
+                                        <template lwc:else><lightning-icon icon-name="utility:sort" size="xx-small"></lightning-icon></template>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={pincodeWiseNonActiveAssets} for:item="asset">
+                                    <tr key={asset.id}>
+                                        <td>{asset.pinCode}</td>
+                                        <td>{asset.serviceEngineerName}</td>
+                                        <td>{asset.x90days}</td>
+                                        <td>{asset.x180days}</td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table> -->
+                        <table class="slds-table slds-table_bordered slds-table_cell-buffer">
+                            <thead>
+                                <tr class="slds-text-title_caps">
+                                    <th scope="col" class="horizontal-flex" style="justify-content: space-between; cursor: pointer" onclick={handleColumnSort} data-field="pinCode"
+                                        data-columns="pincodeWiseNonActiveAssetsColumns" data-data="pincodeWiseNonActiveAssets">
+                                        <span>Pin Code</span>
+                                        <template lwc:if={pincodeWiseNonActiveAssetsColumns.pinCode.isAsc}>
+                                            <lightning-icon icon-name="utility:arrowup" size="xx-small"></lightning-icon>
+                                        </template>
+                                        <template lwc:elseif={pincodeWiseNonActiveAssetsColumns.pinCode.isDesc}>
+                                            <lightning-icon icon-name="utility:arrowdown" size="xx-small"></lightning-icon>
+                                        </template>
+                                        <template lwc:else>
+                                            <lightning-icon icon-name="utility:sort" size="xx-small"></lightning-icon>
+                                        </template>
+                                    </th>
+
+                                    <th scope="col" class="horizontal-flex" style="justify-content: space-between; cursor: pointer" onclick={handleColumnSort} data-field="serviceEngineerName"
+                                        data-columns="pincodeWiseNonActiveAssetsColumns" data-data="pincodeWiseNonActiveAssets">
+                                        <span>Service Engineer</span>
+                                        <template lwc:if={pincodeWiseNonActiveAssetsColumns.serviceEngineerName.isAsc}>
+                                            <lightning-icon icon-name="utility:arrowup" size="xx-small"></lightning-icon>
+                                        </template>
+                                        <template lwc:elseif={pincodeWiseNonActiveAssetsColumns.serviceEngineerName.isDesc}>
+                                            <lightning-icon icon-name="utility:arrowdown" size="xx-small"></lightning-icon>
+                                        </template>
+                                        <template lwc:else>
+                                            <lightning-icon icon-name="utility:sort" size="xx-small"></lightning-icon>
+                                        </template>
+                                    </th>
+
+                                    <!-- <th scope="col">Within Last 90 Days</th> -->
+                                    <th scope="col">Customers in 90 Days</th>
+                                    <!-- <th scope="col">Within Last 180 Days</th> -->
+                                    <th scope="col">Customers in 180 Days</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                <template for:each={pincodeWiseNonActiveAssets} for:item="asset">
+                                    <tr key={asset.id}>
+                                        <td>{asset.pinCode}</td>
+                                        <td>{asset.serviceEngineerName}</td>
+                                        <!-- <td>{asset.x90days}</td> -->
+                                        <td>{asset.x90days_accounts}</td>
+                                        <!-- <td>{asset.x180days}</td> -->
+                                        <td>{asset.x180days_accounts}</td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+
+                    </div>
+                </template>
+
+                <!-- <div class="chart-container">
+                    <canvas lwc:dom="manual" class="bar-chart-js-canvas2" style="max-height: 300px;"></canvas>
+                </div> -->
+            </lightning-card>
+        </lightning-layout-item>
+
+
+        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small">
+            <lightning-card title="Invoicing Due after AMC PM">
+
+            </lightning-card>
+        </lightning-layout-item>
+
+
+        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small">
+            <lightning-card title="Team Leave Plan">
+                <template if:true={showSpinner}>
+                    <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+                </template>
+                <template if:true={hasNoTeamAttendance}>
+                    <lightning-layout>
+                        <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3"></lightning-layout-item>
+                        <lightning-layout-item size="8" small-device-size="8" medium-device-size="6" large-device-size="6">
+                            <img src="/img/chatter/OpenRoad.svg" class="slds-illustration__svg slds-var-p-around_large" />
+                            <p style="text-align: center; font-size: large;">No Team Leave Plan Data Available.</p>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3"></lightning-layout-item>
+                    </lightning-layout>
+                </template>
+                <template if:true={teamAttendance.length}>
+                    <div class="slds-scrollable_x table-container">
+                        <table class="slds-table slds-table_bordered slds-table_cell-buffer">
+                            <thead>
+                                <tr class="slds-text-title_caps">
+                                    <th scope="col">Employee Name</th>
+                                    <th scope="col">Start Date</th>
+                                    <th scope="col">End Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={teamAttendance} for:item="attendance">
+                                    <tr key={attendance.id} class="slds-hint-parent">
+                                        <td>{attendance.userName}</td>
+                                        <td><lightning-formatted-date-time value={attendance.startDate} day="numeric" month="short" year="numeric"></lightning-formatted-date-time></td>
+                                        <td><lightning-formatted-date-time value={attendance.endDate} day="numeric" month="short" year="numeric"></lightning-formatted-date-time></td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </template>
+            </lightning-card>
+        </lightning-layout-item>
+
+
+        <!-- <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small">
+            <lightning-card title="Engineer Tour Plan">
+
+            </lightning-card>
+        </lightning-layout-item> -->
+
+
+        <!-- <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small">
+            <lightning-card title="Geo Mapping">
+
+            </lightning-card>
+        </lightning-layout-item> -->
+
+
+        <!-- <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small">
+            <lightning-card title="Business Revenue">
+
+            </lightning-card>
+        </lightning-layout-item> -->
+
+        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small">
+
+            <lightning-card title="Business Revenue">
+                <!-- Spinner -->
+                <template if:true={showSpinner}>
+                    <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+                </template>
+
+                <!-- No data message -->
+                <template if:true={hasNoData}>
+                    <lightning-layout>
+                        <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3"></lightning-layout-item>
+                        <lightning-layout-item size="8" small-device-size="8" medium-device-size="6" large-device-size="6">
+                            <img src="/img/chatter/OpenRoad.svg" class="slds-illustration__svg slds-var-p-around_large" />
+                            <p style="text-align: center; font-size: large;">No Business Revenue Data Available.</p>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3"></lightning-layout-item>
+                    </lightning-layout>
+                </template>
+
+                <!-- Data table -->
+                <template if:true={businessRevenueData.length}>
+                    <div class="slds-scrollable_x table-container">
+                        <table class="slds-table slds-table_bordered slds-table_cell-buffer">
+                            <thead>
+                                <tr class="slds-text-title_caps">
+                                    <th scope="col" class="horizontal-flex" style="justify-content: space-between; cursor: pointer" onclick={handleColumnSort} data-field="serviceEngineerName"
+                                        data-columns="businessRevenueDataColumns" data-data="businessRevenueData">
+                                        <span>Engineer</span>
+                                        <template lwc:if={businessRevenueDataColumns.serviceEngineerName.isAsc}><lightning-icon icon-name="utility:arrowup" size="xx-small"></lightning-icon></template>
+                                        <template lwc:elseif={businessRevenueDataColumns.serviceEngineerName.isDesc}><lightning-icon icon-name="utility:arrowdown"
+                                                size="xx-small"></lightning-icon></template>
+                                        <template lwc:else><lightning-icon icon-name="utility:sort" size="xx-small"></lightning-icon></template>
+                                    </th>
+
+                                    <th scope="col" class="horizontal-flex" style="justify-content: space-between; cursor: pointer" onclick={handleColumnSort} data-field="spareGoal"
+                                        data-columns="businessRevenueDataColumns" data-data="businessRevenueData">
+                                        <span>Spare Goal</span>
+                                        <template lwc:if={businessRevenueDataColumns.spareGoal.isAsc}><lightning-icon icon-name="utility:arrowup" size="xx-small"></lightning-icon></template>
+                                        <template lwc:elseif={businessRevenueDataColumns.spareGoal.isDesc}><lightning-icon icon-name="utility:arrowdown" size="xx-small"></lightning-icon></template>
+                                        <template lwc:else><lightning-icon icon-name="utility:sort" size="xx-small"></lightning-icon></template>
+                                    </th>
+                                    <th scope="col" class="horizontal-flex" style="justify-content: space-between; cursor: pointer" onclick={handleColumnSort} data-field="spareAchieve"
+                                        data-columns="businessRevenueDataColumns" data-data="businessRevenueData">
+                                        <span>Spare Achieve</span>
+                                        <template lwc:if={businessRevenueDataColumns.spareAchieve.isAsc}><lightning-icon icon-name="utility:arrowup" size="xx-small"></lightning-icon></template>
+                                        <template lwc:elseif={businessRevenueDataColumns.spareAchieve.isDesc}><lightning-icon icon-name="utility:arrowdown" size="xx-small"></lightning-icon></template>
+                                        <template lwc:else><lightning-icon icon-name="utility:sort" size="xx-small"></lightning-icon></template>
+                                    </th>
+
+                                    <th scope="col" class="horizontal-flex" style="justify-content: space-between; cursor: pointer" onclick={handleColumnSort} data-field="serviceGoal"
+                                        data-columns="businessRevenueDataColumns" data-data="businessRevenueData">
+                                        <span>Service Goal</span>
+                                        <template lwc:if={businessRevenueDataColumns.serviceGoal.isAsc}><lightning-icon icon-name="utility:arrowup" size="xx-small"></lightning-icon></template>
+                                        <template lwc:elseif={businessRevenueDataColumns.serviceGoal.isDesc}><lightning-icon icon-name="utility:arrowdown" size="xx-small"></lightning-icon></template>
+                                        <template lwc:else><lightning-icon icon-name="utility:sort" size="xx-small"></lightning-icon></template>
+                                    </th>
+                                    <th scope="col" class="horizontal-flex" style="justify-content: space-between; cursor: pointer" onclick={handleColumnSort} data-field="serviceAchieve"
+                                        data-columns="businessRevenueDataColumns" data-data="businessRevenueData">
+                                        <span>Service Achieve</span>
+                                        <template lwc:if={businessRevenueDataColumns.serviceAchieve.isAsc}><lightning-icon icon-name="utility:arrowup" size="xx-small"></lightning-icon></template>
+                                        <template lwc:elseif={businessRevenueDataColumns.serviceAchieve.isDesc}><lightning-icon icon-name="utility:arrowdown"
+                                                size="xx-small"></lightning-icon></template>
+                                        <template lwc:else><lightning-icon icon-name="utility:sort" size="xx-small"></lightning-icon></template>
+                                    </th>
+
+                                    <th scope="col" class="horizontal-flex" style="justify-content: space-between; cursor: pointer" onclick={handleColumnSort} data-field="totalGoal"
+                                        data-columns="businessRevenueDataColumns" data-data="businessRevenueData">
+                                        <span>Total Goal</span>
+                                        <template lwc:if={businessRevenueDataColumns.totalGoal.isAsc}><lightning-icon icon-name="utility:arrowup" size="xx-small"></lightning-icon></template>
+                                        <template lwc:elseif={businessRevenueDataColumns.totalGoal.isDesc}><lightning-icon icon-name="utility:arrowdown" size="xx-small"></lightning-icon></template>
+                                        <template lwc:else><lightning-icon icon-name="utility:sort" size="xx-small"></lightning-icon></template>
+                                    </th>
+                                    <th scope="col" class="horizontal-flex" style="justify-content: space-between; cursor: pointer" onclick={handleColumnSort} data-field="totalAchieve"
+                                        data-columns="businessRevenueDataColumns" data-data="businessRevenueData">
+                                        <span>Total Achieve</span>
+                                        <template lwc:if={businessRevenueDataColumns.totalAchieve.isAsc}><lightning-icon icon-name="utility:arrowup" size="xx-small"></lightning-icon></template>
+                                        <template lwc:elseif={businessRevenueDataColumns.totalAchieve.isDesc}><lightning-icon icon-name="utility:arrowdown" size="xx-small"></lightning-icon></template>
+                                        <template lwc:else><lightning-icon icon-name="utility:sort" size="xx-small"></lightning-icon></template>
+                                    </th>
+                                    <th scope="col" class="horizontal-flex" style="justify-content: space-between; cursor: pointer" onclick={handleColumnSort} data-field="totalPercentage"
+                                        data-columns="businessRevenueDataColumns" data-data="businessRevenueData">
+                                        <span>Total %</span>
+                                        <template lwc:if={businessRevenueDataColumns.totalPercentage.isAsc}><lightning-icon icon-name="utility:arrowup" size="xx-small"></lightning-icon></template>
+                                        <template lwc:elseif={businessRevenueDataColumns.totalPercentage.isDesc}><lightning-icon icon-name="utility:arrowdown"
+                                                size="xx-small"></lightning-icon></template>
+                                        <template lwc:else><lightning-icon icon-name="utility:sort" size="xx-small"></lightning-icon></template>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={businessRevenueData} for:item="revenue">
+                                    <tr key={revenue.id} class="slds-hint-parent">
+                                        <td>{revenue.serviceEngineerName}</td>
+
+                                        <td class="slds-text-align_right">
+                                            <lightning-formatted-number value={revenue.spareGoal}></lightning-formatted-number>
+                                        </td>
+                                        <td class="slds-text-align_right">
+                                            <lightning-formatted-number value={revenue.spareAchieve}></lightning-formatted-number>
+                                        </td>
+                                        <!-- <td class="slds-text-align_right">{revenue.sparePercentage}%</td> -->
+
+                                        <td class="slds-text-align_right">
+                                            <lightning-formatted-number value={revenue.serviceGoal}></lightning-formatted-number>
+                                        </td>
+                                        <td class="slds-text-align_right">
+                                            <lightning-formatted-number value={revenue.serviceAchieve}></lightning-formatted-number>
+                                        </td>
+                                        <!-- <td class="slds-text-align_right">{revenue.servicePercentage}%</td> -->
+
+                                        <td class="slds-text-align_right">
+                                            <lightning-formatted-number value={revenue.totalGoal}></lightning-formatted-number>
+                                        </td>
+                                        <td class="slds-text-align_right">
+                                            <lightning-formatted-number value={revenue.totalAchieve}></lightning-formatted-number>
+                                        </td>
+                                        <td class="slds-text-align_right">
+                                            {revenue.totalPercentage}%
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </template>
+            </lightning-card>
+        </lightning-layout-item>
+
+
+        <!-- <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small">
+            <lightning-card title="AMC Business Chart">
+                <div class="chart-container">
+                    <canvas lwc:dom="manual" class="doughnut" style="max-height: 300px;"></canvas>
+                </div>
+            </lightning-card>
+        </lightning-layout-item> -->
+
+        <!--  -->
+        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small">
+            <lightning-card title="AMC Business Summary">
+                <template if:true={showSpinner}>
+                    <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+                </template>
+
+                <template if:true={noDataFound}>
+                    <div class="slds-align_absolute-center slds-p-around_medium">
+                        <img src="/img/chatter/OpenRoad.svg" class="slds-illustration__svg slds-var-p-around_medium" alt="No Data" />
+                        <p class="slds-text-heading_small slds-text-align_center">No AMC Business Data Available</p>
+                    </div>
+                </template>
+
+                <template if:true={sortedAmcData}>
+                    <div class="slds-p-around_medium">
+                        <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                            <thead>
+                                <tr>
+                                    <th scope="col">SE Name</th>
+                                    <th scope="col">New AMCs</th>
+                                    <th scope="col">Renewed AMCs</th>
+                                    <th scope="col">AMCs Within 90 Days</th>
+                                    <th scope="col">Not Renewed Within 90 Days</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={sortedAmcData} for:item="record">
+                                    <tr key={record.seName} style={record.rowStyle}>
+                                        <td>{record.seName}</td>
+                                        <td>
+                                            <div>Amount: {record.newAMCs}</div>
+                                            <div>Count: {record.newAMCsCount}</div>
+                                        </td>
+                                        <td>
+                                            <div>Amount: {record.renewedAMCs}</div>
+                                            <div>Count: {record.renewedAMCsCount}</div>
+                                        </td>
+                                        <td>
+                                            <div>Amount: {record.amcWithin90Days}</div>
+                                            <div>Count: {record.amcWithin90DaysCount}</div>
+                                        </td>
+                                        <td>
+                                            <div>Amount: {record.notRenewedWithin90Days}</div>
+                                            <div>Count: {record.notRenewedWithin90DaysCount}</div>
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </template>
+            </lightning-card>
+        </lightning-layout-item>
+
+
+
+        <!--  -->
+
+
+        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small">
+            <lightning-card title="Last 7 days Case History">
+                <!-- Spinner -->
+                <template if:true={showSpinner}>
+                    <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+                </template>
+
+                <!-- No data message -->
+                <template if:true={hasNoCaseHistoryData}>
+                    <lightning-layout>
+                        <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3"></lightning-layout-item>
+                        <lightning-layout-item size="8" small-device-size="8" medium-device-size="6" large-device-size="6">
+                            <img src="/img/chatter/OpenRoad.svg" class="slds-illustration__svg slds-var-p-around_large" />
+                            <p style="text-align: center; font-size: large;">No Case History Data Available.</p>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3"></lightning-layout-item>
+                    </lightning-layout>
+                </template>
+
+                <!-- Data display -->
+                <!-- <template if:true={caseHistoryData} for:each={caseHistoryData} for:item="record">
+                    <div class="slds-p-around_medium" key={record.ownerName}>
+                        <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-large-size_1-of-4" style="font-weight: 600;font-size: large">{record.ownerName}</div>
+                        <div class="slds-grid slds-wrap slds-gutters">
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-large-size_1-of-4">
+                                <lightning-card>
+                                    <div class="slds-text-align_center">
+                                        <p class="slds-text-heading_small">Cases Assigned</p>
+                                        <p class="slds-text-heading_medium">{record.assigned}</p>
+                                    </div>
+                                </lightning-card>
+                            </div>
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-large-size_1-of-4">
+                                <lightning-card>
+                                    <div class="slds-text-align_center">
+                                        <p class="slds-text-heading_small">Cases Attended</p>
+                                        <p class="slds-text-heading_medium">{record.attended}</p>
+                                    </div>
+                                </lightning-card>
+                            </div>
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-large-size_1-of-4">
+                                <lightning-card>
+                                    <div class="slds-text-align_center">
+                                        <p class="slds-text-heading_small">Cases Closed</p>
+                                        <p class="slds-text-heading_medium">{record.closed}</p>
+                                    </div>
+                                </lightning-card>
+                            </div>
+                            <div class="slds-col slds-size_1-of-1 slds-medium-size_1-of-2 slds-large-size_1-of-4">
+                                <lightning-card>
+                                    <div class="slds-text-align_center">
+                                        <p class="slds-text-heading_small">Open Cases</p>
+                                        <p class="slds-text-heading_medium">{record.open}</p>
+                                    </div>
+                                </lightning-card>
+                            </div>
+                        </div>
+                    </div>
+                </template> -->
+
+
+                <template if:true={caseHistoryData}>
+                    <div class="slds-p-around_medium">
+                        <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                            <thead>
+                                <tr>
+                                    <th>Service Engineer</th>
+                                    <th>Cased Assigned</th>
+                                    <th>Case Attended</th>
+                                    <th>Cases Closed</th>
+                                    <th>Open Cases</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={caseHistoryData} for:item="record">
+                                    <tr key={record.ownerName}>
+                                        <td>{record.ownerName}</td>
+                                        <td>{record.assigned}</td>
+                                        <td>{record.attended}</td>
+                                        <td>{record.closed}</td>
+                                        <td>{record.open}</td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </template>
+            </lightning-card>
+        </lightning-layout-item>
+
+
+        <!--  -->
+        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small">
+            <lightning-card title="Open Cases Older Than 4 Days">
+                <template if:true={showSpinner}>
+                    <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+                </template>
+
+                <template if:true={hasNoCaseList}>
+                    <lightning-layout>
+                        <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3"></lightning-layout-item>
+                        <lightning-layout-item size="8" small-device-size="8" medium-device-size="6" large-device-size="6">
+                            <img src="/img/chatter/OpenRoad.svg" class="slds-illustration__svg slds-var-p-around_large" />
+                            <p style="text-align: center; font-size: large;">No Case History Data Available.</p>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3"></lightning-layout-item>
+                    </lightning-layout>
+                </template>
+
+                <template if:true={caseList}>
+                    <div class="slds-scrollable_x table-container">
+                        <table class="slds-table slds-table_cell-buffer slds-table_bordered">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Service Engineer</th>
+                                    <th scope="col">Case Number</th>
+                                    <th scope="col">Customer Name</th>
+                                    <th scope="col">Case Priority</th>
+                                    <th scope="col">Case Stage</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={caseList} for:item="caseRec">
+                                    <tr key={caseRec.caseNumber}>
+                                        <td>{caseRec.serviceEngineer}</td>
+                                        <td>{caseRec.caseNumber}</td>
+                                        <td>{caseRec.customerName}</td>
+                                        <td>{caseRec.casePriority}</td>
+                                        <td>{caseRec.caseStage}</td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </template>
+            </lightning-card>
+        </lightning-layout-item>
+        <!--  -->
+
+
+        <!--  -->
+        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small">
+
+            <lightning-card title="List of Open Cases (Waiting for Action)">
+                <template if:true={showSpinner}>
+                    <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+                </template>
+
+                <template if:true={hasNoCases}>
+                    <lightning-layout>
+                        <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3">
+                        </lightning-layout-item>
+
+                        <lightning-layout-item size="8" small-device-size="8" medium-device-size="6" large-device-size="6">
+
+                            <img src="/img/chatter/OpenRoad.svg" class="slds-illustration__svg slds-var-p-around_large" />
+                            <p style="text-align: center; font-size: large;">
+                                No Open Cases Requiring Action.
+                            </p>
+                        </lightning-layout-item>
+
+                        <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3">
+                        </lightning-layout-item>
+                    </lightning-layout>
+                </template>
+
+                <template if:true={openCasesForAction.length}>
+                    <div class="slds-scrollable_x table-container">
+                        <table class="slds-table slds-table_bordered slds-table_cell-buffer">
+                            <thead>
+                                <tr class="slds-text-title_caps">
+                                    <th scope="col">Case Number</th>
+                                    <th scope="col">Account</th>
+                                    <th scope="col">Created Date</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Assigned Date</th>
+                                    <th scope="col">Owner</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={openCasesForAction} for:item="cases">
+                                    <tr key={cases.id} class="slds-hint-parent">
+                                        <td>
+                                            {cases.caseNumber}
+                                        </td>
+                                        <td>
+                                            {cases.accountName}
+                                        </td>
+                                        <td>
+                                            <lightning-formatted-date-time value={cases.createdDate} day="numeric" month="short" year="numeric">
+                                            </lightning-formatted-date-time>
+                                        </td>
+                                        <td>{cases.status}</td>
+                                        <td>
+                                            <lightning-formatted-date-time value={cases.assignedDateTime} day="numeric" month="short" year="numeric">
+                                            </lightning-formatted-date-time>
+                                        </td>
+                                        <td>
+                                            {cases.ownerName}
+                                        </td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </template>
+            </lightning-card>
+        </lightning-layout-item>
+        <!--  -->
+
+
+        <!--  -->
+        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small">
+            <lightning-card title="Pending Orders">
+                <div class="">
+                    <template if:true={showSpinner}>
+                        <lightning-spinner alternative-text="Loading" size="medium"></lightning-spinner>
+                    </template>
+
+                    <!-- <template if:true={hasNoOrders}>
+                        <div class="slds-align_absolute-center slds-p-around_large">
+                            <img src="/img/chatter/OpenRoad.svg" class="slds-illustration__svg slds-var-p-around_large" />
+                            <p class="slds-text-heading_medium slds-text-color_weak">
+                                No pending orders found
+                            </p>
+                        </div>
+                    </template> -->
+                    <template if:true={hasNoOrders}>
+                        <lightning-layout>
+                            <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3">
+                            </lightning-layout-item>
+
+                            <lightning-layout-item size="8" small-device-size="8" medium-device-size="6" large-device-size="6">
+
+                                <img src="/img/chatter/OpenRoad.svg" class="slds-illustration__svg slds-var-p-around_large" />
+                                <p style="text-align: center; font-size: large;">
+                                    No pending orders found
+                                </p>
+                            </lightning-layout-item>
+
+                            <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3">
+                            </lightning-layout-item>
+                        </lightning-layout>
+                    </template>
+
+                    <template if:true={pendingOrders.length}>
+                        <div class="table-container" style="max-height: 500px;">
+                            <table class="slds-table slds-table_bordered slds-table_cell-buffer">
+                                <thead>
+                                    <tr class="slds-text-title_caps">
+                                        <th scope="col">Order Name</th>
+                                        <!-- <th scope="col">Sale Order</th> -->
+                                        <th scope="col">Order Date</th>
+                                        <th scope="col">Customer Name</th>
+                                        <!-- <th scope="col">Condition</th> -->
+                                        <th scope="col">Total value</th>
+                                        <th scope="col">Order Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template for:each={pendingOrders} for:item="order">
+                                        <tr key={order.id} class="slds-hint-parent">
+                                            <td>{order.saleOrderNumber}</td>
+                                            <td>
+                                                {order.customerPurchaseOrderDate}
+                                            </td>
+                                            <td>
+                                                {order.customerName}
+                                            </td>
+                                            <td>{order.documentAmount}</td>
+                                            <td>
+                                                {order.deliveryStatus}
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </template>
+                </div>
+            </lightning-card>
+        </lightning-layout-item>
+        <!--  -->
+        <!--  -->
+        <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-top_x-small slds-var-p-horizontal_xx-small">
+            <lightning-card title="Returnable Quotes">
+                <template if:true={showSpinner}>
+                    <lightning-spinner alternative-text="Loading" size="large"></lightning-spinner>
+                </template>
+                <template if:true={hasNoReturnableQuoteLines}>
+                    <lightning-layout>
+                        <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3"></lightning-layout-item>
+                        <lightning-layout-item size="8" small-device-size="8" medium-device-size="6" large-device-size="6">
+                            <img src="/img/chatter/OpenRoad.svg" class="slds-illustration__svg slds-var-p-around_large" />
+                            <p style="text-align: center; font-size: large;">No Returnable Quotes Available.</p>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3"></lightning-layout-item>
+                    </lightning-layout>
+                </template>
+
+                <template if:true={returnableQuoteLines.length}>
+                    <div class="table-container">
+                        <!-- <table class="slds-table slds-table_bordered slds-table_cell-buffer"> -->
+                        <table class="slds-table slds-table_bordered slds-table_col-bordered slds-table_fixed-layout">
+                            <thead>
+                                <tr class="slds-text-title_caps">
+                                    <th scope="col">Customer Name</th>
+                                    <th scope="col">Material Code</th>
+                                    <th scope="col">Material Description</th>
+                                    <th scope="col">Quantity</th>
+                                    <th scope="col">Amount</th>
+
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <template for:each={returnableQuoteLines} for:item="qt">
+                                    <tr key={qt.id}>
+                                        <td>{qt.customerName}</td>
+                                        <td>{qt.materialCode}</td>
+                                        <td>{qt.materialDescription}</td>
+                                        <td>{qt.quantity}</td>
+                                        <td>{qt.amount}</td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                        </table>
+                    </div>
+                </template>
+                <!-- <template if:true={error}>
+                                        <div class="slds-text-color_error">{error.body.message}</div>
+                                    </template> -->
+            </lightning-card>
+        </lightning-layout-item>
+        <!--  -->
+    </lightning-layout>
+
+
+
+
+
+
+
+
+</template>

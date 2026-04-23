@@ -1,0 +1,38 @@
+<template>
+    <lightning-card title="Quote List">
+        <div class="slds-p-around_medium" style="overflow-x: auto;">
+            <table class="slds-table slds-table_bordered slds-table_cell-buffer">
+                <thead>
+                    <tr>
+                        <th scope="col" class="force-wrap">Quote Name</th>
+                        <th scope="col" class="force-wrap">Account Name</th>
+                        <th scope="col" class="force-wrap">Total Price</th>
+                        <th scope="col" class="force-wrap">Status</th>
+                        <th scope="col" class="force-wrap">Expiration Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <template for:each={paginatedQuotes} for:item="quote">
+                        <tr key={quote.Id}>
+                            <!-- <td>{quote.Name}</td> -->
+                            <td class="force-wrap"> <a href={quote.recordLink} target="_blank">{quote.Name}</a></td>
+                            <td if:true={quote.Account} class="force-wrap">{quote.Account.Name}</td>
+                            <td if:false={quote.Account} class="force-wrap"></td>
+                            <td class="force-wrap">{quote.Total_Basic_Unit_Price__c}</td>
+                            <td class="force-wrap">{quote.Status}</td>
+                            <td class="force-wrap">
+                                <lightning-formatted-date-time value={quote.ExpirationDate} year="numeric" month="short" day="2-digit">
+                                </lightning-formatted-date-time>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+        <div class="slds-m-top_medium slds-align_absolute-center">
+            <lightning-button label="Previous" onclick={handlePrevious} disabled={disablePrevious}></lightning-button>
+            <span class="slds-m-horizontal_medium">Page {currentPage} of {totalPages}</span>
+            <lightning-button label="Next" class="slds-m-left_small" onclick={handleNext} disabled={disableNext}></lightning-button>
+        </div>
+    </lightning-card>
+</template>

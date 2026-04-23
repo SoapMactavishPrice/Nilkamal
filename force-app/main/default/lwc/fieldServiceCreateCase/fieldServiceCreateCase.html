@@ -1,0 +1,178 @@
+<template>
+
+    <template if:true={showSpinner}>
+        <lightning-spinner alternative-text="Loading" variant="brand" size="medium"></lightning-spinner>
+    </template>
+
+    <div class="case-record-form-container">
+
+        <lightning-card hide-header="true" variant="narrow" title="Create Case" label="Create Case">
+
+            <lightning-record-edit-form object-api-name="Case" onload={handleCreateCaseLoad} onsuccess={handleCreateCaseSuccess} onsubmit={handleCreateCaseSubmit} onerror={handleCreateCaseError}>
+
+                <lightning-messages></lightning-messages>
+
+                <lightning-layout multiple-rows>
+
+                    <lightning-layout-item size="12" small-device-size="12" medium-device-size="4" large-device-size="4" class="slds-var-p-horizontal_medium">
+                        <template if:true={caseRecord.AssetId}>
+                            <lightning-record-picker name="AssetId" object-api-name="Asset" label="Asset (Serial Number)" value={caseRecord.AssetId} onchange={handleFieldChange}
+                                data-type="RecordPicker" data-name="AssetId"></lightning-record-picker>
+                            <div class="slds-var-p-top_small">
+                                <template if:true={assetWarrantyDetails}>
+                                    <div>
+                                        Warranty : {assetWarrantyDetails.status}
+                                        <br />
+                                        Start Date : <lightning-formatted-date-time value={assetWarrantyDetails.startDate} year="numeric" day="2-digit" month="short"></lightning-formatted-date-time>
+                                        <br />
+                                        End Date : <lightning-formatted-date-time value={assetWarrantyDetails.endDate} year="numeric" day="2-digit" month="short"></lightning-formatted-date-time>
+                                    </div>
+                                </template>
+                                <template if:true={assetAMCDetails}>
+                                    <div>
+                                        {assetAMCDetails.type} : {assetAMCDetails.status}
+                                        <br />
+                                        Start Date : <lightning-formatted-date-time value={assetAMCDetails.startDate} year="numeric" day="2-digit" month="short"></lightning-formatted-date-time>
+                                        <br />
+                                        End Date : <lightning-formatted-date-time value={assetAMCDetails.endDate} year="numeric" day="2-digit" month="short"></lightning-formatted-date-time>
+                                    </div>
+                                </template>
+                                <template if:true={assetWarrantyAMCExpired}>
+                                    <div class="slds-text-color_error">
+                                        AMC/Warranty Expired
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                        <template if:false={caseRecord.AssetId}>
+                            <lightning-record-picker name="AssetId" object-api-name="Asset" label="Asset (Serial Number)" placeholder="Search by Serial Number" value={caseRecord.AssetId}
+                                display-info={assetBySerialDisplayInfo} matching-info={assetBySerialMatchingInfo} onchange={handleFieldChange} data-type="RecordPicker"
+                                data-name="AssetId"></lightning-record-picker>
+                        </template>
+                    </lightning-layout-item>
+
+                    <lightning-layout-item size="12" small-device-size="12" medium-device-size="4" large-device-size="4" class="slds-var-p-horizontal_medium">
+                        <template if:true={caseRecord.AccountId}>
+                            <lightning-record-picker name="AccountId" object-api-name="Account" label="Customer" value={caseRecord.AccountId} onchange={handleCustomerSelect} data-type="RecordPicker"
+                                data-name="AccountId"></lightning-record-picker>
+                            <div class="slds-var-p-top_small">
+                                <div if:true={caseRecord.SAPCustomerCode}>{caseRecord.SAPCustomerCode}</div>
+                                <div if:true={caseRecord.customerAddress}>{caseRecord.customerAddress}</div>
+                            </div>
+                        </template>
+                        <template if:false={caseRecord.AccountId}>
+                            <lightning-record-picker name="AccountId" object-api-name="Account" label="Customer" placeholder="Search by Customer Name" display-info={accountByNameDisplayInfo}
+                                matching-info={accountByNameMatchingInfo} onchange={handleCustomerSelect} data-type="RecordPicker" data-name="AccountId"></lightning-record-picker>
+                        </template>
+                        <!--
+                        <template if:true={caseRecord.AccountId}>
+                            <div class="slds-var-p-top_small">
+                                <div if:true={caseRecord.SAPCustomerCode}>{caseRecord.SAPCustomerCode}</div>
+                                <div if:true={caseRecord.customerAddress}>{caseRecord.customerAddress}</div>
+                            </div>
+                        </template>
+                        -->
+                    </lightning-layout-item>
+
+
+                    <lightning-layout-item size="12" small-device-size="12" medium-device-size="4" large-device-size="4" class="slds-var-p-horizontal_medium">
+                        <template lwc:if={caseRecord.assetOptions}>
+                            <c-multiline-dropdown field-label="Customer Assets (Invoice)" options={caseRecord.assetOptions} placeholder="Select Asset" value={caseRecord.AssetId}
+                                onchange={handleAssetSelect} disabled={caseRecord.isCustomerAssetsDropdownDisabled}></c-multiline-dropdown>
+                        </template>
+                        <template lwc:else>
+                            <c-multiline-dropdown field-label="Customer Assets (Invoice)" placeholder="Select Asset" onchange={handleAssetSelect}
+                                disabled={caseRecord.isCustomerAssetsDropdownDisabled}></c-multiline-dropdown>
+                        </template>
+                    </lightning-layout-item>
+
+
+                    <!--
+                    <lightning-layout-item size="12" small-device-size="12" medium-device-size="4" large-device-size="4" class="slds-var-p-horizontal_small">
+                        <template if:true={caseRecord.Invoice__c}>
+                            <lightning-record-picker name="Invoice__c" object-api-name="Invoice__c" label="Invoice Number" value={caseRecord.Invoice__c} onchange={handleFieldChange}
+                                data-type="RecordPicker"></lightning-record-picker>
+                        </template>
+                        <template if:false={caseRecord.Invoice__c}>
+                            <lightning-record-picker name="Invoice__c" object-api-name="Asset" label="Invoice Number" placeholder="Search by Serial Number or Invoice Number"
+                                display-info={assetBySerialNoOrInvNoDisplayInfo} matching-info={assetBySerialNoOrInvNoMatchingInfo} onchange={handleFieldChange}
+                                data-type="RecordPicker"></lightning-record-picker>
+                        </template>
+                    </lightning-layout-item>
+                    -->
+
+
+
+
+                    <lightning-layout-item size="12">
+                        <hr>
+                    </lightning-layout-item>
+
+
+
+                    <template for:each={fields} for:item="field">
+                        <template if:false={field.isHidden}>
+                            <template lwc:if={field.isCustom}>
+                                <lightning-layout-item key={field.fieldApiName} size="12" small-device-size="12" medium-device-size="4" large-device-size="4" class="slds-var-p-horizontal_medium">
+                                    <lightning-combobox name={field.fieldApiName} value={field.value} label={field.label} options={field.options} onchange={handleFieldChange}
+                                        data-name={field.fieldApiName} required={field.required} disabled={field.isDisabled}></lightning-combobox>
+                                    <!-- disabled={field.isDisabled} -->
+                                </lightning-layout-item>
+                            </template>
+                            <template lwc:else>
+                                <lightning-layout-item key={field.fieldApiName} size="12" small-device-size="12" medium-device-size="4" large-device-size="4" class="slds-var-p-horizontal_small">
+                                    <template lwc:if={field.isContactField}>
+                                        <template if:true={caseRecord.contactOptions}>
+                                            <c-multiline-dropdown field-label="Contact Name" placeholder="Select Contact" value={field.value} options={caseRecord.contactOptions}
+                                                onchange={handleContactSelect} disabled={isAddContactDisabled} data-name={field.fieldApiName}></c-multiline-dropdown>
+                                        </template>
+                                        <template if:false={caseRecord.contactOptions}>
+                                            <c-multiline-dropdown field-label="Contact Name" placeholder="Select Contact" onchange={handleContactSelect} disabled={isAddContactDisabled}
+                                                data-name={field.fieldApiName}></c-multiline-dropdown>
+                                        </template>
+                                        <div class="slds-text-align_center">
+                                            <lightning-button variant="base" label="Add Contact" title="Add Contact" onclick={handleAddNewContact} disabled={isAddContactDisabled}
+                                                data-parent-field-api-name={field.fieldApiName}></lightning-button>
+                                        </div>
+                                    </template>
+
+                                    <template lwc:elseif={field.isNotifiedByField}>
+                                        <template if:true={caseRecord.contactOptions}>
+                                            <c-multiline-dropdown field-label="Notified By" placeholder="Select Notified By" value={field.value} options={caseRecord.contactOptions}
+                                                onchange={handleContactSelect} disabled={isAddContactDisabled} data-name={field.fieldApiName}></c-multiline-dropdown>
+                                        </template>
+                                        <template if:false={caseRecord.contactOptions}>
+                                            <c-multiline-dropdown field-label="Notified By" placeholder="Select Notified By" onchange={handleContactSelect} disabled={isAddContactDisabled}
+                                                data-name={field.fieldApiName}></c-multiline-dropdown>
+                                        </template>
+                                        <div class="slds-text-align_center">
+                                            <lightning-button variant="base" label="Add Contact" title="Add Contact" onclick={handleAddNewContact} disabled={isAddContactDisabled}
+                                                data-parent-field-api-name={field.fieldApiName}></lightning-button>
+                                        </div>
+                                    </template>
+
+                                    <template lwc:else>
+                                        <lightning-input-field field-name={field.fieldApiName} variant="label-stacked" value={field.value} onchange={handleFieldChange} required={field.required}
+                                            disabled={field.isDisabled}></lightning-input-field>
+                                    </template>
+                                </lightning-layout-item>
+                            </template>
+                        </template>
+                    </template>
+
+
+
+                    <lightning-layout-item size="12" class="slds-align_absolute-center slds-var-p-vertical_xx-large">
+                        <lightning-button label="Cancel" variant="brand-outline" class="slds-var-p-horizontal_small" onclick={handleCreateCaseCancel}></lightning-button>
+                        <lightning-button label="Save" type="submit" variant="brand" class="slds-var-p-horizontal_small"></lightning-button>
+                    </lightning-layout-item>
+
+                </lightning-layout>
+
+            </lightning-record-edit-form>
+
+        </lightning-card>
+
+    </div>
+
+</template>

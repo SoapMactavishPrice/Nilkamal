@@ -1,0 +1,66 @@
+@import 'c/utilCSS';
+
+
+
+
+
+.open-cases-header,
+.open-service-appointments-header {
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-align: center;
+    background: var(--gray-clr);
+    color: var(--white-clr);
+}
+
+.totalAppointment {
+    float: right;
+    margin-right: 20%;
+}
+
+.case-number-sa-number[data-checked="true"] a div {
+    color: var(--green-clr);
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+
+@media (max-width: 767px) {
+    .open-cases-container {}
+
+    .open-cases-container .open-cases-table {
+        height: 43vh;
+        overflow-y: auto;
+    }
+
+    .open-service-appointments-container {}
+
+    .open-service-appointments-container .open-service-appointments-table {
+        height: 43vh;
+        overflow-y: auto;
+    }
+
+}
+
+
+@media (min-width: 768px) {
+    .block1 {}
+
+    .block2 {
+        padding: 5px;
+    }
+
+    .open-cases-container {}
+
+    .open-cases-container .open-cases-table {
+        height: 35vh;
+        overflow-y: auto;
+    }
+
+    .open-service-appointments-container {}
+
+    .open-service-appointments-container .open-service-appointments-table {
+        height: 35vh;
+        overflow-y: auto;
+    }
+}

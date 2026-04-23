@@ -1,0 +1,35 @@
+@import 'c/utilCSS';
+
+.center-content {
+    display: flex;
+    justify-content: center;
+    margin: 10px 0;
+}
+
+.slds-modal {
+    /* width: 25rem; */
+    margin: auto;
+}
+
+/* .slds-modal__container {
+    background: white;
+    border-radius: 0.5rem;
+} */
+
+.slds-modal__header {
+    text-align: center;
+    font-weight: bold;
+}
+
+.slds-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+lightning-card {
+    padding-top: 1rem;
+}

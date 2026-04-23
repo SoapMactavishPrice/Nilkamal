@@ -1,0 +1,605 @@
+<template>
+    <template if:true={showSpinner}>
+        <lightning-spinner alternative-text="Loading" variant="brand" size="medium"></lightning-spinner>
+    </template>
+
+
+    <!--First Page-->
+    <template if:true={isMobileView}>
+        <lightning-card label="Spare Request" hide-header>
+            <template if:true={showSpinner}>
+                <lightning-spinner alternative-text="Loading" variant="brand" size="medium"></lightning-spinner>
+            </template>
+
+            <div class="container slds-var-p-top_small">
+                <div class="row">
+                    <div class="label">Case Type</div>
+                    <div class="slds-wrap">{caseType}</div>
+                </div>
+                <div class="row">
+                    <div class="label">Case Id</div>
+                    <div class="slds-wrap">{caseNum}</div>
+                </div>
+                <div class="row">
+                    <div class="label">Customer Name</div>
+                    <div class="slds-wrap">{AccountName}</div>
+                </div>
+                <div class="row">
+                    <div class="label">Case Date</div>
+                    <div class="slds-wrap">{date}</div>
+                </div>
+                <div class="row">
+                    <div class="label">Invoice No</div>
+                    <div class="slds-wrap">{InvoiceNumber}</div>
+                </div>
+                <div class="row">
+                    <div class="label">Serial No</div>
+                    <div class="slds-wrap">{SerialNo}</div>
+                </div>
+                <div class="row">
+                    <div class="label">Material Code</div>
+                    <div class="slds-wrap">{MaterialCode}</div>
+                </div>
+                <div class="row">
+                    <div class="label">Material Commission Date</div>
+                    <div class="slds-wrap">
+                        <lightning-formatted-date-time if:true={materialCommissionDate} value={materialCommissionDate} year="numeric" day="2-digit" month="short"></lightning-formatted-date-time>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="label">Status</div>
+                    <div class="slds-wrap">{assetStatus}</div>
+                </div>
+                <template if:true={assetId}>
+                    <div class="row">
+                        <div class="label">Document Path</div>
+                        <div class="slds-wrap">
+                            <lightning-record-view-form object-api-name="Asset" record-id={assetId}>
+                                <lightning-output-field field-name="Document_Path_Formula__c" variant="label-hidden"></lightning-output-field>
+                            </lightning-record-view-form>
+                        </div>
+                    </div>
+                </template>
+
+                <div class="row">
+                    <div class="slds-col slds-size_3-of-3 row slds-p-around_medium">
+                        <div class="slds-wrap row">
+                            <p>Fast Moving</p>
+                            <lightning-input type="checkbox" data-name="FastMoving" checked={isFastMovingChecked} variant="label-hidden" onchange={handleAssetCategoryChange}>
+                            </lightning-input>
+                        </div>
+                        <div class="slds-wrap row">
+                            <p>Critical</p>
+                            <lightning-input type="checkbox" data-name="Critical" checked={isCriticalChecked} variant="label-hidden" onchange={handleAssetCategoryChange}>
+                            </lightning-input>
+                        </div>
+                        <div class="slds-wrap row">
+                            <p>Consumables</p>
+                            <lightning-input type="checkbox" data-name="Consumables" checked={isConsumablesChecked} variant="label-hidden" onchange={handleAssetCategoryChange}>
+                            </lightning-input>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="row">
+                    <div class="slds-col slds-size_3-of-3 row slds-p-around_medium">
+                        <div class="slds-wrap row">
+                            <p>All Spares</p>
+                            <lightning-input type="checkbox" checked={showAll} label="Show All Spares" variant="label-hidden" onchange={handleAllSpares}>
+                            </lightning-input>
+                        </div>
+                    </div>
+
+                </div>
+    
+
+                <div class="searchinput">
+                    <div class="slds-text-align_right slds-var-p-bottom_xx-small" style="display: flex; flex-direction: row; justify-content: flex-end; gap: 10px">
+                        <lightning-button icon-name="utility:cart" label="Cart" title="Cart" icon-position="left" onclick={handleCartClick}></lightning-button>
+                        <!-- <lightning-button label="Create Quote" title="Create Quote" onclick={handleCreateQuoteClick}></lightning-button> -->
+                        <lightning-button label="New Material Code" title="New Material Code" onclick={handleNewMaterialCodeClick}></lightning-button>
+                    </div>
+                    <template if:true={showAll}>
+                    <lightning-input type="search" placeholder="type here..." variant="label-hidden" onchange={handleMobileSearchChange}></lightning-input>
+                    <lightning-button label="Search" title="Search" onclick={handleMobileSearch}></lightning-button>
+                    </template>
+                    <template if:false={showAll}>
+                        <lightning-input type="text" placeholder="Search" value={clientFilterQuery} onchange={handleSearchChange} variant="label-hidden"></lightning-input>
+                    </template>
+                </div>
+
+                <template if:true={spareParts}>
+                    <template for:each={paginatedCases} for:item="spare" for:index="index">
+                        <div key={spare.Id} class="slds-box spare-part spare-part-fixed">
+                            <div class="slds-grid slds-wrap slds-gutters">
+                                <div class="product-image-container slds-col slds-size_1-of-3 slds-small-size_1-of-3" style="display: flex; justify-content: center; align-items: center">
+                                    <template if:true={spare.imageUrl}>
+                                        <img src={spare.imageUrl} alt="Product Image" onclick={handleImageClick} data-id={spare.Id} style="max-height: 100px" />
+                                    </template>
+                                    <template if:false={spare.imageUrl}>
+                                        <lightning-icon icon-name="doctype:image" size="large"></lightning-icon>
+                                    </template>
+                                </div>
+
+                                <div class="slds-col slds-size_2-of-3 slds-small-size_2-of-3" style="width: 60%">
+                                    <div class="product-details">
+                                        <p><b>Spare Material Code:</b> {spare.prodName}</p>
+                                        <p><b>OEM Material Code:</b> {spare.modelName}</p>
+                                        <p><b>Description:</b> {spare.modelDesc}</p>
+                                        <p><b>HSN Code:</b> {spare.hsncode}</p>
+                                        <div class="quantity-container">
+                                            <b>Basic Unit Price(INR):</b>
+                                            <lightning-formatted-number value={spare.calculatedPrice} currency-code={spare.currencyCode}></lightning-formatted-number>
+                                        </div>
+                                        <div>
+                                            <lightning-button label="Check Inv" variant="base" onclick={handleCheckStock} data-materialcode={spare.MaterialCode} data-plantname={spare.plantName}
+                                                data-proname={spare.prodName} data-index={spare.rowIndex}>
+                                            </lightning-button>
+                                            <p>Total Stock :- {spare.totalStock}</p>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div style="width: 100%; position: relative; display: flex; align-items: center; gap: 10px">
+                                            <template if:true={spare.checkbox}>
+                                                <lightning-combobox value={spare.billingType} variant="label-hidden" options={billingTypeOptions} data-id={spare.Id} class="billing-type-field"
+                                                    onchange={handleBillingTypeChange} required dropdown-alignment="auto" data-index={spare.rowIndex}></lightning-combobox>
+                                                <!-- <lightning-input type="number" placeholder="Quantity" value={spare.quantity} data-id={spare.Id} class="quantity-field" min="1"
+                                                    onchange={handleQuantityChange}  required variant="label-hidden"></lightning-input> -->
+                                            </template>
+                                            <template if:false={spare.checkbox}>
+                                                <lightning-combobox value={spare.billingType} variant="label-hidden" options={billingTypeOptions} data-id={spare.Id} class="billing-type-field"
+                                                    dropdown-alignment="auto" disabled></lightning-combobox>
+                                                <!-- <lightning-input type="number" placeholder="Quantity" value={spare.quantity} data-id={spare.Id} class="quantity-field" disabled variant="label-hidden">
+                                                </lightning-input> -->
+                                            </template>
+
+                                        </div>
+
+                                        <div class="quantity-container">
+                                            <button class="decrement" onclick={decreaseQuantity} data-id={spare.Id} data-index={spare.rowIndex}>-</button>
+                                            <lightning-input type="number" placeholder="Quantity" variant="label-hidden" value={spare.quantity} data-id={spare.Id} class="quantity-field"
+                                                onkeydown={handleKeyDown} onchange={handleQuantityChange} data-index={spare.rowIndex}>
+                                            </lightning-input>
+                                            <button class="increment" onclick={increaseQuantity} data-id={spare.Id} data-index={spare.rowIndex}>+</button>
+                                        </div>
+                                        <p><b>Within Warranty :</b>
+                                            <!-- {spare.withinWarenty} -->
+                                            <!-- <lightning-input type="checkbox" data-id={spare.Id} checked={spare.withinWarenty} disabled>
+                                            </lightning-input> -->
+                                        </p>
+                                        <div class="slds-form-element">
+                                            <div class="slds-form-element__control">
+                                                <div class="slds-checkbox" style="cursor: not-allowed;">
+                                                    <input type="checkbox" id="checkbox{spare.Id}" value={spare.Id} checked={spare.withinWarenty} disabled style="cursor: not-allowed;" />
+                                                    <label class="slds-checkbox__label" style="cursor: not-allowed;" for="checkbox-{spare.Id}">
+                                                        <span class="slds-checkbox_faux"></span>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="quantity-container">
+                                            <template if:true={spare.isWarranty}>
+                                                <div style="text-wrap:auto">Warranty Period </div>
+                                                <lightning-combobox name="warrantyperiod" placeholder="Select Period" variant="label-hidden" value={spare.warrantyperiod} data-id={spare.Id}
+                                                    data-index={spare.rowIndex} options={warrantyOptions} onchange={handleChange} dropdown-alignment="auto">
+                                                </lightning-combobox>
+
+                                            </template>
+                                        </div>
+                                        <!-- <div class="quantity-container">
+                                            <template if:true={spare.isWarranty}>
+                                                <div style="text-wrap:auto">No. of PM visit</div>
+                                                <lightning-input type="text" placeholder="Enter visits" variant="label-hidden" value={spare.noofpmvisit} data-id={spare.Id} onchange={handlePmChange}
+                                                    data-index={spare.rowIndex}>
+                                                </lightning-input>
+                                            </template>
+                                        </div>
+                                        <div class="quantity-container">
+                                            <template if:true={spare.isWarranty}>
+                                                <div style="text-wrap:auto">No. of Breakdown Visit</div>
+                                                <lightning-input type="text" placeholder="Enter visits" variant="label-hidden" value={spare.noofbreakdownvisit} data-id={spare.Id}
+                                                    onchange={handlebreakChange} data-index={spare.rowIndex}>
+                                                </lightning-input>
+                                            </template>
+                                        </div> -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Save Button -->
+                    <div class="slds-text-align_center slds-m-top_medium">
+                        <lightning-button label="Previous" onclick={handlePreviousPage} disabled={isFirstPage} class="slds-m-right_small"></lightning-button>
+                        <span class="slds-text-body_regular">Page {currentPage} of {totalPages}</span>
+                        <lightning-button label="Next" onclick={handleNextPage} disabled={isLastPage} class="slds-m-left_small"></lightning-button>
+                    </div>
+                </template>
+
+                <template if:false={spareParts}>
+                    <lightning-layout>
+                        <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3"></lightning-layout-item>
+                        <lightning-layout-item size="8" small-device-size="8" medium-device-size="6" large-device-size="6">
+                            <img src="/img/chatter/OpenRoad.svg" class="slds-illustration__svg slds-var-p-around_large" />
+                        </lightning-layout-item>
+                        <lightning-layout-item size="2" small-device-size="2" medium-device-size="6" large-device-size="3"></lightning-layout-item>
+                    </lightning-layout>
+                </template>
+
+                <div class="slds-grid slds-grid_align-center slds-m-top_medium">
+                    <lightning-button label="Add to Cart" variant="brand" onclick={handleSave}></lightning-button>
+                </div>
+
+            </div>
+        </lightning-card>
+    </template>
+
+
+    <!-- Second Page Desktop View -->
+    <template if:false={isMobileView}>
+        <lightning-card label="Spare Request" hide-header>
+
+            <div style="position: absolute; top: 10px; right: 10px; z-index: 2">
+                <div style="display: flex; flex-direction: row; gap: 10px">
+                    <lightning-button icon-name="utility:cart" label="Cart" title="Cart" icon-position="left" onclick={handleCartClick}></lightning-button>
+                    <!-- <lightning-button label="Create Quote" title="Create Quote" onclick={handleCreateQuoteClick}></lightning-button> -->
+                    <lightning-button label="New Material Code" title="New Material Code" onclick={handleNewMaterialCodeClick}></lightning-button>
+                </div>
+            </div>
+
+            <lightning-accordion allow-multiple-sections>
+                <lightning-accordion-section name="section-1" label="Case Details">
+                    <div class="slds-grid slds-wrap user-select-none">
+                        <div class="slds-col slds-size_1-of-3  ">
+                            <lightning-input label="Case Type" value={caseType} variant="label-inline" disabled></lightning-input>
+                        </div>
+                        <div class="slds-col slds-size_1-of-3  ">
+                            <lightning-input label="Case Id" value={caseNum} variant="label-inline" disabled></lightning-input>
+                        </div>
+                        <div class="slds-col slds-size_1-of-3  ">
+                            <lightning-input label="Customer Name" value={AccountName} variant="label-inline" disabled></lightning-input>
+                        </div>
+                        <div class="slds-col slds-size_1-of-3  ">
+                            <lightning-input label="Case Date" value={date} variant="label-inline" disabled></lightning-input>
+                        </div>
+                        <div class="slds-col slds-size_1-of-3  ">
+                            <lightning-input label="Invoice No" value={InvoiceNumber} variant="label-inline" disabled></lightning-input>
+                        </div>
+                        <div class="slds-col slds-size_1-of-3  ">
+                            <lightning-input label="Serial No" value={SerialNo} variant="label-inline" disabled></lightning-input>
+                        </div>
+                        <div class="slds-col slds-size_1-of-3  ">
+                            <lightning-input label="Material Code" value={MaterialCode} variant="label-inline" disabled></lightning-input>
+                        </div>
+                        <div class="slds-col slds-size_1-of-3">
+                            <lightning-input label="Material Commission Date" value={materialCommissionDate} variant="label-inline" disabled></lightning-input>
+                        </div>
+                        <div class="slds-col slds-size_1-of-3">
+                            <lightning-input label="Status" value={assetStatus} variant="label-inline" disabled></lightning-input>
+                        </div>
+                        <div class="slds-col slds-size_1-of-3" if:true={assetId}>
+                            <lightning-record-view-form object-api-name="Asset" record-id={assetId}>
+                                <lightning-output-field field-name="Document_Path_Formula__c" variant="label-inline"></lightning-output-field>
+                            </lightning-record-view-form>
+                        </div>
+
+                        <template if:true={isPrinter}>                           
+                        <div class="slds-col slds-size_3-of-3 row slds-p-around_medium">
+                            <div class="slds-wrap row">
+                                <p>All Spares</p>
+                                <lightning-input type="checkbox" checked={showAll} label="Show All Spares" variant="label-hidden" onchange={handleAllSpares}>
+                                </lightning-input>
+                            </div>
+                            <div class="slds-wrap row">
+                                <p>Mapped Spares</p>
+                                <lightning-input type="checkbox" checked={showMapped} data-name="Mapped Spares" variant="label-hidden" onchange={handleAssetCategoryChange}>
+                                </lightning-input>
+                            </div>
+
+                        </div>
+                        </template>
+                        <template if:true={isNotPrinter}>
+                            
+                        <div class="slds-col slds-size_3-of-3 row slds-p-around_medium">
+                            <div class="slds-wrap row">
+                                <p>Fast Moving</p>
+                                <lightning-input type="checkbox" data-name="FastMoving" checked={isFastMovingChecked} variant="label-hidden" onchange={handleAssetCategoryChange}>
+                                </lightning-input>
+                            </div>
+                            <div class="slds-wrap row">
+                                <p>Critical</p>
+                                <lightning-input type="checkbox" data-name="Critical" checked={isCriticalChecked} variant="label-hidden" onchange={handleAssetCategoryChange}>
+                                </lightning-input>
+                            </div>
+                            <div class="slds-wrap row">
+                                <p>Consumables</p>
+                                <lightning-input type="checkbox" data-name="Consumables" checked={isConsumablesChecked} variant="label-hidden" onchange={handleAssetCategoryChange}>
+                                </lightning-input>
+                            </div>
+                            <div class="slds-wrap row">
+                                <p>All Spares</p>
+                                <lightning-input type="checkbox" checked={showAll} label="Show All Spares" variant="label-hidden" onchange={handleAllSpares}>
+                                </lightning-input>
+                            </div>
+
+                        </div>
+                        </template>
+                    </div>
+                </lightning-accordion-section>
+            </lightning-accordion>
+
+            <lightning-accordion allow-multiple-sections>
+                <lightning-accordion-section name="spare-parts-section" label="Spare Parts Details">
+                    <div class="searchinput slds-m-bottom_medium">
+                        <lightning-input type="text" placeholder="Search" value={clientFilterQuery} onchange={handleSearchChange} variant="label-hidden"></lightning-input>
+                    </div>
+
+                    <template if:true={spareParts}>
+                        <article class="slds-card custom-slds-card-block">
+                            <div class="slds-card__header slds-grid">
+                                <header class="slds-media slds-media_center slds-has-flexi-truncate header-scroll">
+                                    <div class="slds-media__body div-scroll custom-table-fixed-height" style="max-height: 400px; overflow-y: auto;">
+                                        <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-border_left slds-border_right">
+                                            <thead>
+                                                <tr class="slds-line-height_reset">
+                                                    <th class="common-css-table-header text-center fixed-table-header" scope="col">
+                                                        <div class="slds-truncate">Image</div>
+                                                    </th>
+                                                    <th class="common-css-table-header text-center fixed-table-header" scope="col">
+                                                        <div class="slds-truncate">Spare Material Code</div>
+                                                    </th>
+                                                    <th class="common-css-table-header text-center fixed-table-header" scope="col">
+                                                        <div class="slds-truncate">OEM Material Code</div>
+                                                    </th>
+                                                    <th class="common-css-table-header text-center fixed-table-header" scope="col">
+                                                        <div class="slds-truncate">Description</div>
+                                                    </th>
+                                                    <th class="common-css-table-header text-center fixed-table-header" scope="col">
+                                                        <div class="slds-truncate">HSN Code</div>
+                                                    </th>
+                                                    <th class="common-css-table-header text-center fixed-table-header" scope="col">
+                                                        <div class="slds-truncate">Basic Unit Price (INR)</div>
+                                                    </th>
+                                                    <!-- <th class="common-css-table-header text-center fixed-table-header" scope="col">
+                                                        <div class="slds-truncate">Select</div>
+                                                    </th> -->
+                                                    <th class="common-css-table-header text-center fixed-table-header" scope="col">
+                                                        <div class="slds-truncate">Quantity</div>
+                                                    </th>
+                                                    <th class="common-css-table-header text-center fixed-table-header" scope="col">
+                                                        <div class="slds-truncate">Inventory</div>
+                                                    </th>
+                                                    <th class="common-css-table-header text-center fixed-table-header" scope="col">
+                                                        <div class="slds-truncate">FOC / Chargeable</div>
+                                                    </th>
+                                                    <th class="common-css-table-header text-center fixed-table-header" scope="col">
+                                                        <div class="slds-truncate">Category</div>
+                                                    </th>
+                                                    <th class="common-css-table-header text-center fixed-table-header" scope="col">
+                                                        <div class="slds-truncate">W</div>
+                                                    </th>
+                                                    <th class="common-css-table-header text-center fixed-table-header" scope="col">
+                                                        <div class="slds-truncate">Warranty Period</div>
+                                                    </th>
+                                                    <!-- <th class="common-css-table-header text-center fixed-table-header" scope="col">
+                                                        <div class="slds-truncate">No. of PM Visit</div>
+                                                    </th>
+                                                    <th class="common-css-table-header text-center fixed-table-header" scope="col">
+                                                        <div class="slds-truncate">No. of Breakdown Visit</div>
+                                                    </th> -->
+
+                                                    <!--
+                                                    <th class="common-css-table-header text-center fixed-table-header" scope="col">
+                                                        <div class="slds-truncate">Returnable/<br />Non-Returnable</div>
+                                                    </th>
+                                                    -->
+                                                </tr>
+                                            </thead>
+
+                                            <tbody>
+                                                <template for:each={paginatedCases} for:item="spare" for:index="index">
+                                                    <tr key={spare.Id} class="slds-line-height_reset">
+                                                        <td style="text-align: center; width: 8%">
+                                                            <template if:true={spare.imageUrl}>
+                                                                <img src={spare.imageUrl} alt="Product Image" onclick={handleImageClick} data-id={spare.Id} style="max-height: 100px" />
+                                                            </template>
+                                                            <template if:false={spare.imageUrl}>
+                                                                <lightning-icon icon-name="doctype:image" size="large"></lightning-icon>
+                                                            </template>
+                                                        </td>
+                                                        <td style="width: 20%">
+                                                            <div class="slds-truncate" style="text-wrap:auto" title={spare.prodName}>{spare.prodName}</div>
+                                                        </td>
+                                                        <td style="width: 5%">
+                                                            <div class="slds-truncate" style="text-wrap:auto" title={spare.modelName}>{spare.modelName}</div>
+                                                        </td>
+                                                        <td style="width: 20%">
+                                                            <div class="slds-truncate" style="text-wrap:auto" title={spare.modelDesc}>{spare.modelDesc}</div>
+                                                        </td>
+                                                        <td style="width: 10%">
+                                                            <div class="slds-truncate" style="text-wrap:auto" title={spare.hsncode} if:true={spare.hsncode}>{spare.hsncode}</div>
+                                                        </td>
+                                                        <td style="width: 10%">
+                                                            <div class="slds-truncate" title={spare.calculatedPrice}>
+                                                                <lightning-formatted-number value={spare.calculatedPrice}>
+                                                                </lightning-formatted-number>
+                                                                <!-- {spare.price} -->
+                                                            </div>
+                                                        </td>
+                                                        <td style="width: 8%">
+                                                            <!-- <template if:true={spare.checkbox}> -->
+                                                            <div class="quantity-container">
+                                                                <button class="decrement" onclick={decreaseQuantity} data-id={spare.Id} data-index={spare.rowIndex}>-</button>
+                                                                <lightning-input type="number" placeholder="Quantity" variant="label-hidden" value={spare.quantity} data-id={spare.Id}
+                                                                    class="quantity-field" onkeydown={handleKeyDown} onchange={handleQuantityChange} data-index={spare.rowIndex}>
+                                                                </lightning-input>
+                                                                <button class="increment" onclick={increaseQuantity} data-id={spare.Id} data-index={spare.rowIndex}>+</button>
+                                                            </div>
+                                                        </td>
+                                                        <td style="width: 8%">
+                                                            <lightning-button label="Check Inv" variant="base" onclick={handleCheckStock} data-materialcode={spare.materialCode}
+                                                                data-plantname={spare.plantName} data-proname={spare.prodName} data-index={spare.rowIndex}></lightning-button>
+                                                            <p>Total Stock :- {spare.totalStock}</p>
+                                                        </td>
+                                                        <td style="width: 5%">
+                                                            <!-- <lightning-input type="checkbox" data-id={spare.Id} checked={spare.returnableNonReturnable} onchange={handleCheckbox1Change}></lightning-input> -->
+                                                            <template if:true={spare.checkbox}>
+                                                                <lightning-combobox value={spare.billingType} variant="label-hidden" options={billingTypeOptions} data-id={spare.Id}
+                                                                    onchange={handleBillingTypeChange} required={spare.checkbox} data-index={spare.rowIndex} dropdown-alignment="auto">
+                                                                </lightning-combobox>
+                                                            </template>
+                                                            <template if:false={spare.checkbox}>
+                                                                <lightning-combobox value={spare.billingType} variant="label-hidden" options={billingTypeOptions} data-id={spare.Id}
+                                                                    class="billing-type-field" dropdown-alignment="auto" disabled></lightning-combobox>
+                                                            </template>
+                                                        </td>
+                                                        <td style="width: 5%">
+                                                            <p>{spare.category}</p>
+                                                        </td>
+
+                                                        <td style="width: 5%;cursor: not-allowed;">
+                                                            <!-- <lightning-input type="checkbox" data-id={spare.Id} checked={spare.withinWarenty} disabled style="cursor: not-allowed;"
+                                                                class="disabled-cursor">
+                                                            </lightning-input> -->
+                                                            <div class="slds-form-element">
+                                                                <div class="slds-form-element__control">
+                                                                    <div class="slds-checkbox" style="cursor: not-allowed;">
+                                                                        <input type="checkbox" id="checkbox-{spare.Id}" value={spare.Id} checked={spare.withinWarenty} disabled
+                                                                            style="cursor: not-allowed;" />
+                                                                        <label class="slds-checkbox__label" style="cursor: not-allowed;" for="checkbox-{spare.Id}">
+                                                                            <span class="slds-checkbox_faux"></span>
+                                                                        </label>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+
+                                                        </td>
+                                                        <td style="width: 8%">
+                                                            <div class="quantity-container">
+                                                                <!-- <div style="text-wrap:auto" title={spare.warranty}>{spare.warranty}</div> -->
+                                                                <template if:true={spare.isWarranty}>
+                                                                    <lightning-combobox name="warrantyperiod" placeholder="Select Period" variant="label-hidden" value={spare.warrantyperiod}
+                                                                        data-id={spare.Id} data-index={spare.rowIndex} options={warrantyOptions} onchange={handleChange} dropdown-alignment="auto">
+                                                                    </lightning-combobox>
+                                                                </template>
+                                                            </div>
+                                                        </td>
+                                                        <!-- <td style="width: 8%">
+                                                            <template if:true={spare.isWarranty}>
+                                                                <lightning-input type="text" placeholder="Enter visits" variant="label-hidden" value={spare.noofpmvisit} data-id={spare.Id}
+                                                                    onchange={handlePmChange} data-index={spare.rowIndex}>
+                                                                </lightning-input>
+                                                            </template>
+                                                        </td>
+                                                        <td style="width: 8%">
+                                                            <template if:true={spare.isWarranty}>
+                                                                <lightning-input type="text" placeholder="Enter visits" variant="label-hidden" value={spare.noofbreakdownvisit} data-id={spare.Id}
+                                                                    onchange={handlebreakChange} data-index={spare.rowIndex}>
+                                                                </lightning-input>
+                                                            </template>
+                                                        </td> -->
+                                                    </tr>
+                                                </template>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </header>
+                            </div>
+                        </article>
+
+                        <!-- Pagination -->
+                        <div class="slds-text-align_center slds-m-top_medium">
+                            <lightning-button label="Previous" onclick={handlePreviousPage} disabled={isFirstPage} class="slds-m-right_small">
+                            </lightning-button>
+                            <span class="slds-text-body_regular">Page {currentPage} of {totalPages}</span>
+                            <lightning-button label="Next" onclick={handleNextPage} disabled={isLastPage} class="slds-m-left_small">
+                            </lightning-button>
+                        </div>
+
+
+                    </template>
+
+                    <template if:false={spareParts}>
+                        <lightning-layout>
+                            <lightning-layout-item size="2" small-device-size="2" medium-device-size="3" large-device-size="3"></lightning-layout-item>
+                            <lightning-layout-item size="8" small-device-size="8" medium-device-size="6" large-device-size="6">
+                                <img src="/img/chatter/OpenRoad.svg" class="slds-illustration__svg slds-var-p-around_large" />
+                            </lightning-layout-item>
+                            <lightning-layout-item size="2" small-device-size="2" medium-device-size="6" large-device-size="3"></lightning-layout-item>
+                        </lightning-layout>
+                    </template>
+
+                    <!-- Save Button -->
+                    <div class="slds-grid slds-grid_align-center slds-m-top_medium">
+                        <lightning-button label="Add to Cart" variant="brand" onclick={handleSave} disabled={isSaveButtonDisabled}>
+                        </lightning-button>
+                    </div>
+                </lightning-accordion-section>
+            </lightning-accordion>
+        </lightning-card>
+    </template>
+
+
+
+
+
+    <template if:true={isImageCarouselVisible}>
+        <div class="custom-modal">
+            <section role="dialog" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <!-- <header class="slds-modal__header"> -->
+                    <span class="slds-modal__close">
+                        <lightning-icon icon-name="utility:close" alternative-text="close" onclick={handleCloseImageCarousel}></lightning-icon>
+                    </span>
+                    <!-- <h2 class="slds-text-heading_medium slds-hyphenate">Modal Header</h2> -->
+                    <!-- </header> -->
+                    <div class="slds-modal__content slds-p-around_medium">
+                        <div class="glider-container">
+                            <div class="glider">
+                                <template for:each={selectedSpare.imageUrls} for:item="imageUrl">
+                                    <div key={imageUrl} class="image-container">
+                                        <img src={imageUrl} />
+                                    </div>
+                                </template>
+                            </div>
+                            <!-- <button aria-label="Previous" class="glider-prev">«</button> -->
+                            <!-- <button aria-label="Next" class="glider-next">»</button> -->
+                            <div role="tablist" class="dots"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </div>
+    </template>
+
+    <template if:true={isModalOpen}>
+        <section role="dialog" class="slds-modal slds-fade-in-open">
+            <div class="slds-modal__container">
+                <!-- Modal Header -->
+                <header class="slds-modal__header">
+                    <h2 class="slds-text-heading_medium">Inventory Details</h2>
+                    <lightning-button-icon icon-name="utility:close" alternative-text="Close" class="slds-modal__close" onclick={closeModal}></lightning-button-icon>
+                </header>
+
+                <!-- Modal Body -->
+                <div class="slds-modal__content slds-p-around_medium">
+                    <template if:true={inventoryData}>
+                        <lightning-datatable key-field="MATERIAL" data={inventoryData} columns={columns} hide-checkbox-column="true">
+                        </lightning-datatable>
+                    </template>
+                    <!-- <template if:true={error}>
+                        <p class="slds-text-color_error">Error loading data</p>
+                    </template> -->
+                </div>
+
+                <!-- Modal Footer -->
+                <footer class="slds-modal__footer">
+                    <lightning-button label="Close" variant="neutral" onclick={closeModal}></lightning-button>
+                </footer>
+            </div>
+        </section>
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+
+</template>

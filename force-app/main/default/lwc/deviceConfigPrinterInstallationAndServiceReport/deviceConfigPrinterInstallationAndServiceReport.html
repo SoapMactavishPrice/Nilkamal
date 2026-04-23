@@ -1,0 +1,143 @@
+<template>
+    <lightning-layout-item size="12" class="slds-var-p-horizontal_x-small">
+        <div class="accordion-container">
+            <div class="accordion-section">
+                <div class="accordion-header" onclick={toggleAccordion} data-section="deviceConfig">
+                    <lightning-icon icon-name="utility:settings" size="small" class="slds-var-m-right_x-small"></lightning-icon>
+                    <span class="accordion-title">Device Configuration Parameters</span>
+                    <lightning-icon icon-name={deviceConfigIcon} size="small" class="accordion-icon"></lightning-icon>
+                </div>
+                <div class={deviceConfigContentClass} data-section="deviceConfig">
+                    <div class="slds-var-p-around_medium">
+                        <template for:each={serviceReportParameters} for:item="param" for:index="index">
+                            <div key={param.key} class="parameter-row slds-var-p-vertical_small slds-border_bottom">
+                                <lightning-layout multiple-rows>
+                                    <!-- Parameter Name - Read Only -->
+                                    <lightning-layout-item size="12" small-device-size="12" medium-device-size="2" large-device-size="2" class="slds-var-p-horizontal_x-small">
+                                        <lightning-input type="text" label="Parameter Name" value={param.parameterName} readonly variant="label-stacked">
+                                        </lightning-input>
+                                    </lightning-layout-item>
+
+                                    <!-- Selection Option List - Always show as dropdown -->
+                                    <lightning-layout-item size="12" small-device-size="12" medium-device-size="2" large-device-size="2" class="slds-var-p-horizontal_x-small">
+                                        <!-- Show as fixed text for Interval and Quantity rows -->
+                                        <template if:true={param.isPurgingInterval}>
+                                            <lightning-input 
+                                                type="text" 
+                                                label="Selection Option List" 
+                                                value={param.selectionOptionList} 
+                                                readonly 
+                                                variant="label-stacked">
+                                            </lightning-input>
+                                        </template>
+                                        <template if:true={param.isPurgingQuantity}>
+                                            <lightning-input 
+                                                type="text" 
+                                                label="Selection Option List" 
+                                                value={param.selectionOptionList} 
+                                                readonly 
+                                                variant="label-stacked">
+                                            </lightning-input>
+                                        </template>
+                                        <!-- Show as dropdown (disabled if value is N/A) -->
+                                        <template if:false={param.isPurgingInterval}>
+                                            <template if:false={param.isPurgingQuantity}>
+                                                <lightning-combobox 
+                                                    label="Selection Option List" 
+                                                    value={param.selectionOptionList} 
+                                                    options={param.optionListOptions} 
+                                                    onchange={handleParameterChange}
+                                                    data-index={index} 
+                                                    data-field="selectionOptionList" 
+                                                    variant="label-stacked"
+                                                    disabled={param.isSelectionOptionListDisabled}>
+                                                </lightning-combobox>
+                                            </template>
+                                        </template>
+                                    </lightning-layout-item>
+
+                                    <!-- Selected Type - Always show as dropdown -->
+                                    <lightning-layout-item size="12" small-device-size="12" medium-device-size="2" large-device-size="2" class="slds-var-p-horizontal_x-small">
+                                        <!-- Show as editable dropdown for all cases (including Interval and Quantity rows) -->
+                                        <lightning-combobox 
+                                            label="Selected Type" 
+                                            value={param.selectedType} 
+                                            options={param.dynamicOptions} 
+                                            onchange={handleParameterChange}
+                                            data-index={index} 
+                                            data-field="selectedType" 
+                                            variant="label-stacked"
+                                            disabled={param.isSelectionTypeDisabled}>
+                                        </lightning-combobox>
+                                    </lightning-layout-item>
+
+                                    <!-- Selection Value - Conditional rendering -->
+                                    <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-horizontal_x-small">
+                                        <!-- For Photocell setting: Show multiselect combobox (disabled) -->
+                                        <template if:true={param.isPhotocellSetting}>
+                                            <lightning-dual-listbox
+                                                label="Selection Value"
+                                                source-label="Available"
+                                                selected-label="Selected"
+                                                options={param.valueOptions}
+                                                value={param.selectionValueArray}
+                                                onchange={handleParameterChange}
+                                                data-index={index}
+                                                data-field="selectionValue"
+                                                variant="label-stacked"
+                                                disabled={param.isSelectionValueDisabled}
+                                                class="larger-input">
+                                            </lightning-dual-listbox>
+                                        </template>
+                                        <!-- For Nozzle Select: Show N/A as readonly text box -->
+                                        <template if:true={param.isNozzleSelectSplice}>
+                                            <lightning-input
+                                                type="text"
+                                                label="Selection Value"
+                                                value={param.selectionValue}
+                                                readonly
+                                                variant="label-stacked"
+                                                class="larger-input">
+                                            </lightning-input>
+                                        </template>
+                                        <!-- For Nozzle Select Head: Also show N/A as readonly text box -->
+                                        <template if:true={param.isNozzleSelectHead}>
+                                            <lightning-input
+                                                type="text"
+                                                label="Selection Value"
+                                                value={param.selectionValue}
+                                                readonly
+                                                variant="label-stacked"
+                                                class="larger-input">
+                                            </lightning-input>
+                                        </template>
+                                        <!-- For all other parameters: Show regular input -->
+                                        <template if:true={param.isRegularParameter}>
+                                            <lightning-input
+                                                type="text"
+                                                label="Selection Value"
+                                                value={param.selectionValue}
+                                                onchange={handleParameterChange}
+                                                data-index={index}
+                                                data-field="selectionValue"
+                                                variant="label-stacked"
+                                                disabled={param.isSelectionValueDisabled}
+                                                class="larger-input">
+                                            </lightning-input>
+                                        </template>
+                                    </lightning-layout-item>
+                                </lightning-layout>
+                            </div>
+                        </template>
+
+                        <template if:false={serviceReportParameters.length}>
+                            <div class="slds-align_absolute-center slds-var-p-vertical_large">
+                                <p class="slds-text-color_weak">No parameters configured.</p>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </lightning-layout-item>
+</template>

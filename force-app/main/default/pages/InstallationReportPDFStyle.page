@@ -1,0 +1,5 @@
+<apex:page cache="false" showHeader="false" contentType="text/css">
+
+    .mscTran{ padding:3.3; border: 1px solid black; text-align: left; }
+
+</apex:page>

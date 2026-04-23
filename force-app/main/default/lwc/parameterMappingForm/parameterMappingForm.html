@@ -1,0 +1,352 @@
+<template>
+    <lightning-card >
+        <template if:true={isLoading}>
+            <div class="slds-is-relative slds-p-around_large">
+                <lightning-spinner alternative-text="Loading..." size="medium"></lightning-spinner>
+            </div>
+        </template>
+
+        <template if:false={isLoading}>
+            <template if:true={hasError}>
+                <div class="slds-p-around_medium">
+                    <div class="slds-notify slds-notify_alert slds-alert_error" role="alert">
+                        <span class="slds-assistive-text">error</span>
+                        <h2>{errorMessage}</h2>
+                    </div>
+                </div>
+            </template>
+
+            <template if:false={hasError}>
+                <div class="slds-p-around_medium">
+                    <table class="slds-table slds-table_cell-buffer slds-table_bordered slds-table_striped">
+                        <thead>
+                            <tr class="slds-line-height_reset">
+                                <th class="slds-text-title_caps" scope="col">
+                                    <div class="slds-truncate" title="Parameter">Parameter</div>
+                                </th>
+                                <th class="slds-text-title_caps" scope="col">
+                                    <div class="slds-truncate" title="Option">Option</div>
+                                </th>
+                                <th class="slds-text-title_caps" scope="col">
+                                    <div class="slds-truncate" title="Type">Type</div>
+                                </th>
+                                <th class="slds-text-title_caps" scope="col">
+                                    <div class="slds-truncate" title="Value">Value</div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <template for:each={mappingRows} for:item="row">
+                                <!-- Single Option Mode (ParameterMapping.isMultiple = false) -->
+                                <template if:false={row.isMappingMultiple}>
+                                    <tr key={row.id} class="slds-hint-parent">
+                                        <!-- Column 1: Parameter Mapping Label -->
+                                        <td data-label="Parameter">
+                                            <div class="slds-truncate parameter-label" title={row.label}>
+                                                {row.label}
+                                            </div>
+                                        </td>
+
+                                        <!-- Column 2: Selected Option Dropdown -->
+                                        <td data-label="Option">
+                                            <template if:true={row.hasOptions}>
+                                                <lightning-combobox
+                                                    name={row.id}
+                                                    data-id={row.id}
+                                                    value={row.selectedOptionValue}
+                                                    placeholder="Select Option"
+                                                    options={row.optionsList}
+                                                    onchange={handleOptionChange}
+                                                    disabled={row.isOptionDisabled}
+                                                    variant="label-hidden">
+                                                </lightning-combobox>
+                                            </template>
+                                            <template if:false={row.hasOptions}>
+                                                <span class="slds-text-color_weak">No options available</span>
+                                            </template>
+                                        </td>
+
+                                        <!-- Column 3: Type -->
+                                        <td data-label="Type">
+                                            <!-- Single selection mode (Option.isMultiple = false) -->
+                                            <template if:false={row.isMultipleMode}>
+                                                <template if:true={row.showTypeDropdown}>
+                                                    <lightning-combobox
+                                                        name={row.typeComboName}
+                                                        data-id={row.id}
+                                                        value={row.selectedTypeValue}
+                                                        placeholder="Select Type"
+                                                        options={row.typesList}
+                                                        onchange={handleTypeChange}
+                                                        variant="label-hidden">
+                                                    </lightning-combobox>
+                                                </template>
+
+                                                <template if:true={row.showSingleType}>
+                                                    <span class="single-type-label">{row.singleTypeLabel}</span>
+                                                </template>
+
+                                                <template if:true={row.showNoTypeMessage}>
+                                                    <span class="slds-text-color_weak">Select an option first</span>
+                                                </template>
+                                            </template>
+
+                                            <!-- Multiple type mode (Option.isMultiple = true) -->
+                                            <template if:true={row.isMultipleMode}>
+                                                <template if:true={row.hasMultipleTypes}>
+                                                    <div class="multiple-types-container">
+                                                        <template for:each={row.multipleTypes} for:item="typeItem">
+                                                            <div key={typeItem.id} class="multiple-type-label">
+                                                                {typeItem.label}
+                                                            </div>
+                                                        </template>
+                                                    </div>
+                                                </template>
+                                                <template if:false={row.hasMultipleTypes}>
+                                                    <span class="slds-text-color_weak">Select an option first</span>
+                                                </template>
+                                            </template>
+                                        </td>
+
+                                        <!-- Column 4: Value -->
+                                        <td data-label="Value">
+                                            <!-- Single selection mode -->
+                                            <template if:false={row.isMultipleMode}>
+                                                <template if:true={row.showNAReadonly}>
+                                                    <span class="na-readonly">N/A</span>
+                                                </template>
+
+                                                <template if:true={row.showTextInput}>
+                                                    <lightning-input
+                                                        type="text"
+                                                        data-id={row.id}
+                                                        value={row.textInputValue}
+                                                        placeholder="Enter value"
+                                                        onchange={handleTextInputChange}
+                                                        variant="label-hidden">
+                                                    </lightning-input>
+                                                </template>
+
+                                                <template if:true={row.showValueDropdown}>
+                                                    <lightning-combobox
+                                                        name={row.valueComboName}
+                                                        data-id={row.id}
+                                                        value={row.selectedDropdownValue}
+                                                        placeholder="Select Value"
+                                                        options={row.dropdownValueOptions}
+                                                        onchange={handleValueDropdownChange}
+                                                        variant="label-hidden">
+                                                    </lightning-combobox>
+                                                </template>
+
+                                                <template if:true={row.showNoValueMessage}>
+                                                    <span class="slds-text-color_weak">—</span>
+                                                </template>
+                                            </template>
+
+                                            <!-- Multiple type mode -->
+                                            <template if:true={row.isMultipleMode}>
+                                                <template if:true={row.hasMultipleTypes}>
+                                                    <div class="multiple-values-container">
+                                                        <template for:each={row.multipleTypes} for:item="typeItem">
+                                                            <div key={typeItem.id} class="multiple-value-row">
+                                                                <template if:true={typeItem.showNAReadonly}>
+                                                                    <span class="na-readonly">N/A</span>
+                                                                </template>
+
+                                                                <template if:true={typeItem.showTextInput}>
+                                                                    <lightning-input
+                                                                        type="text"
+                                                                        data-id={row.id}
+                                                                        data-type-id={typeItem.id}
+                                                                        value={typeItem.textValue}
+                                                                        placeholder={typeItem.placeholder}
+                                                                        onchange={handleMultipleTextInputChange}
+                                                                        variant="label-hidden">
+                                                                    </lightning-input>
+                                                                </template>
+
+                                                                <template if:true={typeItem.showValueDropdown}>
+                                                                    <lightning-combobox
+                                                                        data-id={row.id}
+                                                                        data-type-id={typeItem.id}
+                                                                        value={typeItem.dropdownValue}
+                                                                        placeholder="Select Value"
+                                                                        options={typeItem.dropdownOptions}
+                                                                        onchange={handleMultipleDropdownChange}
+                                                                        variant="label-hidden">
+                                                                    </lightning-combobox>
+                                                                </template>
+                                                            </div>
+                                                        </template>
+                                                    </div>
+                                                </template>
+                                                <template if:false={row.hasMultipleTypes}>
+                                                    <span class="slds-text-color_weak">—</span>
+                                                </template>
+                                            </template>
+                                        </td>
+                                    </tr>
+                                </template>
+
+                                <!-- Multiple Options Mode (ParameterMapping.isMultiple = true) - Show ALL options with checkboxes -->
+                                <template if:true={row.isMappingMultiple}>
+                                    <template for:each={row.allOptionsData} for:item="optionData" for:index="optIndex">
+                                        <tr key={optionData.uniqueKey} class="slds-hint-parent">
+                                            <!-- Column 1: Parameter Mapping Label (only show on first row) -->
+                                            <td data-label="Parameter">
+                                                <template if:true={optionData.isFirstOption}>
+                                                    <div class="slds-truncate parameter-label" title={row.label}>
+                                                        {row.label}
+                                                    </div>
+                                                </template>
+                                            </td>
+
+                                            <!-- Column 2: Checkbox + Option Label -->
+                                            <td data-label="Option">
+                                                <div class="option-checkbox-container">
+                                                    <lightning-input
+                                                        type="checkbox"
+                                                        data-id={row.id}
+                                                        data-option-id={optionData.optionId}
+                                                        checked={optionData.isSelected}
+                                                        label={optionData.optionLabel}
+                                                        onchange={handleOptionCheckboxChange}>
+                                                    </lightning-input>
+                                                </div>
+                                            </td>
+
+                                            <!-- Column 3: Type (only show if option is selected) -->
+                                            <td data-label="Type">
+                                                <template if:true={optionData.isSelected}>
+                                                    <template if:false={optionData.isOptionMultiple}>
+                                                        <!-- Single type selection -->
+                                                        <template if:true={optionData.showTypeDropdown}>
+                                                            <lightning-combobox
+                                                                data-id={row.id}
+                                                                data-option-id={optionData.optionId}
+                                                                value={optionData.selectedTypeValue}
+                                                                placeholder="Select Type"
+                                                                options={optionData.typesList}
+                                                                onchange={handleMappingMultipleTypeChange}
+                                                                variant="label-hidden">
+                                                            </lightning-combobox>
+                                                        </template>
+
+                                                        <template if:true={optionData.showSingleType}>
+                                                            <span class="single-type-label">{optionData.singleTypeLabel}</span>
+                                                        </template>
+
+                                                        <template if:true={optionData.showNoTypes}>
+                                                            <span class="slds-text-color_weak">—</span>
+                                                        </template>
+                                                    </template>
+
+                                                    <!-- Multiple types (Option.isMultiple = true) -->
+                                                    <template if:true={optionData.isOptionMultiple}>
+                                                        <div class="multiple-types-container">
+                                                            <template for:each={optionData.multipleTypes} for:item="typeItem">
+                                                                <div key={typeItem.id} class="multiple-type-label">
+                                                                    {typeItem.label}
+                                                                </div>
+                                                            </template>
+                                                        </div>
+                                                    </template>
+                                                </template>
+                                                <template if:false={optionData.isSelected}>
+                                                    <span class="slds-text-color_weak disabled-text">—</span>
+                                                </template>
+                                            </td>
+
+                                            <!-- Column 4: Value (only show if option is selected) -->
+                                            <td data-label="Value">
+                                                <template if:true={optionData.isSelected}>
+                                                    <template if:false={optionData.isOptionMultiple}>
+                                                        <!-- Single value -->
+                                                        <template if:true={optionData.showNAReadonly}>
+                                                            <span class="na-readonly">N/A</span>
+                                                        </template>
+
+                                                        <template if:true={optionData.showTextInput}>
+                                                            <lightning-input
+                                                                type="text"
+                                                                data-id={row.id}
+                                                                data-option-id={optionData.optionId}
+                                                                value={optionData.textInputValue}
+                                                                placeholder="Enter value"
+                                                                onchange={handleMappingMultipleTextChange}
+                                                                variant="label-hidden">
+                                                            </lightning-input>
+                                                        </template>
+
+                                                        <template if:true={optionData.showValueDropdown}>
+                                                            <lightning-combobox
+                                                                data-id={row.id}
+                                                                data-option-id={optionData.optionId}
+                                                                value={optionData.selectedDropdownValue}
+                                                                placeholder="Select Value"
+                                                                options={optionData.dropdownValueOptions}
+                                                                onchange={handleMappingMultipleDropdownChange}
+                                                                variant="label-hidden">
+                                                            </lightning-combobox>
+                                                        </template>
+
+                                                        <template if:true={optionData.showNoValueMessage}>
+                                                            <span class="slds-text-color_weak">—</span>
+                                                        </template>
+                                                    </template>
+
+                                                    <!-- Multiple values (Option.isMultiple = true) -->
+                                                    <template if:true={optionData.isOptionMultiple}>
+                                                        <div class="multiple-values-container">
+                                                            <template for:each={optionData.multipleTypes} for:item="typeItem">
+                                                                <div key={typeItem.id} class="multiple-value-row">
+                                                                    <template if:true={typeItem.showNAReadonly}>
+                                                                        <span class="na-readonly">N/A</span>
+                                                                    </template>
+
+                                                                    <template if:true={typeItem.showTextInput}>
+                                                                        <lightning-input
+                                                                            type="text"
+                                                                            data-id={row.id}
+                                                                            data-option-id={optionData.optionId}
+                                                                            data-type-id={typeItem.id}
+                                                                            value={typeItem.textValue}
+                                                                            placeholder={typeItem.placeholder}
+                                                                            onchange={handleMappingMultipleTypeTextChange}
+                                                                            variant="label-hidden">
+                                                                        </lightning-input>
+                                                                    </template>
+
+                                                                    <template if:true={typeItem.showValueDropdown}>
+                                                                        <lightning-combobox
+                                                                            data-id={row.id}
+                                                                            data-option-id={optionData.optionId}
+                                                                            data-type-id={typeItem.id}
+                                                                            value={typeItem.dropdownValue}
+                                                                            placeholder="Select Value"
+                                                                            options={typeItem.dropdownOptions}
+                                                                            onchange={handleMappingMultipleTypeDropdownChange}
+                                                                            variant="label-hidden">
+                                                                        </lightning-combobox>
+                                                                    </template>
+                                                                </div>
+                                                            </template>
+                                                        </div>
+                                                    </template>
+                                                </template>
+                                                <template if:false={optionData.isSelected}>
+                                                    <span class="slds-text-color_weak disabled-text">—</span>
+                                                </template>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </template>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+            </template>
+        </template>
+    </lightning-card>
+</template>

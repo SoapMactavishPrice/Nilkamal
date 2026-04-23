@@ -1,0 +1,31 @@
+<template>
+    <div class="slds-m-around_small">
+        <!-- Signature Pad Container -->
+        <div style="height: 300px">
+            <template if:true={enableNameSigning}>
+                <div>{nameInputLabel}</div>
+                <lightning-input class="slds-m-bottom_small" label=" " variant="label-hidden" type="text" value={inputText} onchange={handleNameInput}>
+                </lightning-input>
+            </template>
+
+            <template if:true={padLabel}>
+                <div>{padLabel}</div>
+            </template>
+
+            <canvas class="signature_pad_canvas"></canvas>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="slds-m-top_small">
+            <lightning-button variant="brand" label="Save" title="Save" onclick={saveSignature}></lightning-button>
+            <lightning-button variant="brand" label="Clear" title="Clear" onclick={clearSignature} class="slds-m-left_x-small"></lightning-button>
+        </div>
+
+        <!-- Display saved signature -->
+        <template if:true={imgSrc}>
+            <br />
+            <br />
+            <img src={imgSrc} />
+        </template>
+    </div>
+</template>

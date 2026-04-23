@@ -1,0 +1,17 @@
+<template>
+    <lightning-card title="Spare Returns">
+        <template if:true={spareReturns}>
+            <lightning-datatable
+                key-field="Id"
+                data={spareReturns}
+                columns={columns}
+                draft-values={draftValues}
+                onsave={handleSave}
+                hide-checkbox-column="true">
+            </lightning-datatable>
+        </template>
+        <template if:true={error}>
+            <p>Error fetching data</p>
+        </template>
+    </lightning-card>
+</template>

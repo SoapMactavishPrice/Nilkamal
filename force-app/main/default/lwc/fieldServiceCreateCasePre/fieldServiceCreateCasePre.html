@@ -1,0 +1,17 @@
+<template>
+
+    <lightning-modal-header label="Select Case Type"></lightning-modal-header>
+
+    <lightning-modal-body>
+        <lightning-combobox variant="label-inline" name="division" label="Case Division" value={division} placeholder="Select Case Division" options={divisionOptions}
+            onchange={handleChange}></lightning-combobox>
+        <lightning-combobox variant="label-inline" name="caseType" label="Case Type" value={caseType} placeholder="Select Case Type" options={caseTypeOptions}
+            onchange={handleChange}></lightning-combobox>
+    </lightning-modal-body>
+
+    <lightning-modal-footer>
+        <lightning-button variant="base" label="Cancel" title="Cancel" class="slds-m-right_small" onclick={handleCancel}></lightning-button>
+        <lightning-button variant="brand" label="Ok" title="Ok" onclick={handleOkay}></lightning-button>
+    </lightning-modal-footer>
+
+</template>

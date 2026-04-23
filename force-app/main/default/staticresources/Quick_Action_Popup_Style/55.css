@@ -1,0 +1,6 @@
+@media only screen and (min-width: 769px) {
+    .slds-modal__container {
+        width: 55% !important;
+        max-width: 55% !important;
+    }
+}

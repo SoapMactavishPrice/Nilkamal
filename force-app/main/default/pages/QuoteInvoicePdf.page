@@ -1,0 +1,828 @@
+<apex:page renderAs="pdf" controller="QuoteInvoicePDFController">
+
+	<apex:stylesheet value="{!$Resource.QuoteHeaderFooter}" />
+
+	<!-- First Page Header -->
+	<c:PDFHeaderFooter type="header" position="left">
+		<apex:outputPanel rendered="{!quoteRecord.Business_Vertical__c != 'CNPL'}">
+		<img src="{!$Resource.NilkamalPDFLogo}" alt="logo" style="height: 50px" />
+		</apex:outputPanel>
+	</c:PDFHeaderFooter>
+<c:PDFHeaderFooter type="header" position="center">
+
+    <!-- CNPL Header -->
+    <apex:outputPanel rendered="{!quoteRecord.Business_Vertical__c == 'CNPL'}">
+      <table style="width:100%;">
+    	<tr>
+        	<td style="text-align:center; line-height:1;">
+				<span style="font-size:26px; font-weight:bold; display:block;">
+					CAMBRO NILKAMAL PRIVATE LIMITED
+				</span>
+				<span style="font-size:14px; display:block; margin-top:0px;">
+					An Indo - US Joint Venture
+				</span>
+			</td>
+		
+        	<td style="width:120px; text-align:right;">
+            	<img src="{!$Resource.CambroLogo}" style="height:55px;" />
+        	</td>
+    	</tr>
+	 </table>
+
+    </apex:outputPanel>
+
+    <!-- Default Header -->
+    <apex:outputPanel rendered="{!quoteRecord.Business_Vertical__c != 'CNPL'}">
+        <div style="font-size: 40px">
+            <i>
+                <b>Nilkamal Limited</b>
+            </i>
+        </div>
+    </apex:outputPanel>
+
+</c:PDFHeaderFooter>
+	<c:PDFHeaderFooter type="header" position="right">
+		<apex:outputPanel rendered="{!quoteRecord.Business_Vertical__c != 'CNPL'}">
+		<img src="{!$Resource.NilkamalPDFLogo2}" alt="logo" style="height: 50px" />
+		</apex:outputPanel>
+	</c:PDFHeaderFooter>
+
+
+	<!-- All Pages Header -->
+	<c:PDFHeaderFooter type="header" position="left">
+		<img src="{!$Resource.NilkamalPDFLogo}" alt="logo" style="height: 50px" />
+	</c:PDFHeaderFooter>
+	<c:PDFHeaderFooter type="header" position="center">
+		<strong style="font-size: 18px">
+			<apex:outputText rendered="{!AND(isPrinter, isAMC)}">
+				Ref Number:
+			</apex:outputText>
+			<apex:outputText rendered="{!NOT(AND(isPrinter, isAMC))}">
+				Quote Number:
+			</apex:outputText>
+			<!-- Quote Number : -->
+			{!quoteRecord.Document_No_1__c}
+			<apex:outputText value=" - {!quoteRecord.Document_Version__c}" rendered="{!NOT(ISBLANK(quoteRecord.Document_Version__c))}"
+			/>
+		</strong>
+	</c:PDFHeaderFooter>
+	<c:PDFHeaderFooter type="header" position="right">
+		<apex:outputPanel rendered="{!quoteRecord.Business_Vertical__c != 'CNPL'}">
+		<img src="{!$Resource.NilkamalPDFLogo2}" alt="logo" style="height: 50px" />
+		</apex:outputPanel>
+	</c:PDFHeaderFooter>
+
+
+	<c:PDFHeaderFooter type="footer" position="center" showPageNumbers="true" />
+
+
+	<head>
+		<title>Quotation / Proforma Invoice</title>
+	</head>
+
+
+	<body>
+		<div style="border-bottom: 2px solid black; font-size: 12px; text-align: center; padding-bottom: 5px">
+    
+    <apex:outputPanel rendered="{!quoteRecord.Business_Vertical__c != 'CNPL'}">
+        Head Office : Nilkamal House, Street No.14, M.I.D.C., Andheri (East), Mumbai - 400 093. Tel.: (022) 4235 8825
+        <br/> (Material Handling Division) : Fax : (91-22) 2836 1923 / 2836 7891 • E-mail : cratessales@nilkamal.com
+        <br/> (Furniture Division) : Fax : (91-22) 2835 3556 • E-mail : furniture@nilkamal.com
+        <br/> (@ Home Division) : Fax : (91-22) 2837 2787 • E-mail : connect@at-home.co.in • visit us at : www.at-home.co.in / www.nilkamal.com
+    </apex:outputPanel>
+
+    <apex:outputPanel rendered="{!quoteRecord.Business_Vertical__c = 'CNPL'}">
+        Redg./Head Office : Nilkamal House, 77/18, Road No. 13/14, MIDC, Andheri (East), Mumbai
+        <br/>visit us at : www.at-home.co.in / www.nilkamal.com
+    </apex:outputPanel>
+
+   </div>
+		
+
+		<!-- Quotation / Proforma Invoice Details -->
+		<table style="width:100%; border-collapse:collapse; font-size:14px">
+			<tr>
+				<th colspan="2" style="padding:8px; text-align:center; font-weight:bold; font-size:13px;">
+					{!mainHeaderHeading}
+				</th>
+			</tr>
+			<tr>
+				<td style="padding:5px; width:50%; word-wrap: break-word; white-space: normal;">
+					<apex:outputText rendered="{!AND(isPrinter, isAMC)}">
+						<strong>Ref Number:</strong>
+					</apex:outputText>
+					<apex:outputText rendered="{!NOT(AND(isPrinter, isAMC))}">
+						<strong>Quote Number:</strong>
+					</apex:outputText>
+					<!--<strong>Quote Number:</strong>-->
+					{!quoteRecord.Document_No_1__c}
+					<apex:outputText value=" - {!quoteRecord.Document_Version__c}" rendered="{!NOT(ISBLANK(quoteRecord.Document_Version__c))}"
+					/>
+				</td>
+				<td style="padding:5px; width:50%; text-align:left;">
+					<!-- <apex:outputText value="{0,date,dd MMM yyyy}"> -->
+					<strong>Date: </strong>
+					<!--<apex:param value="{!quoteRecord.PI_Date__c}" /> -->
+					<apex:outputText value="{0,date,dd MMM yyyy}">
+						<apex:param value="{!IF(isPOcustomer, 
+						                               quoteRecord.PI_Date__c, 
+						                               quoteRecord.Quote_Start_Date__c)}" />
+					</apex:outputText>
+					<!-- </apex:outputText> -->
+				</td>
+			</tr>
+			<tr>
+				<td style="padding:5px; word-wrap: break-word; white-space: normal;">
+					<strong>Bill To,</strong>
+					<br/>
+					<!-- <strong>Customer Address,</strong> -->
+					<p>
+						{!quoteRecord.Bill_to_Party__r.Name}<br/>
+						 <apex:outputText rendered="{!NOT(ISBLANK(quoteRecord.Street1_Bill_To__c))}">{!quoteRecord.Street1_Bill_To__c}<br/></apex:outputText>
+						 <apex:outputText rendered="{!NOT(ISBLANK(quoteRecord.Street2_Bill_To__c))}">{!quoteRecord.Street2_Bill_To__c}<br/></apex:outputText>
+						 <apex:outputText rendered="{!NOT(ISBLANK(quoteRecord.Street_House_Number_Bill_To__c))}">{!quoteRecord.Street_House_Number_Bill_To__c}<br/></apex:outputText>
+						 <apex:outputText rendered="{!NOT(ISBLANK(quoteRecord.City_Bill_To__c))}">{!quoteRecord.City_Bill_To__c}<br/></apex:outputText>
+						 <apex:outputText rendered="{!NOT(ISBLANK(quoteRecord.Postal_Code_Bill_To__c))}">{!quoteRecord.Postal_Code_Bill_To__c}<br/></apex:outputText>
+						 <apex:outputText rendered="{!NOT(ISBLANK(quoteRecord.Country_Bill_To__c))}">{!quoteRecord.Country_Bill_To__c}<br/></apex:outputText>
+						 GST No: {!quoteRecord.Bill_to_Party__r.GST_No__c}
+					</p>
+				</td>
+				<td style="padding:5px; word-wrap: break-word; white-space: normal;">
+					<strong>Ship To,</strong>
+					<p>
+						{!quoteRecord.Ship_to_Party__r.Name}
+						<apex:outputText rendered="{!NOT(ISBLANK(quoteRecord.Street1__c))}">{!quoteRecord.Street1__c}<br/></apex:outputText>
+						 <apex:outputText rendered="{!NOT(ISBLANK(quoteRecord.Street2__c))}">{!quoteRecord.Street2__c}<br/></apex:outputText>
+						 <apex:outputText rendered="{!NOT(ISBLANK(quoteRecord.Street_House_Number__c))}">{!quoteRecord.Street_House_Number__c}<br/></apex:outputText>
+						 <apex:outputText rendered="{!NOT(ISBLANK(quoteRecord.City__c))}">{!quoteRecord.City__c}<br/></apex:outputText>
+						 <apex:outputText rendered="{!NOT(ISBLANK(quoteRecord.Postal_Code__c))}">{!quoteRecord.Postal_Code__c}<br/></apex:outputText>
+						 <apex:outputText rendered="{!NOT(ISBLANK(quoteRecord.Country__c))}">{!quoteRecord.Country__c}<br/></apex:outputText>
+						 GST No: {!quoteRecord.Ship_to_Party__r.GST_No__c}
+					</p>
+				</td>
+			</tr>
+			<tr>
+				<td style="padding:5px; word-wrap: break-word; white-space: normal;">
+					<apex:outputText rendered="{!isPOcustomer}">
+						<strong>PO Number:</strong> {!quoteRecord.Customer_PO_Number__c}
+						<br/>
+						<!-- <strong>PO Date:</strong> {!quoteRecord.Customer_PO_Date__c}
+                            <br/> -->
+						<apex:outputText value="{0,date,dd MMM yyyy}">
+							<strong>PO Date: </strong>
+							<apex:param value="{!quoteRecord.Customer_PO_Date__c}" />
+						</apex:outputText>
+					</apex:outputText>
+					<br/>
+					<strong>Kind Attn:</strong> {!quoteRecord.Contact.Name}
+					<br/>
+					<strong>Mobile No:</strong> {!quoteRecord.Phone}
+					<br/>
+					<strong>Email Id:</strong> {!quoteRecord.Email}
+				</td>
+				<td style="padding:5px; word-wrap: break-word; white-space: normal;">
+					<!-- {!quoteRecord.Business_Vertical__c} Coordinator - {!coordinatorName} -->
+					PURCHASE ORDER SHOULD BE
+					<br/>GENERATED ON BELOW ADDRESS :
+					<br/>
+					<br/> Nilkamal Limited ({!quoteRecord.Business_Vertical__c} Division)
+					<br/> {!plantMaster.Address__c}
+					<br/> {!plantMaster.Street_4__c}
+					<br/> {!plantMaster.Street_5__c}
+					<br/> {!plantMaster.City__c}
+					<br/> {!plantMaster.Pin_Code__c}
+					<br/> GST No: {!plantMaster.GST_No__c}
+					<!-- <br/> Email: {!quoteRecord.Owner.Email} -->
+
+				</td>
+			</tr>
+			<tr>
+				<td style="padding:5px; vertical-align:top; word-wrap: break-word; white-space: normal;">
+				</td>
+				<td style="padding:5px; word-wrap: break-word; white-space: normal;">
+					<table style="width:100%; border-collapse:collapse; text-align:left;">
+						<tr>
+							<td style="border:1px solid #000; padding:8px; font-size:13px;">Customer Code:</td>
+							<td style="border:1px solid #000; padding:8px; font-size:13px;">{!quoteRecord.Account.SAP_Customer_code__c}</td>
+						</tr>
+						<tr>
+							<td style="border:1px solid #000; padding:8px; font-size:13px;">Model No:</td>
+							<td style="border:1px solid #000; padding:8px; font-size:13px;">{!quoteRecord.Asset_Serial_Number__r.Product2.Name}</td>
+						</tr>
+						<tr>
+							<td style="border:1px solid #000; padding:8px; font-size:13px;">SR No:</td>
+							<td style="border:1px solid #000; padding:8px; font-size:13px;">
+								{!quoteRecord.Opportunity.Serial_Number__r.SerialNumber}
+							</td>
+						</tr>
+						<tr>
+							<td style="border:1px solid #000; padding:8px; font-size:13px;">Report No:</td>
+							<td style="border:1px solid #000; padding:8px; font-size:13px;">{!reportName}</td>
+						</tr>
+					</table>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2" style="padding:5px;">
+					<apex:outputText rendered="{!isCAMC}">
+						<p style="font-size:14px;">
+							<strong>Sub: {!isCAMCSubjectText}</strong>
+						</p>
+						<p style="font-size:14px;">
+							Dear Sir/Madam,
+							<br/> {!isCAMCEmailBodyText}
+						</p>
+					</apex:outputText>
+					<apex:outputText rendered="{!isAMC}">
+						<p style="font-size:14px;">
+							<strong>Sub: {!isAMCSubjectText}</strong>
+						</p>
+						<p style="font-size:14px;">
+							Dear Sir/Madam,
+							<br/> {!isAMCEmailBodyText}
+						</p>
+					</apex:outputText>
+					<apex:outputText rendered="{!isService}">
+						<p style="font-size:14px;">
+							<strong>Sub: {!isServiceSubjectText}</strong>
+						</p>
+						<p style="font-size:14px;">
+							Dear Sir/Madam,
+							<br/> {!isServiceEmailBodyText}
+						</p>
+					</apex:outputText>
+				</td>
+			</tr>
+		</table>
+
+		<table style="width:100%; border-collapse:collapse; font-size:10px; text-align:center; margin-top:10px">
+			<tr>
+				<th style="border:1px solid #000; padding:0px;">Sr No</th>
+				<th style="border:1px solid #000; padding:2px;white-space: pre-wrap;word-break: break-all;">Service Material Code</th>
+				<th style="border:1px solid #000; padding:2px;">SAC Code</th>
+				<th style="border:1px solid #000; padding:2px;">Description</th>
+				<!-- <apex:outputText rendered="{!isAMC}">
+					<th style="border:1px solid #000; padding:2px;">Period in Month(s)</th>
+					<th style="border:1px solid #000; padding:2px;">Number of PM Visit</th>
+					<th style="border:1px solid #000; padding:2px;">Number of Break down Visit</th>
+				</apex:outputText>
+				<apex:outputText rendered="{!isCAMC}">
+					<th style="border:1px solid #000; padding:2px;">Period in Month(s)</th>
+					<th style="border:1px solid #000; padding:2px;">Number of PM Visit</th>
+					<th style="border:1px solid #000; padding:2px;">Number of Break down Visit</th>
+				</apex:outputText> -->
+				<apex:outputText rendered="{!OR(isAMC, isCAMC)}">
+					<th style="border:1px solid #000; padding:2px;">Period in Month(s)</th>
+					<th style="border:1px solid #000; padding:2px;">Number of PM Visit</th>
+					<th style="border:1px solid #000; padding:2px;">Number of Break down Visit</th>
+				</apex:outputText>
+				<th style="border:1px solid #000; padding:0px;">Qty</th>
+				<apex:outputText rendered="{!isMHE || isHanel}">
+					<th style="border:1px solid #000; padding:2px;">Basic Unit Price</th>
+				</apex:outputText>
+				<apex:outputText rendered="{!isPrinter}">
+					<th style="border:1px solid #000; padding:2px;">Rate Per Day</th>
+				</apex:outputText>
+				<apex:outputText rendered="{!showDiscountInValueColumn}">
+					<th style="border:1px solid #000; padding:2px;">Unit Disc In Value</th>
+				</apex:outputText>
+				<apex:outputText rendered="{!showDiscountInValueColumn}">
+					<th style="border:1px solid #000; padding:2px;">Discounted Basic Unit Price</th>
+				</apex:outputText>
+
+				<th style="border:1px solid #000; padding:2px;">Total
+					<apex:outputText rendered="{!showDiscountInValueColumn}">
+						Discounted
+					</apex:outputText>
+					Basic Price</th>
+				<th style="border:1px solid #000; padding:2px;">GST%</th>
+				<th style="border:1px solid #000; padding:2px;">Total Price</th>
+			</tr>
+			<apex:variable var="rowIndex" value="{!1}" />
+			<apex:variable var="basicUPTotal" value="{!0}" />
+			<apex:variable var="discBasicUPTotal" value="{!0}" />
+			<apex:variable var="totaldiscBasicUPTotal" value="{!0}" />
+			<apex:variable var="quantityTotal" value="{!0}" />
+			<apex:variable var="amcStartMonths" value="{!1}" />
+			<apex:variable var="amcEndMonths" value="{!0}" />
+
+			<apex:variable var="camcStartMonths" value="{!1}" />
+			<apex:variable var="camcEndMonths" value="{!0}" />
+
+			<apex:repeat value="{!quoteServiceItems}" var="each">
+				<tr style="page-break-inside: avoid;">
+					<td style="border: 1px solid #000;padding: 1px;text-align: center;">
+						{!rowIndex}
+					</td>
+					<td style="border:1px solid #000; padding:2px; text-align:center;pre-wrap;word-break: break-all;">
+						{!each.Item_Master__r.Name}
+					</td>
+					<td style="border:1px solid #000; padding:2px; text-align:center;">{!each.Item_Master__r.HSN_Code__r.Name}</td>
+					<td style="border:1px solid #000; padding:2px; text-align:center;">{!each.Description__c}</td>
+
+					<!-- <apex:outputText rendered="{!isAMC}">
+						<apex:variable var="amcEndMonths" value="{!each.AMC_Period_In_Months__c + amcEndMonths}" />
+						<td style="border:1px solid #000; padding:2px; text-align:center;">
+							<b>{!each.AMC_Period_In_Months__c}</b>
+							<br/> {!amcStartMonths} to {!amcEndMonths} months
+						</td>
+						<apex:variable var="amcStartMonths" value="{!each.AMC_Period_In_Months__c + amcStartMonths}" />
+						<td style="border:1px solid #000; padding:2px; text-align:center;">{!each.Number_of_PM_visits_in_12_Months__c}</td>
+						<td style="border:1px solid #000; padding:2px; text-align:center;">{!each.Number_of_Breakdown_visits_in_12_Months__c}</td>
+					</apex:outputText> -->
+
+					<!-- <apex:outputText rendered="{!isCAMC}">
+						<apex:variable var="amcEndMonths" value="{!each.AMC_Period_In_Months__c + amcEndMonths}" />
+						<td style="border:1px solid #000; padding:2px; text-align: center">
+							<b>{!each.AMC_Period_In_Months__c}</b>
+							<br/> {!amcStartMonths} to {!amcEndMonths} months
+						</td>
+						<apex:variable var="amcStartMonths" value="{!each.AMC_Period_In_Months__c + amcStartMonths}" />
+						<td style="border:1px solid #000; padding:2px; text-align:center;">{!each.Number_of_PM_visits_in_12_Months__c}</td>
+						<td style="border:1px solid #000; padding:2px; text-align:center;">{!each.Number_of_Breakdown_visits_in_12_Months__c}</td>
+					</apex:outputText> -->
+
+					<apex:outputText rendered="{!OR(isAMC, isCAMC)}">
+						<!-- AMC ITEMS -->
+						<apex:outputText rendered="{!CONTAINS(each.Item_Master__r.Name, 'AMC') && NOT(CONTAINS(each.Item_Master__r.Name, 'CAMC'))}">
+							<apex:variable var="amcEndMonths" value="{!each.AMC_Period_In_Months__c + amcEndMonths}" />
+							<td style="border:1px solid #000; padding:2px; text-align:center;">
+								<b>{!each.AMC_Period_In_Months__c}</b>
+								<br/> {!amcStartMonths} to {!amcEndMonths} months
+							</td>
+							<apex:variable var="amcStartMonths" value="{!each.AMC_Period_In_Months__c + amcStartMonths}" />
+							<td style="border:1px solid #000; padding:2px; text-align:center;">{!each.Number_of_PM_visits_in_12_Months__c}</td>
+							<td style="border:1px solid #000; padding:2px; text-align:center;">{!each.Number_of_Breakdown_visits_in_12_Months__c}</td>
+						</apex:outputText>
+
+						<!-- CAMC ITEMS -->
+						<apex:outputText rendered="{!CONTAINS(each.Item_Master__r.Name, 'CAMC')}">
+							<apex:variable var="camcEndMonths" value="{!each.AMC_Period_In_Months__c + camcEndMonths}" />
+							<td style="border:1px solid #000; padding:2px; text-align:center;">
+								<b>{!each.AMC_Period_In_Months__c}</b>
+								<br/> {!camcStartMonths} to {!camcEndMonths} months
+							</td>
+							<apex:variable var="camcStartMonths" value="{!each.AMC_Period_In_Months__c + camcStartMonths}" />
+							<td style="border:1px solid #000; padding:2px; text-align:center;">{!each.Number_of_PM_visits_in_12_Months__c}</td>
+							<td style="border:1px solid #000; padding:2px; text-align:center;">{!each.Number_of_Breakdown_visits_in_12_Months__c}</td>
+						</apex:outputText>
+
+						<!-- SERVICE ITEMS (when AMC or CAMC also exists) -->
+						<apex:outputText rendered="{!NOT(CONTAINS(each.Item_Master__r.Name, 'AMC')) && NOT(CONTAINS(each.Item_Master__r.Name, 'CAMC')) && OR(isAMC, isCAMC)}">
+							<!-- Service items when mixed with AMC/CAMC - show empty columns -->
+							<td style="border:1px solid #000; padding:2px; text-align:center;">
+								<b>{!each.AMC_Period_In_Months__c}</b>
+								<br/>
+								<!-- Blank line -->
+							</td>
+							<td style="border:1px solid #000; padding:2px; text-align:center;">{!each.Number_of_PM_visits_in_12_Months__c}</td>
+							<td style="border:1px solid #000; padding:2px; text-align:center;">{!each.Number_of_Breakdown_visits_in_12_Months__c}</td>
+						</apex:outputText>
+					</apex:outputText>
+
+					<!-- SERVICE ITEMS ONLY (when NO AMC or CAMC exists) -->
+					<apex:outputText rendered="{!isService && !isAMC && !isCAMC}">
+						<!-- Don't show these 3 columns at all for pure service items -->
+						<!-- Nothing here - columns are skipped -->
+					</apex:outputText>
+
+
+					<td style="border:1px solid #000; padding:0px;">{!each.Quantity__c}</td>
+					<td style="border:1px solid #000; padding:2px;">
+						<apex:outputText value="{0,number,#,##0.00}">
+							<apex:param value="{!each.Service_Amount__c}" />
+						</apex:outputText>
+					</td>
+					<apex:outputText rendered="{!showDiscountInValueColumn}">
+						<td style="border:1px solid #000; padding:2px;">
+							<apex:outputText value="{0,number,#,##0.00}">
+								<apex:param value="{!each.Discount_In_Value_New__c}" />
+							</apex:outputText>
+						</td>
+					</apex:outputText>
+					<apex:outputText rendered="{!showDiscountInValueColumn}">
+						<td style="border:1px solid #000; padding:2px;">
+							<apex:outputText value="{0,number,#,##0.00}">
+								<apex:param value="{!each.Discounted_Basic_Unit_Price__c}" />
+							</apex:outputText>
+						</td>
+					</apex:outputText>
+					<td style="border:1px solid #000; padding:2px;">
+						<apex:outputText value="{0,number,#,##0.00}">
+							<apex:param value="{!each.Service_Gross_Totals__c}" />
+						</apex:outputText>
+					</td>
+					<td style="border:1px solid #000; text-align:center; padding:2px;">{!each.Service_GST__c} %</td>
+					<td style="border:1px solid #000; text-align:center; padding:2px;">
+						<apex:outputText value="{0,number,#,##0.00}">
+							<apex:param value="{!each.Service_Grand_Total__c}" />
+						</apex:outputText>
+					</td>
+				</tr>
+				<apex:variable var="rowIndex" value="{!rowIndex + 1}" />
+				<apex:variable var="basicUPTotal" value="{!basicUPTotal + each.Service_Amount__c}" />
+				<apex:variable var="discBasicUPTotal" value="{!discBasicUPTotal + each.Discounted_Basic_Unit_Price__c}" />
+				<apex:variable var="totaldiscBasicUPTotal" value="{!totaldiscBasicUPTotal + each.Service_Gross_Totals__c}" />
+				<apex:variable var="quantityTotal" value="{!quantityTotal + each.Quantity__c}" />
+			</apex:repeat>
+			<tr style="page-break-inside: avoid;">
+
+
+				<!-- <td style="border:1px solid #000; padding:2px;"></td> -->
+				<!-- <td style="border:1px solid #000; padding:2px;"></td> -->
+				<!-- <td colspan="3" style="border:1px solid #000; padding:2px; text-align:right; font-weight:bold;">Grand Total</td> -->
+				<apex:outputText rendered="{!isService}">
+					<!-- <td colspan="2" style="border:1px solid #000; padding:8px; font-weight:bold;"> -->
+					<td colspan="4" style="border:1px solid #000; padding:2px; text-align:center; font-weight:bold;">Grand Total</td>
+					<!-- </td> -->
+				</apex:outputText>
+				<apex:outputText rendered="{!isAMC}">
+					<!-- <td colspan="5" style="border:1px solid #000; padding:8px; font-weight:bold;"> -->
+					<td colspan="7" style="border:1px solid #000; padding:2px; text-align:center; font-weight:bold;">Grand Total</td>
+					<!-- </td> -->
+				</apex:outputText>
+				<apex:outputText rendered="{!isCAMC}">
+					<!-- <td colspan="2" style="border:1px solid #000; padding:8px; font-weight:bold;"> -->
+					<td colspan="7" style="border:1px solid #000; padding:2px; text-align:center; font-weight:bold;">Grand Total</td>
+					<!-- </td> -->
+				</apex:outputText>
+				<td style="border:1px solid #000; padding:2px; text-align:center;">
+					<apex:outputText value="{0,number,#,##0}">
+						<apex:param value="{!quantityTotal}" />
+					</apex:outputText>
+				</td>
+
+				<td style="border:1px solid #000; padding:2px; text-align:center;">
+					<apex:outputText value="{0,number,#,##0.00}">
+						<apex:param value="{!basicUPTotal}" />
+					</apex:outputText>
+				</td>
+				<apex:outputText rendered="{!showDiscountInValueColumn}">
+					<td style="border:1px solid #000; padding:2px;"></td>
+				</apex:outputText>
+				<apex:outputText rendered="{!showDiscountInValueColumn}">
+					<td style="border:1px solid #000; padding:2px; text-align:center;">
+						<apex:outputText value="{0,number,#,##0.00}">
+							<apex:param value="{!discBasicUPTotal}" />
+						</apex:outputText>
+					</td>
+				</apex:outputText>
+				<td style="border:1px solid #000; padding:2px; text-align:center;">
+					<apex:outputText value="{0,number,#,##0.00}">
+						<apex:param value="{!totaldiscBasicUPTotal}" />
+					</apex:outputText>
+				</td>
+				<td style="border:1px solid #000; padding:2px;"></td>
+				<td style="border:1px solid #000; padding:2px; text-align:center;">
+					<apex:outputText value="{0,number,#,##0.00}">
+						<apex:param value="{!quoteRecord.Service_Grand_Total__c}" />
+					</apex:outputText>
+				</td>
+			</tr>
+		</table>
+
+
+		<div style="page-break-inside:avoid; margin-top:10px">
+
+			<apex:variable var="rowIndex" value="{!1}" />
+
+			<table style="width:100%; border-collapse:collapse; font-size:14px; text-align:left;">
+				<tr>
+					<th colspan="3" style="border:1px solid #000; padding:8px; text-align:center; font-weight:bold;">
+						Terms and Condition for PO:-
+					</th>
+				</tr>
+				<tr>
+					<td style="border:1px solid #000; font-weight:bold;width:5%;">
+						{!rowIndex}
+						<apex:variable var="rowIndex" value="{!rowIndex + 1}" />
+					</td>
+					<td style="border:1px solid #000; width:20%;">Inco Term</td>
+					<td style="border:1px solid #000;">{!quoteRecord.Inco_Terms__c}</td>
+				</tr>
+				<tr>
+					<td style="border:1px solid #000; font-weight:bold;width:5%;">
+						{!rowIndex}
+						<apex:variable var="rowIndex" value="{!rowIndex + 1}" />
+					</td>
+					<td style="border:1px solid #000; width:20%;">Payment Terms</td>
+					<td style="border:1px solid #000;">{!PaymentTerms}</td>
+				</tr>
+
+				<apex:outputText rendered="{!OR(isAMC, isCAMC)}">
+					<tr>
+						<td style="border:1px solid #000; font-weight:bold;width:5%;">
+							{!rowIndex}
+							<apex:variable var="rowIndex" value="{!rowIndex + 1}" />
+						</td>
+						<td style="border:1px solid #000; width:20%;">Invoice Frequency</td>
+						<td style="border:1px solid #000;">{!quoteRecord.Invoice_Frequency__c}</td>
+					</tr>
+
+					<tr>
+						<td style="border:1px solid #000; font-weight:bold;width:5%;">
+							{!rowIndex}
+							<apex:variable var="rowIndex" value="{!rowIndex + 1}" />
+						</td>
+						<td style="border:1px solid #000; width:20%;">Invoice Term</td>
+						<td style="border:1px solid #000;">{!quoteRecord.Invoice_Term__c}</td>
+					</tr>
+
+				</apex:outputText>
+				<apex:outputText rendered="{!NOT(ISBLANK(quoteRecord.Additional_Charges__c))}">
+					<tr>
+						<td style="border:1px solid #000;font-weight:bold;width:5%;">
+							{!rowIndex}
+							<apex:variable var="rowIndex" value="{!rowIndex + 1}" />
+						</td>
+						<td style="border:1px solid #000;width:20%;">Additional Visit Charges:</td>
+						<td style="border:1px solid #000;">
+							{!quoteRecord.CurrencyIsoCode}
+
+							<apex:outputText value="{0, number, ###,###,##0.00}">
+								<apex:param value="{!quoteRecord.Additional_Charges__c}" />
+							</apex:outputText>
+						</td>
+					</tr>
+				</apex:outputText>
+				<tr>
+					<td style="border:1px solid #000;font-weight:bold;width:5%;">
+						{!rowIndex}
+						<apex:variable var="rowIndex" value="{!rowIndex + 1}" />
+					</td>
+					<td style="border:1px solid #000;width:20%;">Quote Validity:</td>
+					<td style="border:1px solid #000;">07 Days</td>
+				</tr>
+				<apex:outputText rendered="{!NOT(isPrinter)}">
+					<tr>
+						<td style="border:1px solid #000;font-weight:bold;width:5%;">
+							{!rowIndex}
+							<apex:variable var="rowIndex" value="{!rowIndex + 1}" />
+						</td>
+						<td style="border:1px solid #000;width:20%;">Customer Scope:</td>
+						<td style="border:1px solid #000;">{!quoteRecord.Customer_Scope__c}</td>
+					</tr>
+				</apex:outputText>
+				<apex:outputText rendered="{!AND(isPrinter, isAMC)}">
+					<tr>
+						<td style="border:1px solid #000;font-weight:bold;width:5%;">
+							{!rowIndex}
+							<apex:variable var="rowIndex" value="{!rowIndex + 1}" />
+						</td>
+						<td style="border:1px solid #000;width:20%;">Type:</td>
+						<td style="border:1px solid #000;">{!quoteRecord.AMC_Type__c}</td>
+					</tr>
+				</apex:outputText>
+
+			</table>
+		</div>
+
+		<apex:outputText >
+			<div style="page-break-inside:avoid; margin-top: 10px; table-layout:fixed;">
+				<apex:outputText rendered="{!isMHE || isHanel || isPrinter}">
+					<apex:outputPanel rendered="{!NOT(ISBLANK(quoteRecord.Account.Virtual_Account_No__c))}">
+						<table style="width:100%; border-collapse:collapse; font-size:14px; text-align:left;">
+							<tr>
+								<th colspan="2" style="border:1px solid #000; padding:8px; text-align:center; font-weight:bold;">
+									Bank Account Details
+								</th>
+							</tr>
+							<tr>
+								<td style="border:1px solid #000; padding:2px; font-weight:bold">Account No : </td>
+								<td style="border:1px solid #000; padding:2px">{!quoteRecord.Account.Virtual_Account_No__c}</td>
+							</tr>
+							<tr>
+								<td style="border:1px solid #000; padding:2px; font-weight:bold">Beneficiary : </td>
+								<td style="border:1px solid #000; padding: 2px">Nilkamal Limited</td>
+							</tr>
+							<tr>
+								<td style="border:1px solid #000; padding:2px; font-weight:bold">Bank Name : </td>
+								<td style="border:1px solid #000; padding: 2px">DBS Bank Ltd.</td>
+							</tr>
+							<tr>
+								<td style="border:1px solid #000; padding:2px; font-weight:bold">Branch : </td>
+								<td style="border:1px solid #000; padding: 2px">Nariman Point</td>
+							</tr>
+							<tr>
+								<td style="border:1px solid #000; padding:2px; font-weight:bold">IFSC Code : </td>
+								<td style="border:1px solid #000; padding: 2px">DBSS0IN0811</td>
+							</tr>
+							<tr>
+								<td style="border:1px solid #000; padding:2px; font-weight:bold">Account Type : </td>
+								<td style="border:1px solid #000; padding: 2px">Current Account</td>
+							</tr>
+							<!-- Optional: Add more virtual account fields if you have them -->
+						</table>
+					</apex:outputPanel>
+					<apex:outputPanel rendered="{!ISBLANK(quoteRecord.Account.Virtual_Account_No__c)}">
+						<table style="width:100%; border-collapse:collapse; font-size:14px; text-align:left;">
+							<tr>
+								<th colspan="2" style="border:1px solid #000; padding:8px; text-align:center; font-weight:bold;">
+									Bank Account Details
+								</th>
+							</tr>
+							<tr>
+								<td style="border:1px solid #000; padding:2px; font-weight:bold">Account No : </td>
+								<td style="border:1px solid #000; padding:2px">560101000114249</td>
+							</tr>
+							<tr>
+								<td style="border:1px solid #000; padding:2px; font-weight:bold">Beneficiary : </td>
+								<td style="border:1px solid #000; padding: 2px">Nilkamal Limited</td>
+							</tr>
+							<tr>
+								<td style="border:1px solid #000; padding:2px; font-weight:bold">Bank Name : </td>
+								<td style="border:1px solid #000; padding: 2px">Union Bank of India</td>
+							</tr>
+							<tr>
+								<td style="border:1px solid #000; padding:2px; font-weight:bold">Branch : </td>
+								<td style="border:1px solid #000; padding: 2px">Nariman Point</td>
+							</tr>
+							<tr>
+								<td style="border:1px solid #000; padding:2px; font-weight:bold">IFSC Code : </td>
+								<td style="border:1px solid #000; padding: 2px">UBIN0549576</td>
+							</tr>
+							<tr>
+								<td style="border:1px solid #000; padding:2px; font-weight:bold">Account Type : </td>
+								<td style="border:1px solid #000; padding: 2px">Current Account</td>
+							</tr>
+						</table>
+					</apex:outputPanel>
+				</apex:outputText>
+
+				<apex:outputText rendered="{!isCNPL}">
+					<table style="width:100%; border-collapse:collapse; font-size:14px; text-align:left;">
+						<tr>
+							<th colspan="2" style="border:1px solid #000; padding:8px; text-align:center; font-weight:bold;">
+								Bank Account Details
+							</th>
+						</tr>
+						<tr>
+							<td style="border:1px solid #000; padding:2px; font-weight:bold">Account No : </td>
+							<td style="border:1px solid #000; padding: 2px">0386655100000204</td>
+						</tr>
+						<tr>
+							<td style="border:1px solid #000; padding:2px; font-weight:bold">Beneficiary : </td>
+							<td style="border:1px solid #000; padding: 2px">Cambro Nilkamal Pvt. Ltd.</td>
+						</tr>
+						<tr>
+							<td style="border:1px solid #000; padding:2px; font-weight:bold">Bank Name : </td>
+							<td style="border:1px solid #000; padding: 2px">IDBI Bank Ltd.</td>
+						</tr>
+						<tr>
+							<td style="border:1px solid #000; padding:2px; font-weight:bold">Branch : </td>
+							<td style="border:1px solid #000; padding: 2px">Corporate Banking Branch</td>
+						</tr>
+						<tr>
+							<td style="border:1px solid #000; padding:2px; font-weight:bold">IFSC Code : </td>
+							<td style="border:1px solid #000; padding: 2px">IBKL0000386</td>
+						</tr>
+						<tr>
+							<td style="border:1px solid #000; padding:2px; font-weight:bold">Account Type : </td>
+							<td style="border:1px solid #000; padding: 2px">Current Account</td>
+						</tr>
+					</table>
+				</apex:outputText>
+
+			</div>
+		</apex:outputText>
+
+		<apex:outputText rendered="{!NOT(ISBLANK(quoteRecord.Description))}">
+			<p>Remark for Customer :
+				<apex:outputText value="{!quoteRecord.Description}" escape="false" style="white-space: pre-line;"></apex:outputText>
+			</p>
+		</apex:outputText>
+
+		<apex:outputText rendered="{!showOutstanding}">
+			<div style="page-break-inside:avoid; margin-bottom:20px; table-layout:fixed;">
+				<p style="font-size:14px; font-weight:bold; padding:8px; margin:0;">
+					Outstanding Payment Details
+				</p>
+				<span style="font-weight:normal; font-size:12px; padding:10px;margin-bottom:5px;">
+					Outstanding As on
+					<apex:outputText value="{0, date, dd-MM-yyyy}">
+						<apex:param value="{!TODAY()}" />
+					</apex:outputText>
+				</span>
+				<table style="width:100%; border-collapse:collapse; font-size:10px; text-align:center;margin-top:5px;">
+					<tr>
+						<th style="border:1px solid #000; padding:2px;">Sr No</th>
+						<th style="border:1px solid #000; padding:2px;">Invoice No</th>
+						<th style="border:1px solid #000; padding:2px;">Invoice Date</th>
+						<th style="border:1px solid #000; padding:2px;">PO Number</th>
+						<th style="border:1px solid #000; padding:2px;">PO Date</th>
+						<th style="border:1px solid #000; padding:2px;">Invoice Amount</th>
+						<th style="border:1px solid #000; padding:2px;">Outstanding Amount</th>
+					</tr>
+					<apex:variable var="rowIndex" value="{!1}" />
+					<apex:repeat value="{!customerOutstandings}" var="co">
+						<tr style="page-break-inside:avoid;">
+							<td style="border:1px solid #000; padding:2px;">{!rowIndex}</td>
+							<td style="border:1px solid #000; padding:2px;">{!co.Accounting_Document_Number__c}</td>
+							<td style="border:1px solid #000; padding:2px;">
+								<apex:outputText value="{0,date,dd MMM yyyy}">
+									<apex:param value="{!co.Document_Date_in_Document__c}" />
+								</apex:outputText>
+							</td>
+							<td style="border:1px solid #000; padding:2px;">{!co.Customer_PO_Number__c}</td>
+							<td style="border:1px solid #000; padding:2px;">
+								<!-- {!co.Customer_PO_date__c} -->
+								<apex:outputText value="{0,date,dd MM yyyy}">
+									<apex:param value="{!co.Customer_PO_date__c}" />
+								</apex:outputText>
+							</td>
+							<td style="border:1px solid #000; padding:2px; text-align:center;">
+								{!co.Amount_in_Local_Currency__c}
+								<!--
+								<apex:outputText value="{0,number,###,##0.00}">
+									<apex:param value="{!co.Amount_in_Local_Currency__c}" />
+								</apex:outputText>
+								-->
+							</td>
+							<td style="border:1px solid #000; padding:2px; text-align:center;">
+								{!co.Net_Outstanding__c}
+								<!--
+								<apex:outputText value="{0,number,###,##0.00}">
+									<apex:param value="{!co.Net_Outstanding__c}" />
+								</apex:outputText>
+								-->
+							</td>
+						</tr>
+						<apex:variable var="rowIndex" value="{!rowIndex + 1}" />
+					</apex:repeat>
+				</table>
+			</div>
+		</apex:outputText>
+
+
+		<div>
+			<apex:outputText value="{!termsandconditions}" escape="false" />
+		</div>
+
+		<apex:outputPanel rendered="{!quoteRecord.Business_Vertical__c != 'CNPL'}">
+		<div style="page-break-inside:avoid;">
+
+			Yours faithfully,
+			<br/>
+			<strong>NILKAMAL LIMITED</strong>
+			<br/>
+			<br/>
+			
+			<table style="width:100%; border-collapse:collapse; table-layout: fixed; font-size:14px; text-align:left;">
+				<tr>
+					<td style="border:1px solid #000; padding:4px;vertical-align: top;">
+						<strong>{!quoteRecord.Owner.Name}</strong>
+						<br/>
+						<strong>Service Engineer</strong>
+						<br/>
+						<a href="mailto:{!quoteRecord.Owner.Email}" style="color:blue; text-decoration:none;">{!quoteRecord.Owner.Email}</a>
+						<br/>
+						<strong>{!ownerMobile}</strong>
+					</td>
+					<td style="border:1px solid #000; padding:4px;vertical-align: top;">
+						<strong>{!serviceResource.RSM__r.Name}</strong>
+						<br/>
+						<strong>Regional Service Manager</strong>
+						<br/>
+						<a href="mailto:{!serviceResource.RSM__r.Email}" style="color:blue; text-decoration:none;">{!serviceResource.RSM__r.Email}</a>
+						<br/>
+						<strong>{!serviceResource.RSM__r.MobilePhone}</strong>
+					</td>
+					<td style="border:1px solid #000; padding:4px;vertical-align: top;">
+						<strong>{!serviceResource.Coordinator__r.Name}</strong>
+						<br/>
+						<strong>Service Coordinator</strong>
+						<br/>
+						<a href="mailto:{!serviceResource.Coordinator__r.Email}" style="color:blue; text-decoration:none;">{!serviceResource.Coordinator__r.Email}</a>
+						<br/>
+						<strong>{!serviceResource.Coordinator__r.MobilePhone}</strong>
+					</td>
+				</tr>
+				<!-- <tr>
+                <td colspan="3" style="border:1px solid #000; padding:8px;">
+				C.C. Regional Office / Coimbatore/ Mumbai
+                </td>
+				</tr> -->
+			</table>
+
+			<!-- <table style="width: 100%; border-collapse: collapse; font-family: sans-serif; font-size:14px;">
+				<tr>
+					<td style="padding: 40px 8px 8px 8px;">For Nilkamal Limited</td>
+					<td style="padding: 40px 8px 8px 8px; text-align: right;">Sign &amp; Seal of Customer</td>
+				</tr>
+			</table> -->
+		</div>
+		</apex:outputPanel>
+		<apex:outputPanel rendered="{!quoteRecord.Business_Vertical__c == 'CNPL'}">
+			<br/>
+			<br/>
+			<div style="width:50%; float:left;">
+				<strong>Cambro Nilkamal Private Limited</strong>
+			</div>
+			<div style="width:50%; float:right; text-align:right;">
+				<strong>Sign &amp; Seal of Customer</strong>
+			</div>
+			<div style="clear:both;"></div>
+		</apex:outputPanel>
+	</body>
+
+</apex:page>

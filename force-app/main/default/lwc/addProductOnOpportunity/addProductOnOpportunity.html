@@ -1,0 +1,135 @@
+<template>
+
+    <template if:true={showSpinner}>
+        <lightning-spinner alternative-text="Loading" variant="brand" size="medium"></lightning-spinner>
+    </template>
+
+
+    <lightning-card title="Add Products" variant="narrow">
+
+        <template lwc:if={isProductListVisible}>
+
+            <lightning-button-icon icon-name="utility:filterList" variant="container" size="medium" alternative-text="Filter List" slot="actions"
+                onclick={handleOpenFilterModal}></lightning-button-icon>
+            <lightning-button-icon icon-name="utility:cart" variant="container" size="medium" alternative-text="Cart" slot="actions"></lightning-button-icon>
+
+
+            <table class="slds-table slds-table_bordered slds-no-row-hover slds-table_col-bordered slds-table_fixed-layout">
+                <tbody>
+                    <template iterator:row={productRows}>
+                        <tr key={row.value.index} class="slds-hint-parent">
+
+                            <template iterator:item={row.value.products}>
+                                <td key={item.value.Id} class={item.value.classList} data-id={item.value.Id}> <!-- product-container -->
+                                    <div class="checkbox-container">
+                                        <div>
+                                            <lightning-input type="checkbox" name="selected" variant="label-hidden" checked={item.value.selected} data-id={item.value.Id}
+                                                onclick={handleProductClick}></lightning-input>
+                                        </div>
+                                    </div>
+                                    <lightning-layout vertical-align="start" horizontal-align="center" multiple-rows>
+                                        <lightning-layout-item size="4" small-device-size="4" medium-device-size="12" large-device-size="12">
+                                            <div class="product-image-container">
+                                                <img src={item.value.imageSrc} alt={item.value.imageAlt} />
+                                            </div>
+                                        </lightning-layout-item>
+                                        <lightning-layout-item size="8" small-device-size="8" medium-device-size="12" large-device-size="12" class="slds-var-p-around_x-small">
+                                            <div class="slds-wrap product-details">
+                                                <div class="slds-wrap slds-text-align_left product-name">
+                                                    <a href="#" data-id={item.value.Id} onclick={handlePreviewProductClick}>{item.value.Product2.Name}</a>
+                                                </div>
+                                                <div class="slds-wrap slds-text-align_left product-description">
+                                                    {item.value.Product2.Description}
+                                                </div>
+                                                <div class="slds-wrap slds-text-align_left product-base-uom">
+                                                    Base UOM : {item.value.Product2.Base_UOM__r.Name}
+                                                </div>
+                                                <div class="slds-wrap slds-text-align_left product-sales-uom">
+                                                    Sales UOM : {item.value.Product2.Sales_UOM__r.Name}
+                                                </div>
+                                                <div class="slds-wrap slds-text-align_left product-price">
+                                                    <lightning-formatted-number value={item.value.UnitPrice} format-style="currency" currency-code={item.value.CurrencyIsoCode} data-id={item.value.Id}
+                                                        onclick={handleProductClick}></lightning-formatted-number>
+                                                </div>
+                                            </div>
+                                        </lightning-layout-item>
+                                    </lightning-layout>
+                                </td>
+                            </template>
+
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+
+        </template>
+
+
+    </lightning-card>
+
+
+
+    <template if:true={isFilterModalOpen}>
+        <div class="custom-modal">
+            <section role="dialog" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container" style={getFilterModalContainerStyle}>
+                    <header class="slds-modal__header">
+                        <span class="slds-modal__close">
+                            <lightning-icon icon-name="utility:close" alternative-text="close" onclick={handleCloseFilterModal}></lightning-icon>
+                        </span>
+                        <h2 class="slds-text-heading_medium slds-hyphenate">Filter List</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium">
+
+                        <lightning-layout multiple-rows vertical-align="center">
+                            <lightning-layout-item size="12" small-device-size="12" medium-device-size="12" large-device-size="12" class="slds-var-p-vertical_small">
+                                <lightning-input class="slds-var-p-horizontal_x-small" type="search" name="searchTerm" label="Search" placeholder="Search" value={searchTerm}
+                                    onchange={handleFilterChange}></lightning-input>
+                            </lightning-layout-item>
+                            <template iterator:item={filterItems}>
+                                <lightning-layout-item key={item.value.apiName} size="12" small-device-size="12" medium-device-size="3" large-device-size="3">
+                                    <lightning-combobox class="slds-var-p-horizontal_x-small" name={item.value.apiName} label={item.value.label} placeholder={item.value.placeholder}
+                                        value={item.value.value} options={item.value.values} onchange={handleFilterChange}></lightning-combobox>
+                                </lightning-layout-item>
+                            </template>
+                        </lightning-layout>
+
+                    </div>
+                    <footer class="slds-modal__footer">
+                        <lightning-button label="Cancel" title="Cancel" class="slds-m-right_small" onclick={handleCloseFilterModal}></lightning-button>
+                        <lightning-button variant="brand" label="Save" title="Save" onclick={handleSaveFilterModal}></lightning-button>
+                    </footer>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </div>
+    </template>
+
+
+
+    <template if:true={isPreviewProductModalOpen}>
+        <div class="custom-modal">
+            <section role="dialog" class="slds-modal slds-fade-in-open">
+                <div class="slds-modal__container">
+                    <header class="slds-modal__header">
+                        <span class="slds-modal__close">
+                            <lightning-icon icon-name="utility:close" alternative-text="close" onclick={handleClosePreviewProductModal}></lightning-icon>
+                        </span>
+                        <h2 class="slds-text-heading_medium slds-hyphenate">Spare Details</h2>
+                    </header>
+                    <div class="slds-modal__content slds-p-around_medium">
+                        <template if:true={isMobile}>
+                            <lightning-record-form columns="1" layout-type="Full" mode="readonly" object-api-name="Product2" record-id={previewProductId}></lightning-record-form>
+                        </template>
+                        <template if:false={isMobile}>
+                            <lightning-record-form columns="2" layout-type="Full" mode="readonly" object-api-name="Product2" record-id={previewProductId}></lightning-record-form>
+                        </template>
+                    </div>
+                </div>
+            </section>
+            <div class="slds-backdrop slds-backdrop_open"></div>
+        </div>
+    </template>
+
+
+</template>

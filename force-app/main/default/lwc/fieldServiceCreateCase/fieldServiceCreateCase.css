@@ -1,0 +1,9 @@
+@import 'c/utilCSS';
+
+
+
+
+.case-record-form-container {
+	max-width: 1300px;
+	margin: auto;
+}

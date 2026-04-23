@@ -1,0 +1,9 @@
+@media only screen and (min-width: 769px) {
+    .slds-modal__container {
+        width: 75% !important;
+        max-width: 75% !important;
+    }
+    .slds-modal__content {
+        min-height: 75% !important;
+    }
+}

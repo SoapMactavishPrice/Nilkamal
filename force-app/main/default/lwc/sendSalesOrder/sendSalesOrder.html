@@ -1,0 +1,7 @@
+<template>
+    <lightning-card title="SAP Sales Order Request">
+        <lightning-spinner if:true={isLoading} alternative-text="Loading..." size="medium"></lightning-spinner>
+        <lightning-button label="Push To Order" onclick={handleClick}></lightning-button>
+        <p>{responseMessage}</p>
+    </lightning-card>
+</template>

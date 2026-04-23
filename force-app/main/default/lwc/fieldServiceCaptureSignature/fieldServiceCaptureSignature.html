@@ -1,0 +1,124 @@
+<!-- <template>
+    <div class="slds-m-around_small">
+        <div style="height: 300px">
+            <c-signature-pad enable-name-signing="true" name-input-label="Type name here:" enable-signature-drawing="true" pad-label="Or draw signature here:" stroke-thickness="2" pen-color="black"
+                pad-color="white" font="30px 'Great Vibes'">
+            </c-signature-pad>
+        </div>
+        <div class="slds-m-top_small" style="text-align: center;">
+            <lightning-button variant="brand" label="Save" title="Save" onclick={saveSignature}></lightning-button>
+            <lightning-button variant="brand" label="Clear" title="Clear" onclick={clearSignature} class="slds-m-left_x-small"></lightning-button>
+        </div>
+
+
+    </div>
+</template> -->
+<!-- <template if:true={imgSrc}>
+            <br />
+            <br />
+            <img src={imgSrc} />
+        </template> -->
+
+<template>
+    <template if:true={showSpinner}>
+        <lightning-spinner alternative-text="Loading" variant="brand" size="medium"></lightning-spinner>
+    </template>
+    <lightning-card title="Installation Report" icon-name="custom:custom63" variant="narrow" hide-header="true">
+        <lightning-record-edit-form object-api-name={objectApiName} record-id={recordId} onsubmit={handleFormSubmit} onsuccess={handleSuccess} onerror={handleError}>
+            <lightning-layout multiple-rows>
+                <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-horizontal_small">
+                    <lightning-input-field if:true={recordId} field-name="Case__c" class="slds-m-bottom_small" variant="label-stacked" disabled></lightning-input-field>
+                    <lightning-input-field if:false={recordId} field-name="Case__c" class="slds-m-bottom_small" variant="label-stacked" value={caseId} disabled></lightning-input-field>
+                </lightning-layout-item>
+                <template if:true={isInstallationReport}>
+                    <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-horizontal_small">
+                        <lightning-input-field if:true={recordId} field-name="Item_Master__c" class="slds-m-bottom_small" variant="label-stacked" disabled></lightning-input-field>
+                        <lightning-input-field if:false={recordId} field-name="Item_Master__c" class="slds-m-bottom_small" variant="label-stacked" value={itemMasterId}
+                            disabled></lightning-input-field>
+                    </lightning-layout-item>
+                </template>
+                <template if:true={isServiceReport}>
+                    <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-horizontal_small">
+                        <lightning-input-field if:true={recordId} field-name="Product__c" class="slds-m-bottom_small" variant="label-stacked" disabled></lightning-input-field>
+                        <lightning-input-field if:false={recordId} field-name="Product__c" class="slds-m-bottom_small" variant="label-stacked" value={itemMasterId} disabled></lightning-input-field>
+                    </lightning-layout-item>
+                </template>
+                <template if:true={isInstallationReport}>
+                    <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-horizontal_small">
+                        <lightning-input-field field-name="Installation_Start_Date__c" class="slds-m-bottom_small" onchange={handleChange} variant="label-stacked"></lightning-input-field>
+                    </lightning-layout-item>
+                    <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-horizontal_small">
+                        <lightning-input-field field-name="Installation_End_Date__c" data-id="Installation_End_Date__c" class="slds-m-bottom_small" onchange={handleChange}
+                            variant="label-stacked"></lightning-input-field>
+                    </lightning-layout-item>
+                    <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-horizontal_small">
+                        <lightning-input-field field-name="Installation_Status__c" class="slds-m-bottom_small StatusConfirmation" onchange={handleChange}
+                            variant="label-stacked"></lightning-input-field>
+                    </lightning-layout-item>
+                    <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-horizontal_small" if:true={isReasonForHoldVisible}>
+                        <lightning-input-field field-name="Reason_for_Hold__c" class="slds-m-bottom_small" onchange={handleChange} variant="label-stacked"></lightning-input-field>
+                    </lightning-layout-item>
+                    <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-horizontal_small">
+                        <lightning-input-field field-name="Warranty_Start_Date__c" data-id="Warranty_Start_Date__c" class="slds-m-bottom_small" onchange={handleChange}
+                            variant="label-stacked"></lightning-input-field>
+                    </lightning-layout-item>
+                    <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-horizontal_small">
+                        <lightning-input-field field-name="Installation_Asset_Serial_Number__c" data-id="Installation_Asset_Serial_Number__c" class="slds-m-bottom_small" variant="label-stacked"
+                            onchange={handleChange}></lightning-input-field>
+                    </lightning-layout-item>
+                </template>
+                <template if:true={isServiceReport}>
+                    <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-horizontal_small">
+                        <lightning-input-field field-name="SR_Start_Date__c" class="slds-m-bottom_small" onchange={handleChange} variant="label-stacked"></lightning-input-field>
+                    </lightning-layout-item>
+                    <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-horizontal_small">
+                        <lightning-input-field field-name="SR_End_Date__c" class="slds-m-bottom_small" onchange={handleChange} variant="label-stacked"></lightning-input-field>
+                    </lightning-layout-item>
+                    <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-horizontal_small">
+                        <lightning-input-field field-name="SR_Status__c" class="slds-m-bottom_small StatusConfirmation" onchange={handleChange} variant="label-stacked"></lightning-input-field>
+                    </lightning-layout-item>
+                    <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-horizontal_small" if:true={isReasonForHoldVisible}>
+                        <lightning-input-field field-name="Reason_for_Hold__c" class="slds-m-bottom_small" onchange={handleChange} variant="label-stacked"></lightning-input-field>
+                    </lightning-layout-item>
+                    <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-horizontal_small">
+                        <lightning-input-field field-name="Asset_Serial_Number__c" class="slds-m-bottom_small" onchange={handleChange} variant="label-stacked"></lightning-input-field>
+                    </lightning-layout-item>
+                </template>
+
+                <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="6" class="slds-var-p-horizontal_small">
+                    <div style="height: 300px;">
+                        <c-signature-pad enable-name-signing="true" name-input-label="Signature By:" enable-signature-drawing="true" pad-label="Or draw signature here:" stroke-thickness="2"
+                            pen-color="black" pad-color="white" font="30px 'Great Vibes'" oninput={drawText}></c-signature-pad>
+                    </div>
+                    <div class="slds-m-top_small" style="text-align: center;">
+                        <lightning-button variant="brand-outline" label="Clear" title="Clear" onclick={clearSignature} class="slds-m-left_x-small"></lightning-button>
+                    </div>
+                </lightning-layout-item>
+                <!-- <lightning-layout-item size="12" small-device-size="12" medium-device-size="12" large-device-size="12" class="slds-var-p-horizontal_small">
+                    <div class="slds-m-top_small" style="text-align: center;">
+                        <lightning-button variant="brand" label="Save" title="Save" onclick={saveSignature}></lightning-button>
+                    </div>
+                </lightning-layout-item> -->
+
+                <!-- <div class="slds-m-around_small">
+                    <lightning-input label="Enter Your Name" value={inputText} onchange={handleInputChange} class="slds-m-bottom_small"></lightning-input>
+
+                </div> -->
+
+                <!-- Submit Button -->
+                <lightning-layout-item size="12" small-device-size="12" medium-device-size="12" large-device-size="12" class="slds-var-p-horizontal_small"
+                    style="display: flex;justify-content: center;">
+                    <div class="slds-m-top_medium" style="text-align: center;">
+                        <lightning-button label="Preview" class="slds-m-left_small" variant="brand" onclick={handlePreviewClick}></lightning-button>
+                        <lightning-button type="submit" label="Preview" class="slds-m-left_small" variant="brand" data-button="Preview" style="display: none"></lightning-button>
+                    </div>
+
+                    <div class="slds-m-top_medium" style="text-align: center;">
+                        <lightning-button label="Save" class="slds-m-left_small" variant="brand" onclick={handleSaveClick}></lightning-button>
+                        <lightning-button type="submit" label="Save" class="slds-m-left_small" variant="brand" data-button="Save" style="display: none"></lightning-button>
+                    </div>
+                </lightning-layout-item>
+            </lightning-layout>
+        </lightning-record-edit-form>
+    </lightning-card>
+</template>

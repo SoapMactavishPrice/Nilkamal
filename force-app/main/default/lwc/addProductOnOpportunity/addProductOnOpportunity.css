@@ -1,0 +1,118 @@
+@import 'c/utilCSS';
+
+
+
+
+.product-container {
+    text-align: center;
+    z-index: 1;
+    vertical-align: top;
+
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -o-user-select: none;
+}
+
+.product-selected {
+    background-color: var(--light-gray-clr);
+}
+
+.checkbox-container {
+    position: relative;
+}
+
+.checkbox-container div:first-child {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 2;
+}
+
+
+
+@media (max-width: 767px) {
+    .product-container {
+        width: 100%;
+    }
+
+    .product-image-container {}
+
+    .product-image-container img {
+        height: 150px;
+        object-fit: contain;
+        overflow: hidden;
+        border-radius: 5px;
+        -webkit-border-radius: 5px;
+        -moz-border-radius: 5px;
+        -ms-border-radius: 5px;
+        -o-border-radius: 5px;
+    }
+
+    .product-details {
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        text-wrap: balance;
+    }
+
+    .product-name {
+        font-weight: var(--fontWeightBold);
+    }
+
+    .product-description {}
+
+    .product-base-uom {}
+
+    .product-sales-uom {}
+
+    .product-price {
+        font-weight: var(--fontWeightBold);
+    }
+}
+
+
+
+@media (min-width: 768px) {
+    .product-container {
+        width: 25%;
+    }
+
+    .product-image-container {}
+
+    .product-image-container img {
+        height: 150px;
+        object-fit: contain;
+        overflow: hidden;
+        border-radius: 5px;
+        -webkit-border-radius: 5px;
+        -moz-border-radius: 5px;
+        -ms-border-radius: 5px;
+        -o-border-radius: 5px;
+    }
+
+    .product-details {
+        margin: auto;
+        width: fit-content;
+        min-width: 65%;
+        text-align: center;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        text-wrap: balance;
+    }
+
+    .product-name {
+        font-weight: var(--fontWeightBold);
+    }
+
+    .product-description {}
+
+    .product-base-uom {}
+
+    .product-sales-uom {}
+
+    .product-price {
+        font-weight: var(--fontWeightBold);
+    }
+
+}

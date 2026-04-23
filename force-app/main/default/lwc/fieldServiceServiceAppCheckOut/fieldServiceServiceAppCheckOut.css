@@ -1,0 +1,23 @@
+@import 'c/utilCSS';
+
+
+
+
+@media (max-width: 768px) {
+    .body-container {
+        overflow-y: auto;
+        height: 75vh
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+    .body-container {
+        overflow-y: auto;
+    }
+}
+
+@media (min-width: 1025px) {
+    .body-container {
+        overflow-y: auto;
+    }
+}

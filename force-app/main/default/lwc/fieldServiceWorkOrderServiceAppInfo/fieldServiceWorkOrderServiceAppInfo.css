@@ -1,0 +1,48 @@
+@import 'c/utilCSS';
+
+
+
+
+.data-label {
+    font-weight: bold;
+}
+
+.customer-details-header {
+    background-color: var(--light-gray-clr);
+}
+
+
+.truncate {
+    /*
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-height: 4.5rem;
+    line-height: 1.5rem;
+    */
+
+    display: -webkit-box;
+    line-clamp: 3;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: pre-wrap;
+    max-height: 5em;
+}
+
+.expanded {
+    /*
+    max-height: none;
+    overflow: visible;
+    height: auto;
+    */
+
+    line-clamp: unset;
+    -webkit-line-clamp: unset;
+    white-space: pre-wrap;
+}
+
+.date-input-fix {
+    margin: 0.25rem;
+}

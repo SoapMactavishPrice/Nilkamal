@@ -1,0 +1,341 @@
+<template>
+
+    <template if:true={showSpinner}>
+        <lightning-spinner alternative-text="Loading" variant="brand" size="medium"></lightning-spinner>
+    </template>
+
+    <div if:true={assetData} class="container-max-width">
+
+        <div class="material-card-without-shadow">
+            <lightning-card if:true={assetData} title="Asset Details" label="Asset Details" icon-name="standard:asset_object">
+                <lightning-layout multiple-rows>
+                    <lightning-layout-item size="4" small-device-size="4" medium-device-size="2" large-device-size="2" class="slds-var-p-around_xx-small data-label">
+                        Serial Number
+                    </lightning-layout-item>
+                    <lightning-layout-item size="8" small-device-size="8" medium-device-size="4" large-device-size="4"
+                        class="slds-var-p-around_xx-small">{assetData.serialNumber}</lightning-layout-item>
+
+                    <lightning-layout-item size="4" small-device-size="4" medium-device-size="2" large-device-size="2" class="slds-var-p-around_xx-small data-label">
+                        Last Service Engineer
+                    </lightning-layout-item>
+                    <lightning-layout-item size="8" small-device-size="8" medium-device-size="4" large-device-size="4"
+                        class="slds-var-p-around_xx-small">{assetData.lastServiceEngineer}</lightning-layout-item>
+
+                    <lightning-layout-item size="4" small-device-size="4" medium-device-size="2" large-device-size="2" class="slds-var-p-around_xx-small data-label">
+                        Last Service Date
+                    </lightning-layout-item>
+                    <lightning-layout-item size="8" small-device-size="8" medium-device-size="4" large-device-size="4" class="slds-var-p-around_xx-small">
+                        <!-- {assetData.lastServiceDate} -->
+                        <lightning-formatted-date-time value={assetData.lastServiceDate} year="numeric" month="short" day="2-digit"></lightning-formatted-date-time>
+                    </lightning-layout-item>
+
+                    <lightning-layout-item size="4" small-device-size="4" medium-device-size="2" large-device-size="2" class="slds-var-p-around_xx-small data-label">
+                        Warranty Status
+                    </lightning-layout-item>
+
+                    <lightning-layout-item size="8" small-device-size="8" medium-device-size="4" large-device-size="4" class="slds-var-p-around_xx-small">
+                        <template if:true={assetData.isWarrantyAvailable}>
+                            <div class="vertical-flex">
+                                <div>{assetData.warrantyStatus}</div>
+                                <div class="horizontal-flex">
+                                    <lightning-formatted-date-time value={assetData.warranty.startDate} year="numeric" month="short"
+                                        day="2-digit"></lightning-formatted-date-time>&nbsp;to&nbsp;<lightning-formatted-date-time value={assetData.warranty.endDate} year="numeric" month="short"
+                                        day="2-digit"></lightning-formatted-date-time>
+                                </div>
+                            </div>
+                        </template>
+                        <template if:false={assetData.isWarrantyAvailable}>
+                            <div>No Warranty details available</div>
+                        </template>
+                    </lightning-layout-item>
+
+                    <lightning-layout-item size="4" small-device-size="4" medium-device-size="2" large-device-size="2" class="slds-var-p-around_xx-small data-label">AMC Status</lightning-layout-item>
+                    <template if:true={assetData.isAmcAvailable}>
+                        <lightning-layout-item size="8" small-device-size="8" medium-device-size="4" large-device-size="4" class="slds-var-p-around_xx-small">
+                            <div class="vertical-flex">
+                                <div>{assetData.amcStatus}</div>
+                                <template for:each={assetData.amcList} for:item="amc">
+                                    <div key={amc.id} class="horizontal-flex">
+                                        <lightning-formatted-date-time value={amc.startDate} year="numeric" month="short" day="2-digit">
+                                        </lightning-formatted-date-time>&nbsp;to&nbsp;<lightning-formatted-date-time value={amc.endDate} year="numeric" month="short"
+                                            day="2-digit"></lightning-formatted-date-time>
+                                    </div>
+                                </template>
+                            </div>
+                        </lightning-layout-item>
+                    </template>
+                    <template if:false={assetData.isAmcAvailable}>
+                        <div>No AMC details available</div>
+                    </template>
+                </lightning-layout>
+            </lightning-card>
+        </div>
+
+
+        <div class="material-card-without-shadow slds-var-m-top_small">
+            <lightning-card if:true={assetData.timeline} title="Asset Timeline" icon-name="standard:asset_downtime_period">
+                <div class="timelines-container">
+                    <ul class="timelines amc-warranty-case-timeline">
+                        <template for:each={assetData.timeline} for:item="timeline">
+
+                            <template lwc:if={timeline.isStandAloneCase}>
+                                <li key={timeline.id}>
+                                    <lightning-button-icon icon-name={timeline.icon} size="small" variant="container" class="timeline-icon" onclick={handleToggleSection} data-timeline-id={timeline.id}
+                                        data-is-stand-alone-case={timeline.isStandAloneCase}></lightning-button-icon>
+                                    <div class="vertical-flex">
+                                        <div class="horizontal-flex">
+                                            <div class="li-header slds-wrap" onclick={handleToggleSection} data-timeline-id={timeline.id} data-is-stand-alone-case={timeline.isStandAloneCase}
+                                                data-expanded={timeline.isExpanded}>
+                                                <a onclick={handleNavigateToCase} data-id={timeline.Id}>{timeline.name}</a>
+                                                &nbsp;-&nbsp;{timeline.Type}&nbsp;-&nbsp;<lightning-formatted-date-time value={timeline.date} year="numeric" month="short" day="2-digit">
+                                                </lightning-formatted-date-time>
+                                            </div>
+                                        </div>
+                                        <!-- <div class="case-subject truncate" onclick={handleToggleDescription}>Subject : {timeline.Subject}</div> -->
+                                    </div>
+
+                                    <template if:true={timeline.isExpanded}>
+                                        <div>SE : {timeline.ownerName}</div>
+                                        <div>Case Type : {timeline.Type}</div>
+                                        <div>Case Sub Type : {timeline.Case_Sub_Type__c}</div>
+                                        <div class="case-description truncate" onclick={handleToggleDescription}>Description : {timeline.Description}</div>
+                                        <template if:true={timeline.serviceAppointments}>
+                                            <ul class="timelines service-appointments-timeline">
+                                                <template for:each={timeline.serviceAppointments} for:item="serviceAppointment">
+                                                    <li key={serviceAppointment.id}>
+                                                        <!--
+                                                    <lightning-button-icon icon-name={serviceAppointment.icon} size="small" variant="container" class="timeline-icon" onclick={handleToggleSection}
+                                                        data-timeline-id={timeline.id} data-service-appointment-id={serviceAppointment.id}
+                                                        data-is-stand-alone-case={timeline.isStandAloneCase}></lightning-button-icon>
+                                                    -->
+                                                        <div>{serviceAppointment.name}</div>
+                                                        <template if:true={serviceAppointment.isExpanded}>
+                                                            <template if:true={serviceAppointment.serviceReport}>
+                                                                <ul class="timelines service-report-timeline">
+                                                                    <li>
+                                                                        <!--
+                                                                    <lightning-button-icon icon-name={serviceAppointment.serviceReport.icon} size="small" variant="container" class="timeline-icon"
+                                                                        onclick={handleToggleSection} data-timeline-id={timeline.id} data-service-appointment-id={serviceAppointment.id}
+                                                                        data-service-report-id={serviceAppointment.serviceReport.id}
+                                                                        data-is-stand-alone-case={timeline.isStandAloneCase}></lightning-button-icon>
+                                                                    -->
+                                                                        <div>{serviceAppointment.serviceReport.name}</div>
+                                                                        <template if:true={serviceAppointment.serviceReport.isExpanded}>
+                                                                            <template if:true={serviceAppointment.serviceReport.documents}>
+                                                                                <div class="documents">
+                                                                                    <template for:each={serviceAppointment.serviceReport.documents} for:item="document">
+                                                                                        <div key={document.id} class="vertical-flex document-item slds-text-align_center"
+                                                                                            data-id={document.contentDocumentId} onclick={handleNavigateToFilePreview}>
+                                                                                            <div class="document-preview">
+                                                                                                <template if:true={document.isPreviewAvailable}>
+                                                                                                    <img src={document.versionDataUrl} />
+                                                                                                </template>
+                                                                                                <template if:false={document.isPreviewAvailable}>
+                                                                                                    <lightning-icon icon-name={document.iconName}></lightning-icon>
+                                                                                                </template>
+                                                                                            </div>
+                                                                                            <div class="document-name slds-truncate" title={document.title}>{document.title}</div>
+                                                                                        </div>
+                                                                                    </template>
+                                                                                </div>
+                                                                            </template>
+                                                                        </template>
+                                                                    </li>
+                                                                </ul>
+                                                            </template>
+                                                        </template>
+                                                    </li>
+                                                </template>
+                                            </ul>
+                                        </template>
+                                        <template if:true={timeline.installationReport}>
+                                            <ul class="timelines installation-report-timeline">
+                                                <li>
+                                                    <!--
+                                                <lightning-button-icon icon-name={timeline.installationReport.icon} size="small" variant="container" class="timeline-icon" onclick={handleToggleSection}
+                                                    data-timeline-id={timeline.id} data-installation-report-id={timeline.installationReport.id}
+                                                    data-is-stand-alone-case={timeline.isStandAloneCase}></lightning-button-icon>
+                                                -->
+                                                    <div>{timeline.installationReport.name}</div>
+                                                    <template if:true={timeline.installationReport.isExpanded}>
+                                                        <template if:true={timeline.installationReport.documents}>
+                                                            <div class="documents">
+                                                                <template for:each={timeline.installationReport.documents} for:item="document">
+                                                                    <div key={document.id} class="vertical-flex document-item slds-text-align_center" data-id={document.contentDocumentId}
+                                                                        onclick={handleNavigateToFilePreview}>
+                                                                        <div class="document-preview">
+                                                                            <template if:true={document.isPreviewAvailable}>
+                                                                                <img src={document.versionDataUrl} />
+                                                                            </template>
+                                                                            <template if:false={document.isPreviewAvailable}>
+                                                                                <lightning-icon icon-name={document.iconName}></lightning-icon>
+                                                                            </template>
+                                                                        </div>
+                                                                        <div class="document-name slds-truncate" title={document.title}>{document.title}</div>
+                                                                    </div>
+                                                                </template>
+                                                            </div>
+                                                        </template>
+                                                    </template>
+                                                </li>
+                                            </ul>
+                                        </template>
+                                    </template>
+                                </li>
+                            </template>
+
+                            <template lwc:elseif={timeline.isAssetHistory}>
+                                <li key={timeline.id}>
+                                    <lightning-button-icon icon-name={timeline.icon} size="small" variant="container" class="timeline-icon"></lightning-button-icon>
+                                    <div class="vertical-flex">
+                                        <div class="horizontal-flex li-header slds-wrap" onclick={handleToggleSection}>
+                                            {timeline.name}&nbsp;<lightning-formatted-date-time value={timeline.createdDate} year="numeric" month="short" day="2-digit" hour="2-digit" minute="2-digit"
+                                                hour12="true"></lightning-formatted-date-time>
+                                        </div>
+                                    </div>
+                                </li>
+                            </template>
+
+                            <template lwc:else>
+                                <li key={timeline.id}>
+                                    <lightning-button-icon icon-name={timeline.icon} size="small" variant="container" class="timeline-icon" onclick={handleToggleSection}
+                                        data-timeline-id={timeline.id}></lightning-button-icon>
+                                    <div style="font-size: 110%; font-weight: bold" class="li-header slds-wrap" onclick={handleToggleSection} data-timeline-id={timeline.id}
+                                        data-expanded={timeline.isExpanded} data-type="amc-warranty">
+                                        {timeline.name}&nbsp;-&nbsp;<lightning-formatted-date-time value={timeline.startDate} year="numeric" month="short"
+                                            day="2-digit"></lightning-formatted-date-time>&nbsp;to&nbsp;<lightning-formatted-date-time value={timeline.endDate} year="numeric" month="short"
+                                            day="2-digit"></lightning-formatted-date-time>
+                                    </div>
+                                    <template if:true={timeline.isExpanded}>
+                                        <template if:true={timeline.timelineItems}>
+                                            <ul class="timelines case-timeline">
+                                                <template for:each={timeline.timelineItems} for:item="timelineItem">
+                                                    <template if:true={timelineItem.isCase}>
+                                                        <li key={timelineItem.id}>
+                                                            <lightning-button-icon icon-name={timelineItem.icon} size="small" variant="container" class="timeline-icon" onclick={handleToggleSection}
+                                                                data-timeline-id={timeline.id} data-case-id={timelineItem.id}></lightning-button-icon>
+                                                            <div class="vertical-flex">
+                                                                <div class="horizontal-flex li-header slds-wrap" onclick={handleToggleSection} data-timeline-id={timeline.id}
+                                                                    data-case-id={timelineItem.id} data-expanded={timelineItem.isExpanded}>
+                                                                    <a onclick={handleNavigateToCase} data-id={timelineItem.id}>{timelineItem.name}</a>
+                                                                    &nbsp;-&nbsp;{timelineItem.Type}&nbsp;-&nbsp;<lightning-formatted-date-time value={timelineItem.date} year="numeric" month="short"
+                                                                        day="2-digit"></lightning-formatted-date-time>
+                                                                </div>
+                                                                <!-- <div class="case-subject truncate" onclick={handleToggleDescription}>Subject : {timelineItem.Subject}</div> -->
+                                                            </div>
+                                                            <template if:true={timelineItem.isExpanded}>
+                                                                <div>SE : {timelineItem.ownerName}</div>
+                                                                <div>Case Type : {timelineItem.Type}</div>
+                                                                <div>Case Sub Type : {timelineItem.Case_Sub_Type__c}</div>
+                                                                <div class="case-description truncate" onclick={handleToggleDescription}>Description : {timelineItem.Description}</div>
+                                                                <template if:true={timelineItem.serviceAppointments}>
+                                                                    <ul class="timelines service-appointments-timeline">
+                                                                        <template for:each={timelineItem.serviceAppointments} for:item="serviceAppointment">
+                                                                            <li key={serviceAppointment.id}>
+                                                                                <!--
+                                                                        <lightning-button-icon icon-name={serviceAppointment.icon} size="small" variant="container" class="timeline-icon"
+                                                                            onclick={handleToggleSection} data-timeline-id={timeline.id} data-case-id={timelineItem.id}
+                                                                            data-service-appointment-id={serviceAppointment.id}></lightning-button-icon>
+                                                                        -->
+                                                                                <div>{serviceAppointment.name}</div>
+                                                                                <template if:true={serviceAppointment.isExpanded}>
+                                                                                    <template if:true={serviceAppointment.serviceReport}>
+                                                                                        <ul class="timelines service-report-timeline">
+                                                                                            <li>
+                                                                                                <!--
+                                                                                        <lightning-button-icon icon-name={serviceAppointment.serviceReport.icon} size="small" variant="container"
+                                                                                            class="timeline-icon" onclick={handleToggleSection} data-timeline-id={timeline.id}
+                                                                                            data-case-id={timelineItem.id} data-service-appointment-id={serviceAppointment.id}
+                                                                                            data-service-report-id={serviceAppointment.serviceReport.id}></lightning-button-icon>
+                                                                                        -->
+                                                                                                <div>{serviceAppointment.serviceReport.name}</div>
+                                                                                                <template if:true={serviceAppointment.serviceReport.isExpanded}>
+                                                                                                    <template if:true={serviceAppointment.serviceReport.documents}>
+                                                                                                        <div class="documents">
+                                                                                                            <template for:each={serviceAppointment.serviceReport.documents} for:item="document">
+                                                                                                                <div key={document.id} class="vertical-flex document-item slds-text-align_center"
+                                                                                                                    data-id={document.contentDocumentId} onclick={handleNavigateToFilePreview}>
+                                                                                                                    <div class="document-preview">
+                                                                                                                        <template if:true={document.isPreviewAvailable}>
+                                                                                                                            <img src={document.versionDataUrl} />
+                                                                                                                        </template>
+                                                                                                                        <template if:false={document.isPreviewAvailable}>
+                                                                                                                            <lightning-icon icon-name={document.iconName}></lightning-icon>
+                                                                                                                        </template>
+                                                                                                                    </div>
+                                                                                                                    <div class="document-name slds-truncate" title={document.title}>{document.title}
+                                                                                                                    </div>
+                                                                                                                </div>
+                                                                                                            </template>
+                                                                                                        </div>
+                                                                                                    </template>
+                                                                                                </template>
+                                                                                            </li>
+                                                                                        </ul>
+                                                                                    </template>
+                                                                                </template>
+                                                                            </li>
+                                                                        </template>
+                                                                    </ul>
+                                                                </template>
+                                                                <template if:true={timelineItem.installationReport}>
+                                                                    <ul class="timelines installation-report-timeline">
+                                                                        <li>
+                                                                            <!--
+                                                                    <lightning-button-icon icon-name={timelineItem.installationReport.icon} size="small" variant="container" class="timeline-icon"
+                                                                        onclick={handleToggleSection} data-timeline-id={timeline.id} data-case-id={timelineItem.id}
+                                                                        data-installation-report-id={timelineItem.installationReport.id}></lightning-button-icon>
+                                                                    -->
+                                                                            <div>{timelineItem.installationReport.name}</div>
+                                                                            <template if:true={timelineItem.installationReport.isExpanded}>
+                                                                                <template if:true={timelineItem.installationReport.documents}>
+                                                                                    <div class="documents horizontal-flex">
+                                                                                        <template for:each={timelineItem.installationReport.documents} for:item="document">
+                                                                                            <div key={document.id} class="vertical-flex document-item slds-text-align_center"
+                                                                                                data-id={document.contentDocumentId} onclick={handleNavigateToFilePreview}>
+                                                                                                <div class="document-preview">
+                                                                                                    <template if:true={document.isPreviewAvailable}>
+                                                                                                        <img src={document.versionDataUrl} />
+                                                                                                    </template>
+                                                                                                    <template if:false={document.isPreviewAvailable}>
+                                                                                                        <lightning-icon icon-name={document.iconName}></lightning-icon>
+                                                                                                    </template>
+                                                                                                </div>
+                                                                                                <div class="document-name slds-truncate" title={document.title}>{document.title}</div>
+                                                                                            </div>
+                                                                                        </template>
+                                                                                    </div>
+                                                                                </template>
+                                                                            </template>
+                                                                        </li>
+                                                                    </ul>
+                                                                </template>
+                                                            </template>
+                                                        </li>
+                                                    </template>
+                                                    <template if:true={timelineItem.isAssetHistory}>
+                                                        <li key={timelineItem.id}>
+                                                            <lightning-button-icon icon-name={timelineItem.icon} size="small" variant="container" class="timeline-icon"></lightning-button-icon>
+                                                            <div class="vertical-flex">
+                                                                <div class="horizontal-flex li-header slds-wrap" onclick={handleToggleSection}>
+                                                                    {timelineItem.name}&nbsp;<lightning-formatted-date-time value={timelineItem.createdDate} year="numeric" month="short" day="2-digit"
+                                                                        hour="2-digit" minute="2-digit" hour12="true"></lightning-formatted-date-time>
+                                                                </div>
+                                                            </div>
+                                                        </li>
+                                                    </template>
+                                                </template>
+                                            </ul>
+                                        </template>
+                                    </template>
+                                </li>
+                            </template>
+                        </template>
+                    </ul>
+                </div>
+            </lightning-card>
+        </div>
+
+    </div>
+
+</template>

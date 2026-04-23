@@ -1,0 +1,28 @@
+<template>
+
+    <template if:true={showSpinner}>
+        <lightning-spinner variant="brand"></lightning-spinner>
+    </template>
+
+    <div class="modal-container" style="width:100%;">
+        <div class="slds-modal__content slds-var-p-around_medium slds-modal__container" id="modal-content-id-1"
+            style="width:100% !important; max-width: 1400px !important;">
+
+            <div style="width: 100% !important ; max-width: 1400px !important;">
+                <template if:false={data}>
+                    
+                    <lightning-layout class="slds-var-p-vertical_xx-large">
+                        <lightning-layout-item size="3" class="slds-var-p-vertical_xx-large"></lightning-layout-item>
+                        <lightning-layout-item size="6" class="slds-var-p-vertical_xx-large">
+                            <img src="/img/chatter/OpenRoad.svg" class="slds-illustration__svg slds-var-p-around_large" />
+                            <p>No Outstanding found</p>
+                        </lightning-layout-item>
+                        <lightning-layout-item size="3" class="slds-var-p-vertical_xx-large"></lightning-layout-item>
+                    </lightning-layout>
+                </template>
+
+            </div>
+        </div>
+    </div>
+
+</template>

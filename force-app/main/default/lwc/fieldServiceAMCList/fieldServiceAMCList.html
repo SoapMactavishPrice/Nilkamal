@@ -1,0 +1,66 @@
+<template>
+    <lightning-card title="Asset Details" class="full-width">
+        <div class="slds-m-around_medium">
+            <div class="slds-scrollable_x">
+                <table class="slds-table slds-table_bordered slds-table_striped">
+                    <thead>
+                        <tr class="slds-line-height_reset">
+                            <th scope="col">Sr. No</th>
+                            <th scope="col">Asset Name</th>
+                            <th scope="col">Customer Name</th>
+                            <th scope="col">Asset Serial No</th>
+                            <th scope="col">Asset Warranty</th>
+                            <th scope="col">Asset AMC</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <template for:each={displayedAssets} for:item="asset">
+                            <tr key={asset.asset.Id}>
+                                <td>{asset.index}</td>
+                                <!-- <td>{asset.asset.Name}</td> -->
+                                <td> <a href={asset.recordLink} target="_blank">{asset.asset.Name}</a></td>
+                                <!-- <td>{asset.asset.Account.Name}</td> -->
+                                <template if:true={asset.asset.Account}>
+                                    <td>{asset.asset.Account.Name}</td>
+                                </template>
+                                <template if:false={asset.asset.Account}>
+                                    <td>No Account</td>
+                                </template>
+                                <td>{asset.asset.SerialNumber}</td>
+                                <td>
+                                    <template if:true={asset.warranties}>
+                                        <template for:each={asset.warranties} for:item="warranty">
+                                            <p key={warranty.Id}>{warranty.Warranty_Start_Date__c} to {warranty.Warranty_End_Date__c}</p>
+                                        </template>
+                                    </template>
+                                    <template if:false={asset.warranties}>
+                                        No warranties available.
+                                    </template>
+                                </td>
+                                <td>
+                                    <template if:true={asset.amcs}>
+                                        <template for:each={asset.amcs} for:item="amc">
+                                            <p key={amc.Id}>{amc.AMC_End_Date__c}</p>
+                                        </template>
+                                    </template>
+                                    <template if:false={asset.amcs}>
+                                        No AMCs available.
+                                    </template>
+                                </td>
+                                <!-- <td>
+                                <lightning-formatted-date-time value={asset.expiryDate} year="numeric" month="long" day="2-digit">
+                                </lightning-formatted-date-time>
+                            </td> -->
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="slds-m-top_medium slds-align_absolute-center">
+            <lightning-button label="Previous" onclick={handlePrevious} disabled={disablePrevious}></lightning-button>
+            <lightning-button label="Next" class="slds-m-left_small" onclick={handleNext} disabled={disableNext}></lightning-button>
+        </div>
+    </lightning-card>
+</template>

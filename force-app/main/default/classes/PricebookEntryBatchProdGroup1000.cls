@@ -1,0 +1,23 @@
+global class PricebookEntryBatchProdGroup1000 implements Database.Batchable<SObject>, Database.AllowsCallouts, Database.Stateful {
+    
+    private Set<String> matprocessedProducts = new Set<String>();
+
+    global Database.QueryLocator start(Database.BatchableContext BC) {
+        // Query all active Product2 records that have a ProductCode
+        return Database.getQueryLocator('SELECT Id, ProductCode,Item_Group_Text__c,Item_Group__c,Item_Group__r.Item_Group_Code__c, Sales_Organizations__r.Sales_Org_Code__c,Distribution_Channel__r.Distribution_Code__c FROM Product2 WHERE ProductCode != NULL');
+    }
+
+    global void execute(Database.BatchableContext BC, List<Product2> productList) {
+        for (Product2 product : productList) {
+            if (!matprocessedProducts.contains(product.Item_Group_Text__c)) {
+                matprocessedProducts.add(product.Item_Group_Text__c);
+            }
+        }
+        sapComDocumentSapRfcFunctions.getMaterialPriceList(matprocessedProducts,'1000','10');
+       
+    }
+
+    global void finish(Database.BatchableContext BC) {
+        System.debug('Batch execution completed. Processed ' + matprocessedProducts.size() + ' unique products.');
+    }
+}

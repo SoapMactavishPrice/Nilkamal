@@ -1,0 +1,97 @@
+@import 'c/utilCSS';
+
+.day-container {
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+
+
+.user-container {
+    /* margin-left: 20px; */
+    /* padding: 5px 5px; */
+    padding: 10px 15px;
+    border: 1px solid #ccc;
+    background-color: #f9f9f9;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+
+
+h3 {
+    color: #0070d2;
+}
+
+.tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+}
+
+.tab {
+    padding: 10px 15px;
+    border: 1px solid #ccc;
+    background-color: #f9f9f9;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.tab.active {
+    background-color: #007bff;
+    color: #fff;
+    border-color: #007bff;
+}
+
+.availability .day-container {
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.availability .user-container {
+    margin-left: 20px;
+}
+
+.availability {
+    height: 250px;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+
+/*  */
+.success-screen {
+    text-align: center;
+    margin-top: 50px;
+}
+
+.checkmark {
+    width: 72px;
+    height: 72px;
+    stroke: #4caf50;
+}
+
+.checkmark-circle {
+    stroke-width: 2;
+}
+
+.checkmark-check {
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 48;
+    stroke-dashoffset: 48;
+    animation: checkmark-check 0.3s ease-in-out forwards 0.5s;
+}
+
+@keyframes checkmark-check {
+    to {
+        stroke-dashoffset: 0;
+    }
+}

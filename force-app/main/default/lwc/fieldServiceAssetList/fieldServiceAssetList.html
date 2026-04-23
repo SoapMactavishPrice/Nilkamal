@@ -1,0 +1,22 @@
+<template>
+
+    <lightning-card label="Asset List" hide-header>
+
+        <lightning-layout multiple-rows horizontal-align="end">
+            <lightning-layout-item size="12" small-device-size="12" medium-device-size="6" large-device-size="4" class="slds-var-p-around_x-small">
+                <lightning-input type="search" name="searchString" variant="label-hidden" placeholder="Search ..." value={searchString} onchange={handleDatatableSearch}></lightning-input>
+            </lightning-layout-item>
+
+            <lightning-layout-item size="12">
+                <div class="datatable-container">
+                    <lightning-datatable columns={datatableColumns} data={datatableData} key-field="id" enable-infinite-loading onloadmore={handleLoadMoreData} hide-checkbox-column
+                        default-sort-direction={datatableSortDirection} sorted-direction={datatableSortDirection} sorted-by={datatableSortBy} onsort={datatableHandleSort}
+                        onrowaction={datatableHandleRowAction} min-column-width="100"></lightning-datatable>
+                </div>
+            </lightning-layout-item>
+
+        </lightning-layout>
+
+    </lightning-card>
+
+</template>
