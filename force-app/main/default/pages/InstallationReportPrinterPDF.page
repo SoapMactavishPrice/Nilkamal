@@ -346,9 +346,7 @@
                     <tr>
                         <td class="label" style="padding: 6px;">Line Speed meter per/Min</td>
                         <td style="padding: 6px;">{!record.Line_Speed_meter_per_Min__c}</td>
-                        <td class="label" style="padding: 6px;">Customer Requirement</td>
-                        <td style="padding: 6px;"></td>
-                        <td colspan="2"></td>
+                        <td colspan="4"></td>
                     </tr>
                     <tr>
                         <td class="label" style="padding: 6px;">Work Load</td>

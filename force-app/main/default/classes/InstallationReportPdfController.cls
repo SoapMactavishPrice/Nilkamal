@@ -1,4 +1,4 @@
-public with sharing class InstallationReportPdfController {
+public without sharing class InstallationReportPdfController {
     public Id recordId { get; set; }
     public Boolean isPreview  { get; set; }
     public Installation_Report__c record { get; set; }

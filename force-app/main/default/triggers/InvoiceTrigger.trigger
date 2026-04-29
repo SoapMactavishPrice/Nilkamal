@@ -7,6 +7,7 @@ trigger InvoiceTrigger on Invoice__c(before insert, before update, after insert,
     if(Trigger.isAfter && Trigger.isInsert) {
         InvoiceTriggerHandler.createAssets(Trigger.new);
         InvoiceTriggerHandler.updateInvoiceCountToQuote(Trigger.new);
+        InvoiceTriggerHandler.createSpareInstallationCases(Trigger.new);
     }
     if ((Trigger.isBefore && Trigger.isInsert) || (Trigger.isAfter && Trigger.isUndelete)) {
         // InvoiceTriggerHandler.insertUndeleteFlowToUpdateSalesAchieved(Trigger.new, Trigger.isInsert);

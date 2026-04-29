@@ -633,13 +633,22 @@ export default class ExtendedInstallationReport extends NavigationMixin(Lightnin
         }
 
         try {
-            const paramsToSave = this.installationReportParameters.map((param, index) => ({
+            // Use currentReportParameters if available (contains user edits from parameterMappingForm)
+            // Otherwise fall back to installationReportParameters (original database values)
+            const parametersToSave = (this.currentReportParameters && this.currentReportParameters.length > 0) 
+                ? this.currentReportParameters 
+                : this.installationReportParameters;
+
+            console.log('Current Report Parameters before save:', JSON.stringify(this.currentReportParameters, null, 2));
+            console.log('Parameters being saved:', JSON.stringify(parametersToSave, null, 2));
+
+            const paramsToSave = parametersToSave.map((param, index) => ({
                 Name: param.parameterName,
                 Installation_Report__c: this.installationReportRecord.Id,
                 Selected_Type__c: param.selectedType || '',
-                Selection_Value__c: param.selectionValue || '',
+                Selection_Value__c: param.selectedValue || '',
                 Display_Order__c: index + 1,
-                Selection_Options_List__c: this.getOptionsString(param.dynamicOptions)
+                Selection_Options_List__c: param.selectedOption || (param.dynamicOptions ? this.getOptionsString(param.dynamicOptions) : '')
             }));
 
             console.log('Saving installation parameters:', JSON.stringify(paramsToSave, null, 2));
@@ -694,8 +703,8 @@ export default class ExtendedInstallationReport extends NavigationMixin(Lightnin
             console.log('Material Group 5 extracted:', this.materialGroup5);
             console.log('isCIJ:', this.isCIJ, 'isTIJ:', this.isTIJ, 'isTTO:', this.isTTO);
 
-            // Load consumable parts for Ink Part No picklist (CIJ/P01 and TTO/P02) and Ribbon Part picklist (TTO/P02)
-            if (this.materialGroup5 && (this.reportType === 'ServiceReport' || (this.reportType === 'InstallationReport' && (this.isCIJ || this.isTTO)))) {
+            // Load consumable parts for Ink Part No picklist (CIJ/P01, TTO/P02, TIJ/P03) and Ribbon Part picklist (TTO/P02)
+            if (this.materialGroup5 && (this.reportType === 'ServiceReport' || (this.reportType === 'InstallationReport' && (this.isCIJ || this.isTTO || this.isTIJ)))) {
                 this.loadConsumableParts();
             }
         }
@@ -3992,7 +4001,8 @@ export default class ExtendedInstallationReport extends NavigationMixin(Lightnin
             reportType: reportType,
             serviceReportObservations: [],
             workOrderChecklist: [],
-            serviceAppointmentId: this.serviceAppointmentId
+            serviceAppointmentId: this.serviceAppointmentId,
+            currentReportParameters: JSON.stringify(this.currentReportParameters)
         })
             .then(result => {
                 // eslint-disable-next-line no-console
@@ -4002,20 +4012,9 @@ export default class ExtendedInstallationReport extends NavigationMixin(Lightnin
                     if (this.installationReportRecord.Id) {
                         notifyRecordUpdateAvailable([{ recordId: this.installationReportRecord.Id }]);
                     }
-                    // Save parameters if TIJ
-                    if (this.isTIJ) {
-                        this.saveInstallationReportParameters().then(() => {
-                            showToast(this, 'Success', 'Installation report saved successfully', 'success');
-                            this.handleGetInstallationReportDetails();
-                        }).catch(error => {
-                            console.error('Error saving installation parameters:', error);
-                            showToast(this, 'Success', 'Installation report saved, but parameters failed to save', 'warning');
-                            this.handleGetInstallationReportDetails();
-                        });
-                    } else {
+                    // Parameters are now saved as part of the saveReport Apex call via currentReportParameters
                     showToast(this, 'Success', 'Installation report saved successfully', 'success');
                     this.handleGetInstallationReportDetails();
-                    }
                 } else {
                     // If Apex returned no payload, surface a friendly message so it doesn't
                     // look like the button did nothing.
@@ -4032,10 +4031,10 @@ export default class ExtendedInstallationReport extends NavigationMixin(Lightnin
             });
     }
     handlePreviewPDF() {
-        // For showServiceReport, use Preview flow (creates a preview ContentDocument each time)
-        const isInstallation = !!this.installationReportRecord.Id;
-        const isService = !!this.serviceReportRecord.Id;
-        const reportType = isInstallation ? 'InstallationReport' : 'ServiceReport';
+        // Use the component's active report type flags as the source of truth
+        const isInstallation = this.showInstallationReport && !!this.installationReportRecord.Id;
+        const isService = this.showServiceReport && !!this.serviceReportRecord.Id;
+        const reportType = this.showInstallationReport ? 'InstallationReport' : 'ServiceReport';
 
         if (!isInstallation && !isService) {
             showToast(this, 'Error', 'Please save the report before previewing PDF', 'error');

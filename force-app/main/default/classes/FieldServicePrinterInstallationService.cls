@@ -1,5 +1,5 @@
 public without sharing class FieldServicePrinterInstallationService {
-
+    
     @AuraEnabled
     public static Object getReportDetails(String workOrderId, String serviceAppointmentId, String reportType) {
         try {
@@ -37,7 +37,7 @@ public without sharing class FieldServicePrinterInstallationService {
                 WHERE Id = :workOrderId
             ];
             System.debug('DEBUG 2: Work Order queried successfully. Case__r: ' + (workOrder.Case__r != null ? 'NOT NULL' : 'NULL') + ', Asset: ' + (workOrder.Case__r != null && workOrder.Case__r.Asset != null ? 'NOT NULL' : 'NULL'));
-
+            
             Service_Appointment__c serviceAppointment = [
                 SELECT Id, Remote_Support__c, Case__c, Case__r.Description,
                 Status__c, Check_In_Date_Time__c, Check_Out_Date_Time__c
@@ -45,7 +45,7 @@ public without sharing class FieldServicePrinterInstallationService {
                 WHERE Id = :serviceAppointmentId
             ];
             System.debug('DEBUG 3: Service Appointment queried successfully. Case__r: ' + (serviceAppointment.Case__r != null ? 'NOT NULL' : 'NULL'));
-
+            
             Boolean hourMeterRequired = false;
             System.debug('DEBUG 4: Checking hourMeterRequired. Case__r: ' + (workOrder.Case__r != null) + ', Asset: ' + (workOrder.Case__r != null && workOrder.Case__r.Asset != null) + ', Product2Id: ' + (workOrder.Case__r != null && workOrder.Case__r.Asset != null && workOrder.Case__r.Asset.Product2Id != null) + ', Product2: ' + (workOrder.Case__r != null && workOrder.Case__r.Asset != null && workOrder.Case__r.Asset.Product2 != null));
             if (workOrder.Case__r != null && workOrder.Case__r.Asset != null && workOrder.Case__r.Asset.Product2Id != null && workOrder.Case__r.Asset.Product2 != null) {
@@ -55,18 +55,18 @@ public without sharing class FieldServicePrinterInstallationService {
                                                 WHERE MG6_Type__c = :workOrder.Case__r.Asset.Product2.Material_Group_6__c
                                                 LIMIT 1];
                 System.debug('DEBUG 6: Mappings query completed. Size: ' + mappings.size());
-
+                
                 if (!mappings.isEmpty()) {
                     hourMeterRequired = mappings[0].Hour_Meter_Applicable__c;
                 }
             }
             System.debug('DEBUG 7: hourMeterRequired determined: ' + hourMeterRequired);
-
+            
             Installation_Report__c installationReport;
             Service_Report__c serviceReport;
             List<Service_Report_Observation__c> sroList;
             List<Cause_Sub_Cause_Master__c> causeSubCauseList;
-
+            
             System.debug('DEBUG 8: About to check reportType. reportType: ' + reportType);
             if(reportType == 'InstallationReport') {
                 System.debug('DEBUG 9: Calling getInstallationReportRecordFromDB');
@@ -77,25 +77,25 @@ public without sharing class FieldServicePrinterInstallationService {
                 System.debug('DEBUG 11: Calling getServiceReportRecordFromDB');
                 serviceReport = getServiceReportRecordFromDB(workOrder, serviceAppointment, hourMeterRequired);
                 System.debug('DEBUG 12: getServiceReportRecordFromDB completed. serviceReport: ' + (serviceReport != null ? 'NOT NULL, Id: ' + serviceReport.Id : 'NULL'));
-
+                
                 // causeSubCauseList = [
                 //     SELECT Id, Name, Cause__c, Sub_Cause__c
                 //     FROM Cause_Sub_Cause_Master__c
-                //     WHERE Product__c =: workOrder.Case__r.Asset.Product2Id 
-                //     AND Cause__c != null AND Sub_Cause__c != null 
+                //     WHERE Product__c =: workOrder.Case__r.Asset.Product2Id
+                //     AND Cause__c != null AND Sub_Cause__c != null
                 //     AND Business_Vertical__c =: workOrder.Case__r.Division__c
                 //     ORDER BY Cause__c, Sub_Cause__c
                 // ];
                 // causeSubCauseList.addAll([
                 //     SELECT Id, Name, Cause__c, Sub_Cause__c
                 //     FROM Cause_Sub_Cause_Master__c
-                //     WHERE Product__c = null 
+                //     WHERE Product__c = null
                 //     AND Material_Group__c =: workOrder.Case__r.Asset.Product2.Material_Group_6__c
-                //     AND Cause__c != null AND Sub_Cause__c != null 
+                //     AND Cause__c != null AND Sub_Cause__c != null
                 //     AND Business_Vertical__c =: workOrder.Case__r.Division__c
                 //     ORDER BY Cause__c, Sub_Cause__c
                 // ]);
-
+                
                 if (serviceReport != null && serviceReport.Id != null) {
                     System.debug('DEBUG 13: Querying Service_Report_Observation__c');
                     sroList = [
@@ -106,7 +106,7 @@ public without sharing class FieldServicePrinterInstallationService {
                     System.debug('DEBUG 14: Service_Report_Observation__c queried. Size: ' + (sroList != null ? sroList.size() : 0));
                 }
             }
-
+            
             System.debug('DEBUG 15: About to return Map. workOrder: ' + (workOrder != null) + ', serviceAppointment: ' + (serviceAppointment != null) + ', serviceReport: ' + (serviceReport != null));
             return new Map<String, Object>{
                 'workOrder' => workOrder,
@@ -125,7 +125,7 @@ public without sharing class FieldServicePrinterInstallationService {
             throw new AuraHandledException('Error at line ' + e.getLineNumber() + ': ' + e.getMessage());
         }
     }
-
+    
     private static Installation_Report__c getInstallationReportRecordFromDB(Work_Order__c workOrder) {
         // NOTE:
         // For printer (CIJ) installation we use many additional fields on Installation_Report__c
@@ -321,10 +321,14 @@ public without sharing class FieldServicePrinterInstallationService {
                 irToDelete.add(irList[i]);
             }
             delete irToDelete;
-            return irList[0];
+            Installation_Report__c ir = irList[0];
+            backfillInstallationReportFields(ir, workOrder);
+            return ir;
         }
         else if(irList.size() == 1) {
-            return irList[0];
+            Installation_Report__c ir = irList[0];
+            backfillInstallationReportFields(ir, workOrder);
+            return ir;
         }
         else if(irList.size() == 0) {
             return createInstallationReportRecord(workOrder);
@@ -333,7 +337,66 @@ public without sharing class FieldServicePrinterInstallationService {
             throw new CustomException('Something went wrong, please get in touch with your system administrator.');
         }
     }
-
+    
+    /**
+     * Backfill auto-populated fields on existing Installation Reports that were
+     * created before the auto-population logic was added. Updates the record
+     * in-place (in memory) and persists the changes to the database.
+     */
+    private static void backfillInstallationReportFields(Installation_Report__c ir, Work_Order__c workOrder) {
+        if (workOrder.Case__r == null || workOrder.Case__r.Asset == null || workOrder.Case__r.Asset.Product2 == null) {
+            return;
+        }
+        
+        String mg5 = workOrder.Case__r.Asset.Product2.Material_Group_5__c;
+        String modelValue = workOrder.Case__r.Asset.Product2.Name;
+        
+        if (mg5 == null || String.isBlank(modelValue)) {
+            return;
+        }
+        
+        Boolean needsUpdate = false;
+        String mg5Upper = mg5.toUpperCase();
+        
+        // Backfill TIJ_Model_No__c for TIJ (P03)
+        if (mg5Upper.contains('P03') && ir.TIJ_Model_No__c == null) {
+            ir.TIJ_Model_No__c = modelValue;
+            needsUpdate = true;
+        }
+        // Backfill Printer_Model__c for CIJ (P01) or TTO (P02)
+        else if ((mg5Upper.contains('P01') || mg5Upper.contains('P02')) && ir.Printer_Model__c == null) {
+            ir.Printer_Model__c = modelValue;
+            needsUpdate = true;
+        }
+        
+        // Backfill Party_Code__c and Customer_Name__c
+        if (ir.Party_Code__c == null && workOrder.Case__r.Account != null) {
+            ir.Party_Code__c = workOrder.Case__r.Account.SAP_Customer_code__c;
+            needsUpdate = true;
+        }
+        if (ir.Customer_Name__c == null && workOrder.Case__r.Account != null) {
+            ir.Customer_Name__c = workOrder.Case__r.Account.Name;
+            needsUpdate = true;
+        }
+        
+        // Backfill Location from Case Region
+        if (ir.Location__c == null && workOrder.Case__r.Region__c != null) {
+            ir.Location__c = workOrder.Case__r.Region__c;
+            needsUpdate = true;
+        }
+        
+        // Persist the backfilled values
+        if (needsUpdate) {
+            try {
+                update ir;
+                System.debug('Backfilled Installation Report fields for: ' + ir.Id);
+            } catch (Exception e) {
+                System.debug(LoggingLevel.ERROR, 'Error backfilling Installation Report: ' + e.getMessage());
+                // Don't throw - the report can still be used even if backfill fails
+            }
+        }
+    }
+    
     private static Service_Report__c getServiceReportRecordFromDB(Work_Order__c workOrder, Service_Appointment__c serviceAppointment, Boolean hourMeterRequired) {
         System.debug('DEBUG getServiceReportRecordFromDB 1: Starting. workOrder: ' + (workOrder != null) + ', serviceAppointment: ' + (serviceAppointment != null) + ', hourMeterRequired: ' + hourMeterRequired);
         // Find Service Report by Service Appointment
@@ -361,7 +424,7 @@ public without sharing class FieldServicePrinterInstallationService {
             ORDER BY CreatedDate DESC
         ];
         System.debug('DEBUG getServiceReportRecordFromDB 3: Service_Report__c queried. Size: ' + srList.size());
-
+        
         Service_Report__c serviceReport;
         if(srList.size() > 1) {
             // Keep only the latest one, delete others
@@ -410,7 +473,7 @@ public without sharing class FieldServicePrinterInstallationService {
                     WHERE Service_Appointment__c = :firstServiceAppointment[0].Id
                     ORDER BY CreatedDate ASC
                     LIMIT 1
-                ];
+                    ];
                 if (!firstSrList.isEmpty()) {
                     if (serviceReport.Ink_Part_No__c == null && firstSrList[0].Ink_Part_No__c != null) {
                         serviceReport.Ink_Part_No__c = firstSrList[0].Ink_Part_No__c;
@@ -426,7 +489,7 @@ public without sharing class FieldServicePrinterInstallationService {
         
         return serviceReport;
     }
-
+    
     private static Installation_Report__c createInstallationReportRecord(Work_Order__c workOrder) {
         Installation_Report__c installationReport = new Installation_Report__c();
         installationReport.Case__c = workOrder.Case__c;
@@ -450,10 +513,10 @@ public without sharing class FieldServicePrinterInstallationService {
         if (workOrder.Case__r != null && workOrder.Case__r.Asset != null && workOrder.Case__r.Asset.Product2 != null) {
             String mg5 = workOrder.Case__r.Asset.Product2.Material_Group_5__c;
             String modelValue = workOrder.Case__r.Asset.Product2.Name;
-
+            
             if (mg5 != null && String.isNotBlank(modelValue)) {
                 String mg5Upper = mg5.toUpperCase();
-
+                
                 // Pre-populate Party Code and Customer Name for all printer types (CIJ, TIJ, TTO) - same as Service Report
                 installationReport.Party_Code__c = workOrder.Case__r.Account != null ? workOrder.Case__r.Account.SAP_Customer_code__c : null;
                 installationReport.Customer_Name__c = workOrder.Case__r.Account != null ? workOrder.Case__r.Account.Name : null;
@@ -490,7 +553,7 @@ public without sharing class FieldServicePrinterInstallationService {
         insert installationReport;
         return installationReport;
     }
-
+    
     private static Service_Report__c createServiceReportRecord(Work_Order__c workOrder, Service_Appointment__c serviceAppointment, Boolean hourMeterRequired) {
         System.debug('DEBUG createServiceReportRecord 1: Starting. workOrder: ' + (workOrder != null) + ', serviceAppointment: ' + (serviceAppointment != null) + ', hourMeterRequired: ' + hourMeterRequired);
         System.debug('DEBUG createServiceReportRecord 2: workOrder.Case__c: ' + (workOrder != null ? workOrder.Case__c : 'NULL') + ', workOrder.Case__r: ' + (workOrder != null && workOrder.Case__r != null ? 'NOT NULL' : 'NULL'));
@@ -512,13 +575,13 @@ public without sharing class FieldServicePrinterInstallationService {
             
             if (!prevServiceAppointments.isEmpty()) {
                 // Get the Service Report for that previous Service Appointment
-            prevSrFromSameCase = [SELECT Id, Name, Case__c, Service_Appointment__c, Work_Order__c, Case__r.Asset.Product2Id, Action_Taken__c,
+                prevSrFromSameCase = [SELECT Id, Name, Case__c, Service_Appointment__c, Work_Order__c, Case__r.Asset.Product2Id, Action_Taken__c,
                                     Cause__c, Sub_Cause__c, Other_Cause__c, Correction__c, Customer_Problem_Statement__c, Hour_Meter__c,OEM_Serial_Number__c,
                                     Software_No__c, Pump_Run_Hours__c, Nozzle_Serial_No__c, Head_Serial_Number__c
                                 FROM Service_Report__c
                                     WHERE Service_Appointment__c = :prevServiceAppointments[0].Id
-                                ORDER BY CreatedDate DESC
-                                LIMIT 1];
+                    ORDER BY CreatedDate DESC
+                    LIMIT 1];
             }
             
             // Get the FIRST Service Appointment for the same Case to get Ink Part No and Make Up Part No
@@ -546,7 +609,7 @@ public without sharing class FieldServicePrinterInstallationService {
                         WHERE Service_Appointment__c = :firstServiceAppointment[0].Id
                         ORDER BY CreatedDate ASC
                         LIMIT 1
-                    ];
+                        ];
                     System.debug('First Service Report query result size: ' + firstSrList.size());
                     if (!firstSrList.isEmpty()) {
                         firstSrFromSameCase = firstSrList[0];
@@ -585,7 +648,7 @@ public without sharing class FieldServicePrinterInstallationService {
         }
         
         System.debug('DEBUG createServiceReportRecord 8: Basic fields set');
-
+        
         // Pre-populate key header / customer fields so they appear on the LWC
         // and PDF without manual entry.
         serviceReport.Customer_Name__c = workOrder.Case__r.Account != null ? workOrder.Case__r.Account.Name : null;
@@ -604,7 +667,7 @@ public without sharing class FieldServicePrinterInstallationService {
         serviceReport.Customer_Contact_Number__c = contactMobile;
         serviceReport.Customer_Email__c = workOrder.Case__r.ContactEmail;
         serviceReport.Sr_No__c = workOrder.Case__r.Asset != null ? workOrder.Case__r.Asset.SerialNumber : null;
-
+        
         // Populate Software_No__c from Asset.Software_Number__c
         if (workOrder.Case__r != null && workOrder.Case__r.Asset != null && String.isNotBlank(workOrder.Case__r.Asset.Software_Number__c)) {
             serviceReport.Software_No__c = workOrder.Case__r.Asset.Software_Number__c;
@@ -643,21 +706,21 @@ public without sharing class FieldServicePrinterInstallationService {
         } else {
             System.debug('No first Service Report found - this is likely the first Service Report for the Case');
         }
-
+        
         // Complaint Status should mirror the parent Case Status and remain user-read-only on the LWC.
         // This ensures consistency between the Case and the Service Report / PDF.
         serviceReport.Complaint_Status__c = workOrder.Case__r.Status;
-
+        
         // Model number mapping based on Material Group 5 (printer family)
         System.debug('DEBUG createServiceReportRecord 9: About to check Product2. Case__r: ' + (workOrder.Case__r != null) + ', Asset: ' + (workOrder.Case__r != null && workOrder.Case__r.Asset != null) + ', Product2: ' + (workOrder.Case__r != null && workOrder.Case__r.Asset != null && workOrder.Case__r.Asset.Product2 != null));
         if (workOrder.Case__r != null && workOrder.Case__r.Asset != null && workOrder.Case__r.Asset.Product2 != null) {
             System.debug('DEBUG createServiceReportRecord 10: Inside Product2 check');
             String mg5 = workOrder.Case__r.Asset.Product2.Material_Group_5__c;
             String modelValue = workOrder.Case__r.Asset.Product2.Name;
-
+            
             if (mg5 != null) {
                 String mg5Upper = mg5.toUpperCase();
-
+                
                 // CIJ (P01) → CIJ_Model_No__c
                 if (mg5Upper.contains('P01')) {
                     serviceReport.CIJ_Model_No__c = modelValue;
@@ -672,7 +735,7 @@ public without sharing class FieldServicePrinterInstallationService {
                 }
             }
         }
-
+        
         // Copy selected fields from the previous Service Report on the same Case
         System.debug('DEBUG createServiceReportRecord 11: About to copy from prevSrFromSameCase. prevSrFromSameCase: ' + (prevSrFromSameCase != null));
         serviceReport.Customer_Problem_Statement__c = prevSrFromSameCase != null ? prevSrFromSameCase.Customer_Problem_Statement__c : null;
@@ -688,7 +751,7 @@ public without sharing class FieldServicePrinterInstallationService {
             serviceReport.Hour_Meter__c = prevSrFromSameCase.Hour_Meter__c;
         }
         // 26-11
-
+        
         // Service_Report__c serviceReport = new Service_Report__c();
         // serviceReport.Service_Appointment__c = serviceAppointment.Id;
         // serviceReport.Work_Order__c = workOrder.Id;
@@ -700,19 +763,19 @@ public without sharing class FieldServicePrinterInstallationService {
         // serviceReport.Customer_Problem_Statement__c = workOrder.Case__r.Description;
         // serviceReport.OEM_Serial_Number__c = workOrder.Case__r.Asset.OEM_Serial_Number__c;
         // if (hourMeterRequired) {
-        //     serviceReport.Hour_Meter__c = 0; // Default value
+            //     serviceReport.Hour_Meter__c = 0; // Default value
         // }
         // Service_Report__c previousReport = getPreviousServiceReport(workOrder.Case__c);
         // if (previousReport != null) {
-        //     serviceReport.Cause__c = previousReport.Cause__c;
-        //     serviceReport.Sub_Cause__c = previousReport.Sub_Cause__c;
-        //     serviceReport.Correction__c = previousReport.Correction__c;
-        //     serviceReport.Action_Taken__c = previousReport.Action_Taken__c;
-        //     serviceReport.Root_Cause_Analysis__c = previousReport.Root_Cause_Analysis__c;
+            //     serviceReport.Cause__c = previousReport.Cause__c;
+            //     serviceReport.Sub_Cause__c = previousReport.Sub_Cause__c;
+            //     serviceReport.Correction__c = previousReport.Correction__c;
+            //     serviceReport.Action_Taken__c = previousReport.Action_Taken__c;
+            //     serviceReport.Root_Cause_Analysis__c = previousReport.Root_Cause_Analysis__c;
             
-        //     if (hourMeterRequired && previousReport.Hour_Meter__c != null) {
-        //         serviceReport.Hour_Meter__c = previousReport.Hour_Meter__c;
-        //     }
+            //     if (hourMeterRequired && previousReport.Hour_Meter__c != null) {
+                //         serviceReport.Hour_Meter__c = previousReport.Hour_Meter__c;
+            //     }
         // }
         
         System.debug('DEBUG createServiceReportRecord 13: About to insert serviceReport');
@@ -720,7 +783,7 @@ public without sharing class FieldServicePrinterInstallationService {
         System.debug('DEBUG createServiceReportRecord 14: serviceReport inserted successfully. Id: ' + serviceReport.Id);
         return serviceReport;
     }
-
+    
     private static Service_Report__c getPreviousServiceReport(String caseId) {
         try {
             return [SELECT Id, Cause__c, Sub_Cause__c, Correction__c, Action_Taken__c, 
@@ -733,7 +796,7 @@ public without sharing class FieldServicePrinterInstallationService {
             return null;
         }
     }
-
+    
     @AuraEnabled(cacheable=true)
     public static Decimal getMaxPumpRunHoursForCase(String caseId, String currentServiceReportId) {
         try {
@@ -770,7 +833,7 @@ public without sharing class FieldServicePrinterInstallationService {
             return null;
         }
     }
-
+    
     @AuraEnabled(cacheable=true)
     public static Boolean hasSpareRequestsForCase(String caseId) {
         try {
@@ -791,146 +854,146 @@ public without sharing class FieldServicePrinterInstallationService {
             return false;
         }
     }
-
+    
     @AuraEnabled
     public static Service_Report__c saveServiceReport(Service_Report__c serviceReportRecord, String workOrderId, String serviceAppointmentId, String currentReportParameters) {
         // Validate input
-            if (serviceReportRecord == null) {
-                throw new AuraHandledException('Service Report record is null');
+        if (serviceReportRecord == null) {
+            throw new AuraHandledException('Service Report record is null');
+        }
+        
+        // Create a new instance to ensure we're working with clean data
+        Service_Report__c reportToSave = new Service_Report__c();
+        
+        // Copy ID if exists (for update)
+        if (serviceReportRecord.Id != null) {
+            reportToSave.Id = serviceReportRecord.Id;
+        }
+        
+        // Copy all fields from the incoming record using safe field access
+        // Use getPopulatedFieldsAsMap() to only copy fields that are actually set
+        reportToSave.IsSavedByUser__c = true;
+        
+        // Get all populated fields from the incoming record
+        Map<String, Object> populatedFields = serviceReportRecord.getPopulatedFieldsAsMap();
+        System.debug('DEBUG saveServiceReport 828: populatedFields: ' + populatedFields);
+        // List of all valid fields that can be copied to Service_Report__c
+        Set<String> validFields = new Set<String>{
+            'SR_Start_Date__c', 'SR_End_Date__c', 'SR_Status__c', 'Complaint_Status__c',
+            'Customer_Problem_Statement__c', 'Cause__c', 'Sub_Cause__c', 'Action_Taken__c',
+            'Correction__c', 'Root_Cause_Analysis__c', 'Type_of_Service__c', 'Customer_Feedback__c',
+            'Customer_Remark__c', 'Service_Rating__c', 'Customer_Email__c', 'Customer_Contact_Number__c',
+            'OEM_Serial_Number__c', 'Hour_Meter__c', 'Software_No__c', 'Pump_Run_Hours__c',
+            'Reason_for_Hold__c', 'SR_Remark__c', 'TravelDate__c', 'Travel_From_1__c', 'Travel_To_1__c', 'Lodging_Per_Day_1__c', 'Boarding_Per_Day_1__c', 'Conven__c', 'Remark1__c', 'Travel_Date_2__c', 'Travel_From_2__c', 'Travel_To_2__c', 'Lodging_Per_Day_2__c', 'Boarding_Per_Day_2__c', 'Conveyance_2__c', 'Remark2__c', 'Date_To__c', 'Date_To_2__c',
+            // CIJ fields
+            'Ink_Part_No__c', 'Ink_Customer_Stock__c', 'Ink_Exp_Date__c', 'MakeUp_Part_No__c',
+            'MakeUp_Customer_Stock__c', 'Make_Up_Exp_Date__c', 'Nozzle_Serial_No__c',
+            'Visc_Set_Point__c', 'Visc_Actual__c', 'Ink_Temp__c', 'Cabinet_Temp__c',
+            'Head_Temp__c', 'Ink_Pressure__c', 'Heater_Point__c', 'Modulation__c',
+            'Charge_Value__c', 'EHT_Range_Min__c', 'EHT_Range_Max__c', 'EHT_Grade__c',
+            'Gutter_Mode__c', 'Print_Quality__c', 'Ink_Type__c', 'VMC_Calibration__c',
+            'Customer_Application__c', 'Complaint_Details__c',
+            // TTO fields
+            'Ribbon_Part__c', 'Ribbon_Customer_Stock__c', 'Ribbon_EXP_date__c', 'Expiration_Date__c', 'Printer_Manual_Included__c',
+            'TTO_Model_No__c', 'Print_head_Kms__c', 'Input_Air_Pressure__c',
+            'Print_Head_Resistance__c', 'Ribbon_Dia_D1__c', 'Ribbon_Dia_D2__c',
+            'Print_Speed__c', 'Ribbon_Fail_Count__c', 'Registration_Dot__c',
+            'Debounce_Time__c', 'Print_Delay__c', 'PR_GO_Ignore__c', 'PR_GO_Edge__c',
+            'Heating_Mode__c', 'Ribbon_Gap__c', 'Output_Air_Pressure__c',
+            'Head_Out_Time__c', 'Head_In_Time__c', 'Start_Border_Trim__c',
+            'End_Border_Trim__c', 'Darkness__c', 'Head_Serial_Number__c',
+            // TIJ fields
+            'TIJ_Model_No__c', 'Ink_Cartridge_Part__c',
+            'Cartridge_Exp_Date__c', 'Product_Counter__c',
+            // Machine status fields
+            'MC_Breakdown__c', 'MC_Temporary_Down__c', 'MC_Running__c',
+            // Signature fields
+            'Signature__c', 'Signature_by__c', 'Customer_Designation__c',
+            // Repair time fields
+            'Repair_Start_Time__c', 'Repair_End_Time__c'
+        };
+        
+        // Copy only valid fields that are populated
+        for (String fieldName : populatedFields.keySet()) {
+            // Skip Id, Case__c, Service_Appointment__c as they are handled separately
+            if (fieldName == 'Id' || fieldName == 'Case__c' || fieldName == 'Service_Appointment__c') {
+                continue;
             }
             
-            // Create a new instance to ensure we're working with clean data
-            Service_Report__c reportToSave = new Service_Report__c();
-            
-            // Copy ID if exists (for update)
-            if (serviceReportRecord.Id != null) {
-                reportToSave.Id = serviceReportRecord.Id;
-            }
-            
-            // Copy all fields from the incoming record using safe field access
-            // Use getPopulatedFieldsAsMap() to only copy fields that are actually set
-            reportToSave.IsSavedByUser__c = true;
-            
-            // Get all populated fields from the incoming record
-            Map<String, Object> populatedFields = serviceReportRecord.getPopulatedFieldsAsMap();
-            System.debug('DEBUG saveServiceReport 828: populatedFields: ' + populatedFields);
-            // List of all valid fields that can be copied to Service_Report__c
-            Set<String> validFields = new Set<String>{
-                'SR_Start_Date__c', 'SR_End_Date__c', 'SR_Status__c', 'Complaint_Status__c',
-                'Customer_Problem_Statement__c', 'Cause__c', 'Sub_Cause__c', 'Action_Taken__c',
-                'Correction__c', 'Root_Cause_Analysis__c', 'Type_of_Service__c', 'Customer_Feedback__c',
-                'Customer_Remark__c', 'Service_Rating__c', 'Customer_Email__c', 'Customer_Contact_Number__c',
-                'OEM_Serial_Number__c', 'Hour_Meter__c', 'Software_No__c', 'Pump_Run_Hours__c',
-                'Reason_for_Hold__c', 'SR_Remark__c', 'TravelDate__c', 'Travel_From_1__c', 'Travel_To_1__c', 'Lodging_Per_Day_1__c', 'Boarding_Per_Day_1__c', 'Conven__c', 'Remark1__c', 'Travel_Date_2__c', 'Travel_From_2__c', 'Travel_To_2__c', 'Lodging_Per_Day_2__c', 'Boarding_Per_Day_2__c', 'Conveyance_2__c', 'Remark2__c', 'Date_To__c', 'Date_To_2__c',
-                // CIJ fields
-                'Ink_Part_No__c', 'Ink_Customer_Stock__c', 'Ink_Exp_Date__c', 'MakeUp_Part_No__c',
-                'MakeUp_Customer_Stock__c', 'Make_Up_Exp_Date__c', 'Nozzle_Serial_No__c',
-                'Visc_Set_Point__c', 'Visc_Actual__c', 'Ink_Temp__c', 'Cabinet_Temp__c',
-                'Head_Temp__c', 'Ink_Pressure__c', 'Heater_Point__c', 'Modulation__c',
-                'Charge_Value__c', 'EHT_Range_Min__c', 'EHT_Range_Max__c', 'EHT_Grade__c',
-                'Gutter_Mode__c', 'Print_Quality__c', 'Ink_Type__c', 'VMC_Calibration__c',
-                'Customer_Application__c', 'Complaint_Details__c',
-                // TTO fields
-                'Ribbon_Part__c', 'Ribbon_Customer_Stock__c', 'Ribbon_EXP_date__c', 'Expiration_Date__c', 'Printer_Manual_Included__c',
-                'TTO_Model_No__c', 'Print_head_Kms__c', 'Input_Air_Pressure__c',
-                'Print_Head_Resistance__c', 'Ribbon_Dia_D1__c', 'Ribbon_Dia_D2__c',
-                'Print_Speed__c', 'Ribbon_Fail_Count__c', 'Registration_Dot__c',
-                'Debounce_Time__c', 'Print_Delay__c', 'PR_GO_Ignore__c', 'PR_GO_Edge__c',
-                'Heating_Mode__c', 'Ribbon_Gap__c', 'Output_Air_Pressure__c',
-                'Head_Out_Time__c', 'Head_In_Time__c', 'Start_Border_Trim__c',
-                'End_Border_Trim__c', 'Darkness__c', 'Head_Serial_Number__c',
-                // TIJ fields
-                'TIJ_Model_No__c', 'Ink_Cartridge_Part__c',
-                'Cartridge_Exp_Date__c', 'Product_Counter__c',
-                // Machine status fields
-                'MC_Breakdown__c', 'MC_Temporary_Down__c', 'MC_Running__c',
-                // Signature fields
-                'Signature__c', 'Signature_by__c', 'Customer_Designation__c',
-                // Repair time fields
-                'Repair_Start_Time__c', 'Repair_End_Time__c'
-            };
-            
-            // Copy only valid fields that are populated
-            for (String fieldName : populatedFields.keySet()) {
-                // Skip Id, Case__c, Service_Appointment__c as they are handled separately
-                if (fieldName == 'Id' || fieldName == 'Case__c' || fieldName == 'Service_Appointment__c') {
-                    continue;
-                }
-                
-                // Only copy if it's a valid field
-                if (validFields.contains(fieldName)) {
-                    try {
-                        Object fieldValue = populatedFields.get(fieldName);
-                        if (fieldValue != null) {
-                            reportToSave.put(fieldName, fieldValue);
-                        }
-                    } catch (SObjectException soe) {
-                        System.debug(LoggingLevel.ERROR, 'Error setting field ' + fieldName + ': ' + soe.getMessage());
-                        // Skip this field and continue
-                    } catch (Exception e) {
-                        System.debug(LoggingLevel.ERROR, 'Unexpected error setting field ' + fieldName + ': ' + e.getMessage());
-                        // Skip this field and continue
-                    }
-                }
-            }
-            
-            // Set the key relationship - Service Appointment
-            if (serviceReportRecord.Service_Appointment__c != null) {
-                reportToSave.Service_Appointment__c = serviceReportRecord.Service_Appointment__c;
-            } else if (String.isNotBlank(serviceAppointmentId)) {
-                reportToSave.Service_Appointment__c = serviceAppointmentId;
-            }
-            
-            // Set Case if provided
-            if (serviceReportRecord.Case__c != null) {
-                reportToSave.Case__c = serviceReportRecord.Case__c;
-            }
-            
-            // Validate required fields
-            if (reportToSave.Service_Appointment__c == null) {
-                throw new AuraHandledException('Service Appointment is required for Service Report.');
-            }
-            
-            // Ensure Case is set - get from Service Appointment if not provided
-            // Also populate Repair Start Time and Repair End Time from Service Appointment if not already set
-            if (reportToSave.Service_Appointment__c != null && 
-                (reportToSave.Case__c == null || reportToSave.Repair_Start_Time__c == null || reportToSave.Repair_End_Time__c == null)) {
+            // Only copy if it's a valid field
+            if (validFields.contains(fieldName)) {
                 try {
-                    List<Service_Appointment__c> saList = [
+                    Object fieldValue = populatedFields.get(fieldName);
+                    if (fieldValue != null) {
+                        reportToSave.put(fieldName, fieldValue);
+                    }
+                } catch (SObjectException soe) {
+                    System.debug(LoggingLevel.ERROR, 'Error setting field ' + fieldName + ': ' + soe.getMessage());
+                    // Skip this field and continue
+                } catch (Exception e) {
+                    System.debug(LoggingLevel.ERROR, 'Unexpected error setting field ' + fieldName + ': ' + e.getMessage());
+                    // Skip this field and continue
+                }
+            }
+        }
+        
+        // Set the key relationship - Service Appointment
+        if (serviceReportRecord.Service_Appointment__c != null) {
+            reportToSave.Service_Appointment__c = serviceReportRecord.Service_Appointment__c;
+        } else if (String.isNotBlank(serviceAppointmentId)) {
+            reportToSave.Service_Appointment__c = serviceAppointmentId;
+        }
+        
+        // Set Case if provided
+        if (serviceReportRecord.Case__c != null) {
+            reportToSave.Case__c = serviceReportRecord.Case__c;
+        }
+        
+        // Validate required fields
+        if (reportToSave.Service_Appointment__c == null) {
+            throw new AuraHandledException('Service Appointment is required for Service Report.');
+        }
+        
+        // Ensure Case is set - get from Service Appointment if not provided
+        // Also populate Repair Start Time and Repair End Time from Service Appointment if not already set
+        if (reportToSave.Service_Appointment__c != null &&
+        (reportToSave.Case__c == null || reportToSave.Repair_Start_Time__c == null || reportToSave.Repair_End_Time__c == null)) {
+            try {
+                List<Service_Appointment__c> saList = [
                         SELECT Case__c, Check_In_Date_Time__c, Check_Out_Date_Time__c 
                         FROM Service_Appointment__c 
                         WHERE Id = :reportToSave.Service_Appointment__c 
                         LIMIT 1
                     ];
-                    
-                    if (!saList.isEmpty()) {
-                        Service_Appointment__c sa = saList[0];
-                        if (reportToSave.Case__c == null && sa.Case__c != null) {
-                reportToSave.Case__c = sa.Case__c;
-                        }
-                        // Populate Repair Start Time and Repair End Time from Service Appointment if not already set
-                        if (reportToSave.Repair_Start_Time__c == null && sa.Check_In_Date_Time__c != null) {
-                            reportToSave.Repair_Start_Time__c = sa.Check_In_Date_Time__c;
-                        }
-                        if (reportToSave.Repair_End_Time__c == null && sa.Check_Out_Date_Time__c != null) {
-                            reportToSave.Repair_End_Time__c = sa.Check_Out_Date_Time__c;
-                        }
+                
+                if (!saList.isEmpty()) {
+                    Service_Appointment__c sa = saList[0];
+                    if (reportToSave.Case__c == null && sa.Case__c != null) {
+                        reportToSave.Case__c = sa.Case__c;
                     }
-                } catch (Exception e) {
-                    System.debug(LoggingLevel.ERROR, 'Error querying Service Appointment: ' + e.getMessage());
-                    System.debug(LoggingLevel.ERROR, 'Stack trace: ' + e.getStackTraceString());
-                    // Continue - Case might already be set, or we'll fail validation later
+                    // Populate Repair Start Time and Repair End Time from Service Appointment if not already set
+                    if (reportToSave.Repair_Start_Time__c == null && sa.Check_In_Date_Time__c != null) {
+                        reportToSave.Repair_Start_Time__c = sa.Check_In_Date_Time__c;
+                    }
+                    if (reportToSave.Repair_End_Time__c == null && sa.Check_Out_Date_Time__c != null) {
+                        reportToSave.Repair_End_Time__c = sa.Check_Out_Date_Time__c;
+                    }
                 }
+            } catch (Exception e) {
+                System.debug(LoggingLevel.ERROR, 'Error querying Service Appointment: ' + e.getMessage());
+                System.debug(LoggingLevel.ERROR, 'Stack trace: ' + e.getStackTraceString());
+                // Continue - Case might already be set, or we'll fail validation later
             }
-            
-            // Validate Pump_Run_Hours__c: must be greater than previous Service Reports for the same Case
-            if (reportToSave.Pump_Run_Hours__c != null && reportToSave.Case__c != null) {
-                // Get the maximum Pump_Run_Hours__c from previous Service Reports for the same Case
-                // Exclude the current Service Report if it's an update
-                List<Service_Report__c> previousServiceReports;
-                if (reportToSave.Id != null) {
-                    // Exclude current record if it's an update
-                    previousServiceReports = [
+        }
+        
+        // Validate Pump_Run_Hours__c: must be greater than previous Service Reports for the same Case
+        if (reportToSave.Pump_Run_Hours__c != null && reportToSave.Case__c != null) {
+            // Get the maximum Pump_Run_Hours__c from previous Service Reports for the same Case
+            // Exclude the current Service Report if it's an update
+            List<Service_Report__c> previousServiceReports;
+            if (reportToSave.Id != null) {
+                // Exclude current record if it's an update
+                previousServiceReports = [
                         SELECT Pump_Run_Hours__c 
                         FROM Service_Report__c 
                         WHERE Case__c = :reportToSave.Case__c 
@@ -939,9 +1002,9 @@ public without sharing class FieldServicePrinterInstallationService {
                         ORDER BY Pump_Run_Hours__c DESC 
                         LIMIT 1
                     ];
-                } else {
-                    // New record - get all previous Service Reports
-                    previousServiceReports = [
+            } else {
+                // New record - get all previous Service Reports
+                previousServiceReports = [
                         SELECT Pump_Run_Hours__c 
                         FROM Service_Report__c 
                         WHERE Case__c = :reportToSave.Case__c 
@@ -949,54 +1012,54 @@ public without sharing class FieldServicePrinterInstallationService {
                         ORDER BY Pump_Run_Hours__c DESC 
                         LIMIT 1
                     ];
-                }
-                
-                if (!previousServiceReports.isEmpty() && previousServiceReports[0].Pump_Run_Hours__c != null) {
-                    Decimal maxPreviousValue = previousServiceReports[0].Pump_Run_Hours__c;
-                    if (reportToSave.Pump_Run_Hours__c <= maxPreviousValue) {
-                        throw new AuraHandledException('Pump Run Hours (' + reportToSave.Pump_Run_Hours__c + ') must be greater than the previous value (' + maxPreviousValue + ') from previous Service Reports for this Case.');
-                    }
-                }
-            }   
-
-            System.debug('DEBUG saveServiceReport 974: reportToSave: ' + reportToSave);
+            }
             
-            // Upsert the record
-            try {
+            if (!previousServiceReports.isEmpty() && previousServiceReports[0].Pump_Run_Hours__c != null) {
+                Decimal maxPreviousValue = previousServiceReports[0].Pump_Run_Hours__c;
+                if (reportToSave.Pump_Run_Hours__c <= maxPreviousValue) {
+                    throw new AuraHandledException('Pump Run Hours (' + reportToSave.Pump_Run_Hours__c + ') must be greater than the previous value (' + maxPreviousValue + ') from previous Service Reports for this Case.');
+                }
+            }
+        }
+        
+        System.debug('DEBUG saveServiceReport 974: reportToSave: ' + reportToSave);
+        
+        // Upsert the record
+        try {
             upsert reportToSave;
-            } catch (DmlException dmlEx) {
-                System.debug(LoggingLevel.ERROR, 'DML Error: ' + dmlEx.getMessage());
-                System.debug(LoggingLevel.ERROR, 'DML Type: ' + dmlEx.getDmlType(0));
-                System.debug(LoggingLevel.ERROR, 'DML Fields: ' + dmlEx.getDmlFieldNames(0));
-                System.debug(LoggingLevel.ERROR, 'DML Status Code: ' + dmlEx.getDmlStatusCode(0));
-                throw new AuraHandledException('Error saving Service Report: ' + dmlEx.getDmlMessage(0));
-            } catch (Exception e) {
-                System.debug(LoggingLevel.ERROR, 'Unexpected error saving Service Report: ' + e.getMessage());
-                System.debug(LoggingLevel.ERROR, 'Stack trace: ' + e.getStackTraceString());
-                throw new AuraHandledException('Unexpected error saving Service Report: ' + e.getMessage());
-            }
-            
-            // Parse and save parameters if provided
-            if (String.isNotBlank(currentReportParameters) && reportToSave.Id != null) {
-                try {
-                    List<Service_Report_Printer_Parameter__c> parametersToSave = parseAndConvertParameters(currentReportParameters, reportToSave.Id);
-                    if (parametersToSave != null && !parametersToSave.isEmpty()) {
-                        // Delete existing parameters for this service report
-                        delete [SELECT Id FROM Service_Report_Printer_Parameter__c WHERE Service_Report__c = :reportToSave.Id];
-                        System.debug('parametersToSave: ' + parametersToSave);
-                        // Insert new parameters
-                        insert parametersToSave;
-                    }
-                } catch (Exception e) {
-                    System.debug(LoggingLevel.ERROR, 'Error saving parameters: ' + e.getMessage());
-                    System.debug(LoggingLevel.ERROR, 'Stack trace: ' + e.getStackTraceString());
-                    // Don't throw exception - parameters save failure shouldn't fail the entire save
+        } catch (DmlException dmlEx) {
+            System.debug(LoggingLevel.ERROR, 'DML Error: ' + dmlEx.getMessage());
+            System.debug(LoggingLevel.ERROR, 'DML Type: ' + dmlEx.getDmlType(0));
+            System.debug(LoggingLevel.ERROR, 'DML Fields: ' + dmlEx.getDmlFieldNames(0));
+            System.debug(LoggingLevel.ERROR, 'DML Status Code: ' + dmlEx.getDmlStatusCode(0));
+            throw new AuraHandledException('Error saving Service Report: ' + dmlEx.getDmlMessage(0));
+        } catch (Exception e) {
+            System.debug(LoggingLevel.ERROR, 'Unexpected error saving Service Report: ' + e.getMessage());
+            System.debug(LoggingLevel.ERROR, 'Stack trace: ' + e.getStackTraceString());
+            throw new AuraHandledException('Unexpected error saving Service Report: ' + e.getMessage());
+        }
+        
+        // Parse and save parameters if provided
+        if (String.isNotBlank(currentReportParameters) && reportToSave.Id != null) {
+            try {
+                List<Service_Report_Printer_Parameter__c> parametersToSave = parseAndConvertParameters(currentReportParameters, reportToSave.Id);
+                if (parametersToSave != null && !parametersToSave.isEmpty()) {
+                    // Delete existing parameters for this service report
+                    delete [SELECT Id FROM Service_Report_Printer_Parameter__c WHERE Service_Report__c = :reportToSave.Id];
+                    System.debug('parametersToSave: ' + parametersToSave);
+                    // Insert new parameters
+                    insert parametersToSave;
                 }
+            } catch (Exception e) {
+                System.debug(LoggingLevel.ERROR, 'Error saving parameters: ' + e.getMessage());
+                System.debug(LoggingLevel.ERROR, 'Stack trace: ' + e.getStackTraceString());
+                // Don't throw exception - parameters save failure shouldn't fail the entire save
             }
-            
-            return reportToSave;
+        }
+        
+        return reportToSave;
     }
-
+    
     /**
      * @description Parse JSON string of parameters and convert to Service_Report_Printer_Parameter__c records
      * @param parametersJson JSON string containing array of parameter objects
@@ -1046,8 +1109,12 @@ public without sharing class FieldServicePrinterInstallationService {
                     param.Selection_Options_List__c = String.valueOf(paramMap.get('optionList'));
                 }
                 
-                // Only add parameter if it has at least a name
-                if (String.isNotBlank(param.Name)) {
+                // Only add parameter if it has a name AND at least one meaningful value
+                // (skip rows where the user didn't interact - empty option/type/value)
+                if (String.isNotBlank(param.Name) &&
+                    (String.isNotBlank(param.Selection_Options_List__c) ||
+                    String.isNotBlank(param.Selected_Type__c) ||
+                String.isNotBlank(param.Selection_Value__c))) {
                     parameters.add(param);
                 }
             }
@@ -1060,7 +1127,7 @@ public without sharing class FieldServicePrinterInstallationService {
         
         return parameters;
     }
-
+    
     /**
      * Parse JSON string of parameters and convert to Installation_Report_Printer_Parameter__c records
      * @param parametersJson JSON string containing parameters array
@@ -1110,8 +1177,12 @@ public without sharing class FieldServicePrinterInstallationService {
                     param.Selection_Options_List__c = String.valueOf(paramMap.get('optionList'));
                 }
                 
-                // Only add parameter if it has at least a name
-                if (String.isNotBlank(param.Name)) {
+                // Only add parameter if it has a name AND at least one meaningful value
+                // (skip rows where the user didn't interact - empty option/type/value)
+                if (String.isNotBlank(param.Name) &&
+                    (String.isNotBlank(param.Selection_Options_List__c) ||
+                    String.isNotBlank(param.Selected_Type__c) ||
+                String.isNotBlank(param.Selection_Value__c))) {
                     parameters.add(param);
                 }
             }
@@ -1124,21 +1195,21 @@ public without sharing class FieldServicePrinterInstallationService {
         
         return parameters;
     }
-
+    
     @AuraEnabled
     public static void saveServiceReportParameters(List<Service_Report_Printer_Parameter__c> parameters) {
-            if (parameters != null && !parameters.isEmpty()) {
-                // First delete existing parameters for this service report
-                String serviceReportId = parameters[0].Service_Report__c;
-                if (String.isNotBlank(serviceReportId)) {
-                    delete [SELECT Id FROM Service_Report_Printer_Parameter__c WHERE Service_Report__c = :serviceReportId];
-                }
-                
-                // Insert new parameters
-                insert parameters;
+        if (parameters != null && !parameters.isEmpty()) {
+            // First delete existing parameters for this service report
+            String serviceReportId = parameters[0].Service_Report__c;
+            if (String.isNotBlank(serviceReportId)) {
+                delete [SELECT Id FROM Service_Report_Printer_Parameter__c WHERE Service_Report__c = :serviceReportId];
+            }
+            
+            // Insert new parameters
+            insert parameters;
         }
     }
-
+    
     @AuraEnabled
     public static void saveInstallationReportParameters(List<Installation_Report_Printer_Parameter__c> parameters) {
         try {
@@ -1158,18 +1229,19 @@ public without sharing class FieldServicePrinterInstallationService {
             throw new AuraHandledException('Error saving installation parameters: ' + e.getMessage());
         }
     }
-
+    
     @AuraEnabled
     public static List<Map<String, Object>> getServiceReportParameters(String serviceReportId) {
         try {
-            List<Service_Report_Printer_Parameter__c> existingParams = [
-                SELECT Id, Name, Selection_Options_List__c, Selected_Type__c, 
-                       Selection_Value__c, Display_Order__c
-                FROM Service_Report_Printer_Parameter__c 
-                WHERE Service_Report__c = :serviceReportId
-                ORDER BY Display_Order__c NULLS LAST, CreatedDate
-            ];
-
+            // Use SYSTEM_MODE to bypass field-level security so Service Engineers can see parameter values
+            List<Service_Report_Printer_Parameter__c> existingParams = (List<Service_Report_Printer_Parameter__c>) Database.query(
+                'SELECT Id, Name, Selection_Options_List__c, Selected_Type__c, Selection_Value__c, Display_Order__c ' +
+                'FROM Service_Report_Printer_Parameter__c ' +
+                'WHERE Service_Report__c = :serviceReportId ' +
+                'ORDER BY Display_Order__c NULLS LAST, CreatedDate',
+            AccessLevel.SYSTEM_MODE
+                );
+            
             List<Map<String, Object>> wrappedParams = new List<Map<String, Object>>();
             
             if (!existingParams.isEmpty()) {
@@ -1195,18 +1267,19 @@ public without sharing class FieldServicePrinterInstallationService {
             throw new AuraHandledException('Error loading parameters: ' + e.getMessage());
         }
     }
-
+    
     @AuraEnabled
     public static List<Map<String, Object>> getInstallationReportParameters(String installationReportId) {
         try {
-            List<Installation_Report_Printer_Parameter__c> existingParams = [
-                SELECT Id, Name, Selection_Options_List__c, Selected_Type__c, 
-                       Selection_Value__c, Display_Order__c
-                FROM Installation_Report_Printer_Parameter__c 
-                WHERE Installation_Report__c = :installationReportId
-                ORDER BY Display_Order__c NULLS LAST, CreatedDate
-            ];
-
+            // Use SYSTEM_MODE to bypass field-level security so Service Engineers can see parameter values
+            List<Installation_Report_Printer_Parameter__c> existingParams = (List<Installation_Report_Printer_Parameter__c>) Database.query(
+                'SELECT Id, Name, Selection_Options_List__c, Selected_Type__c, Selection_Value__c, Display_Order__c ' +
+                'FROM Installation_Report_Printer_Parameter__c ' +
+                'WHERE Installation_Report__c = :installationReportId ' +
+                'ORDER BY Display_Order__c NULLS LAST, CreatedDate',
+            AccessLevel.SYSTEM_MODE
+                );
+            
             List<Map<String, Object>> wrappedParams = new List<Map<String, Object>>();
             
             if (!existingParams.isEmpty()) {
@@ -1232,7 +1305,7 @@ public without sharing class FieldServicePrinterInstallationService {
             throw new AuraHandledException('Error loading installation parameters: ' + e.getMessage());
         }
     }
-
+    
     // Helper method to parse options from string to Map format
     private static List<Map<String, String>> parseOptionsToMap(String optionsString) {
         List<Map<String, String>> options = new List<Map<String, String>>();
@@ -1250,7 +1323,7 @@ public without sharing class FieldServicePrinterInstallationService {
         }
         return options;
     }
-
+    
     // Default parameters setup as Map
     private static List<Map<String, Object>> getDefaultParametersAsMap() {
         List<Map<String, Object>> defaultParams = new List<Map<String, Object>>();
@@ -1373,10 +1446,10 @@ public without sharing class FieldServicePrinterInstallationService {
                 }
             }
         };
-
+        
         return parameterConfigs;
     }
-
+    
     // IMAGE HANDLING METHODS
     @AuraEnabled
     public static String uploadDiagnosticImage(String recordId, String fileName, String base64Data, String contentType, String imageType) {
@@ -1389,7 +1462,7 @@ public without sharing class FieldServicePrinterInstallationService {
             Integer maxSizeBytes = 300 * 1024; // 300KB in bytes
             
             if (imageBlob.size() > maxSizeBytes) {
-                throw new AuraHandledException('Image size exceeds the maximum allowed size of 300KB. Current size: ' + 
+                throw new AuraHandledException('Image size exceeds the maximum allowed size of 300KB. Current size: ' +
                     String.valueOf(Math.round(imageBlob.size() / 1024.0)) + 'KB');
             }
             
@@ -1413,7 +1486,7 @@ public without sharing class FieldServicePrinterInstallationService {
             throw new AuraHandledException('Error uploading image: ' + e.getMessage());
         }
     }
-
+    
     @AuraEnabled
     public static List<Map<String, String>> getDiagnosticImages(String recordId, String imageType) {
         try {
@@ -1421,9 +1494,9 @@ public without sharing class FieldServicePrinterInstallationService {
             
             // Build dynamic query based on image type
             String query = 'SELECT ContentDocumentId, ContentDocument.Title, ContentDocument.LatestPublishedVersionId ' +
-                          'FROM ContentDocumentLink ' +
-                          'WHERE LinkedEntityId = :recordId ' +
-                          'AND ContentDocument.FileType IN (\'JPG\', \'JPEG\', \'PNG\', \'GIF\', \'BMP\') ';
+                'FROM ContentDocumentLink ' +
+                'WHERE LinkedEntityId = :recordId ' +
+                'AND ContentDocument.FileType IN (\'JPG\', \'JPEG\', \'PNG\', \'GIF\', \'BMP\') ';
             
             // Filter by image type prefix in filename
             if (imageType == 'diagnostic') {
@@ -1483,7 +1556,7 @@ public without sharing class FieldServicePrinterInstallationService {
             throw new AuraHandledException('Error loading images: ' + e.getMessage());
         }
     }
-
+    
     @AuraEnabled
     public static Boolean deleteDiagnosticImage(String contentDocumentId) {
         try {
@@ -1494,7 +1567,7 @@ public without sharing class FieldServicePrinterInstallationService {
             throw new AuraHandledException('Error deleting image: ' + e.getMessage());
         }
     }
-
+    
     // Persist only the customer signature and signer details for an existing
     // Installation_Report__c. This is used by the printer installation LWC
     // when the user clicks "Capture Signature", and does not affect any
@@ -1505,7 +1578,7 @@ public without sharing class FieldServicePrinterInstallationService {
             if (installationReportRecord == null || installationReportRecord.Id == null) {
                 throw new AuraHandledException('Installation Report Id is required to save signature.');
             }
-
+            
             Installation_Report__c ir = [
                 SELECT Id,
                        Signature__c,
@@ -1517,20 +1590,20 @@ public without sharing class FieldServicePrinterInstallationService {
                 WHERE Id = :installationReportRecord.Id
                 LIMIT 1
             ];
-
+            
             ir.Signature__c            = installationReportRecord.Signature__c;
             ir.Signature_by__c         = installationReportRecord.Signature_by__c;
             ir.Customer_Email__c       = installationReportRecord.Customer_Email__c;
             ir.Customer_Contact_Number__c = installationReportRecord.Customer_Contact_Number__c;
             ir.Customer_Designation__c = installationReportRecord.Customer_Designation__c;
-
+            
             update ir;
             return ir;
         } catch (Exception e) {
             throw new AuraHandledException('Error saving installation signature: ' + e.getMessage());
         }
     }
-
+    
     // REPORT SAVE AND PREVIEW METHODS
     @AuraEnabled
     public static Object saveReport(Installation_Report__c installationReportRecord, Service_Report__c serviceReportRecord, String reportType, List<Service_Report_Observation__c> serviceReportObservations, List<Work_Order_Checklist__c> workOrderChecklist, Id serviceAppointmentId, String currentReportParameters) {
@@ -1545,7 +1618,7 @@ public without sharing class FieldServicePrinterInstallationService {
                                                     Case__r.Asset.Software_Number__c, Software_No__c
                                                     FROM Installation_Report__c
                                                     WHERE Id = :installationReportRecord.Id];
-
+                
                 Asset assetToUpdate = new Asset();
                 assetToUpdate.Id = irFromDB.Case__r.AssetId;
                 
@@ -1553,27 +1626,27 @@ public without sharing class FieldServicePrinterInstallationService {
                 if (installationReportRecord.Software_No__c != null) {
                     assetToUpdate.Software_Number__c = installationReportRecord.Software_No__c;
                 }
-
+                
                 if(irFromDB.Case__r.Asset.Is_Temp_Serial_Number__c) {
                     update installationReportRecord;
-
+                    
                     assetToUpdate.Name = installationReportRecord.Installation_Asset_Serial_Number__c;
                     assetToUpdate.SerialNumber = installationReportRecord.Installation_Asset_Serial_Number__c;
                     assetToUpdate.Is_Temp_Serial_Number__c = false;
                     assetToUpdate.InstallDate = installationReportRecord.Installation_End_Date__c;
                     Database.update(assetToUpdate, true, AccessLevel.SYSTEM_MODE);
-
+                    
                 } else {
                     assetToUpdate.InstallDate = installationReportRecord.Installation_End_Date__c;
                     Database.update(assetToUpdate, true, AccessLevel.SYSTEM_MODE);
-
+                    
                     update installationReportRecord;
                 }
-
+                
                 installationReportRecord = [SELECT Id, Name, Work_Order__c
                                             FROM Installation_Report__c
                                             WHERE Id = :installationReportRecord.Id];
-
+                
                 // Parse and save parameters if provided
                 if (String.isNotBlank(currentReportParameters) && installationReportRecord.Id != null) {
                     try {
@@ -1591,49 +1664,49 @@ public without sharing class FieldServicePrinterInstallationService {
                         // Don't throw exception - parameters save failure shouldn't fail the entire save
                     }
                 }
-
+                
                 // Use printer-specific installation PDF page
                 string t1 = createFinalDocument(installationReportRecord, Page.InstallationReportPrinterPDF, 'Installation_Report_' + installationReportRecord.Name + '.pdf');
-               result.put('Id',t1);
+                result.put('Id',t1);
                 return JSON.serialize(result);
             }
             else if(reportType == 'ServiceReport') {
                 serviceReportRecord.IsSavedByUser__c = true;
                 upsert serviceReportRecord;
-
+                
                 Service_Report__c srFromDB = [SELECT Id, Name, Signature__c, Signature_by__c,Case__c, 
                                             Case__r.AssetId, Case__r.Asset.OEM_Serial_Number__c,
                                             Case__r.Asset.Software_Number__c, Software_No__c
                                             FROM Service_Report__c
                                             WHERE Id = :serviceReportRecord.Id];
-
+                
                 Asset assetToUpdate = new Asset();
                 assetToUpdate.Id = srFromDB.Case__r.AssetId;
                 Boolean needsAssetUpdate = false;
-
+                
                 // Update OEM_Serial_Number__c on Asset if changed
                 if(serviceReportRecord.OEM_Serial_Number__c != null &&
                 serviceReportRecord.OEM_Serial_Number__c != srFromDB.Case__r.Asset.OEM_Serial_Number__c) {
                     assetToUpdate.OEM_Serial_Number__c = serviceReportRecord.OEM_Serial_Number__c;
                     needsAssetUpdate = true;
                 }
-
+                
                 // Update Software_Number__c on Asset from Software_No__c in Service Report if changed
                 if (serviceReportRecord.Software_No__c != null &&
-                    serviceReportRecord.Software_No__c != srFromDB.Case__r.Asset.Software_Number__c) {
+                serviceReportRecord.Software_No__c != srFromDB.Case__r.Asset.Software_Number__c) {
                     assetToUpdate.Software_Number__c = serviceReportRecord.Software_No__c;
                     needsAssetUpdate = true;
                 }
-
+                
                 if (needsAssetUpdate) {
                     Database.update(assetToUpdate, true, AccessLevel.SYSTEM_MODE);
                 }
-
+                
                 update serviceReportRecord;
                 serviceReportRecord = [SELECT Id, Name, OEM_Serial_Number__c, Work_Order__c
                                         FROM Service_Report__c
                                         WHERE Id = :serviceReportRecord.Id];
-
+                
                 for(Service_Report_Observation__c sro : serviceReportObservations) {
                     if(sro.Id == null) {
                         sro.Service_Report__c = serviceReportRecord.Id;
@@ -1642,20 +1715,20 @@ public without sharing class FieldServicePrinterInstallationService {
                 if(!serviceReportObservations.isEmpty()) {
                     upsert serviceReportObservations;
                 }
-
+                
                 if(!result.containsKey('OEM_Serial_Number__c')) {
                     result.put('OEM_Serial_Number__c', srFromDB.Case__r.Asset.OEM_Serial_Number__c);
                 }
-
+                
                 string t2 = createFinalDocument(serviceReportRecord, Page.ServiceReportPrinterPDF, 'Service_Report_' + serviceReportRecord.Name + '.pdf');
-
+                
                 result.put('result', serviceReportObservations);
                 result.put('Id', t2);
                 result.put('OEM_Serial_Number__c', serviceReportRecord.OEM_Serial_Number__c);
-
+                
                 return JSON.serialize(result);
             }
-
+            
             return null;
         }
         catch (Exception e) {
@@ -1663,7 +1736,7 @@ public without sharing class FieldServicePrinterInstallationService {
             throw new AuraHandledException(e.getMessage());
         }
     }
-
+    
     @AuraEnabled
     public static Object previewReport(Installation_Report__c installationReportRecord, Service_Report__c serviceReportRecord, String reportType) {
         System.debug(LoggingLevel.ERROR, '=== PREVIEW REPORT METHOD START ===');
@@ -1679,12 +1752,12 @@ public without sharing class FieldServicePrinterInstallationService {
                 installationReportRecord = [SELECT Id, Name, Sr_No_Preview__c, Signature__c
                                             FROM Installation_Report__c
                                             WHERE Id = :installationReportRecord.Id];
-
+                
                 // Validate that signature exists before generating preview
                 if (String.isBlank(installationReportRecord.Signature__c)) {
                     throw new AuraHandledException('Customer signature is required before previewing PDF. Please capture the signature first.');
                 }
-
+                
                 // Check if a preview document already exists for this Installation Report
                 String previewTitlePattern = 'Installation_Report_Preview_' + installationReportRecord.Name + '%';
                 List<ContentDocumentLink> existingLinks = [
@@ -1717,7 +1790,7 @@ public without sharing class FieldServicePrinterInstallationService {
                 
                 // Create new preview document (always create fresh one after deleting old)
                 contentDocumentId = createPreviewDocument(installationReportRecord.Id, Page.InstallationReportPrinterPDF, 'Installation_Report_Preview_' + installationReportRecord.Name + '.pdf');
-
+                
                 return contentDocumentId;
             }
             else if(reportType == 'ServiceReport') {
@@ -1727,7 +1800,7 @@ public without sharing class FieldServicePrinterInstallationService {
                 
                 // Update the record with all fields including Customer_Contact_Number__c, Customer_Email__c, etc.
                 try {
-                update serviceReportRecord;
+                    update serviceReportRecord;
                     System.debug(LoggingLevel.ERROR, 'DEBUG: serviceReportRecord updated successfully');
                     System.debug(LoggingLevel.ERROR, 'DEBUG: Updated serviceReportRecord = ' + serviceReportRecord);
                 } catch (DmlException dmlEx) {
@@ -1736,7 +1809,7 @@ public without sharing class FieldServicePrinterInstallationService {
                     System.debug(LoggingLevel.ERROR, 'ERROR: DML Exception Fields: ' + dmlEx.getDmlFieldNames(0));
                     throw dmlEx;
                 }
-
+                
                 // Re-query to get the updated record for PDF generation
                 System.debug(LoggingLevel.ERROR, 'DEBUG: About to re-query serviceReportRecord');
                 try {
@@ -1757,7 +1830,7 @@ public without sharing class FieldServicePrinterInstallationService {
                     throw new AuraHandledException('Customer signature is required before previewing PDF. Please capture the signature first.');
                 }
                 System.debug(LoggingLevel.ERROR, 'DEBUG: Signature validation passed');
-
+                
                 // Check if a preview document already exists for this Service Report
                 String previewTitlePattern = 'Service_Report_Preview_' + serviceReportRecord.Name + '%';
                 List<ContentDocumentLink> existingLinks = [
@@ -1801,18 +1874,18 @@ public without sharing class FieldServicePrinterInstallationService {
                     System.debug(LoggingLevel.ERROR, 'ERROR: Stack Trace: ' + createEx.getStackTraceString());
                     throw createEx;
                 }
-
+                
                 System.debug(LoggingLevel.ERROR, 'DEBUG: Returning contentDocumentId: ' + contentDocumentId);
                 return contentDocumentId;
             }
-
+            
             return null;
         }
         catch (Exception e) {
             throw new AuraHandledException(e.getMessage());
         }
     }
-
+    
     @AuraEnabled
     public static Object getDocumentId(String recordId, String reportType) {
         try {
@@ -1835,7 +1908,7 @@ public without sharing class FieldServicePrinterInstallationService {
             throw new AuraHandledException(e.getMessage());
         }
     }
-
+    
     @AuraEnabled
     public static string deleteRecord(Id recordId) {
         system.debug(recordId);
@@ -1849,12 +1922,12 @@ public without sharing class FieldServicePrinterInstallationService {
             return e.getMessage();
         }
     }
-
+    
     // PRIVATE HELPER METHODS
     private static Id createFinalDocument(sObject record, PageReference pageRef, String title) {
         try {
             pageRef.getParameters().put('id', record.Id);
-
+            
             try {
                 delete [SELECT Id
                         FROM contentDocument
@@ -1864,7 +1937,7 @@ public without sharing class FieldServicePrinterInstallationService {
             catch(Exception e) {
                 System.debug(e.getMessage());
             }
-
+            
             ContentVersion contentVersion = new ContentVersion();
             contentVersion.ContentLocation = 'S';
             contentVersion.PathOnClient = title;
@@ -1876,18 +1949,18 @@ public without sharing class FieldServicePrinterInstallationService {
                 contentVersion.VersionData = pageRef.getContentAsPDF();
             }
             insert contentVersion;
-
+            
             ContentVersion = [SELECT Id, ContentDocumentId, Title, PathOnClient
                             FROM ContentVersion
                             WHERE Id = :contentVersion.Id];
-
+            
             ContentDocumentLink contentDocumentLink = new ContentDocumentLink();
             contentDocumentLink.ContentDocumentId = contentVersion.ContentDocumentId;
             contentDocumentLink.LinkedEntityId = record.Id;
             contentDocumentLink.ShareType = 'V';
             contentDocumentLink.Visibility = 'AllUsers';
             insert contentDocumentLink;
-
+            
             return contentVersion.ContentDocumentId;
         }
         catch (Exception e) {
@@ -1895,7 +1968,7 @@ public without sharing class FieldServicePrinterInstallationService {
             throw new CustomException(e.getMessage());
         }
     }
-
+    
     private static Id createPreviewDocument(String recordId, PageReference pageRef, String title) {
         System.debug(LoggingLevel.ERROR, '=== CREATE PREVIEW DOCUMENT START ===');
         System.debug(LoggingLevel.ERROR, 'DEBUG: recordId = ' + recordId);
@@ -1907,7 +1980,7 @@ public without sharing class FieldServicePrinterInstallationService {
             pageRef.getParameters().put('id', recordId);
             pageRef.getParameters().put('isPreview',  'true');
             System.debug(LoggingLevel.ERROR, 'DEBUG: Page parameters set. id=' + recordId + ', isPreview=true');
-
+            
             System.debug(LoggingLevel.ERROR, 'DEBUG: Creating ContentVersion');
             ContentVersion contentVersion = new ContentVersion();
             contentVersion.ContentLocation = 'S';
@@ -1920,31 +1993,31 @@ public without sharing class FieldServicePrinterInstallationService {
             } else {
                 System.debug(LoggingLevel.ERROR, 'DEBUG: About to call pageRef.getContentAsPDF()');
                 try {
-                contentVersion.VersionData = pageRef.getContentAsPDF();
+                    contentVersion.VersionData = pageRef.getContentAsPDF();
                     System.debug(LoggingLevel.ERROR, 'DEBUG: getContentAsPDF() completed. Blob size: ' + (contentVersion.VersionData != null ? String.valueOf(contentVersion.VersionData.size()) : 'NULL'));
                 } catch (Exception pdfEx) {
                     System.debug(LoggingLevel.ERROR, 'ERROR: Exception during getContentAsPDF(): ' + pdfEx.getMessage());
                     System.debug(LoggingLevel.ERROR, 'ERROR: Stack Trace: ' + pdfEx.getStackTraceString());
                     throw pdfEx;
-            }
+                }
             }
             
             System.debug(LoggingLevel.ERROR, 'DEBUG: About to insert ContentVersion');
             try {
-            insert contentVersion;
+                insert contentVersion;
                 System.debug(LoggingLevel.ERROR, 'DEBUG: ContentVersion inserted. Id = ' + contentVersion.Id);
             } catch (DmlException dmlEx) {
                 System.debug(LoggingLevel.ERROR, 'ERROR: DML Exception during ContentVersion insert: ' + dmlEx.getMessage());
                 System.debug(LoggingLevel.ERROR, 'ERROR: DML Exception Fields: ' + dmlEx.getDmlFieldNames(0));
                 throw dmlEx;
             }
-
+            
             System.debug(LoggingLevel.ERROR, 'DEBUG: About to query ContentVersion');
             ContentVersion contentVersionQuery = [SELECT Id, ContentDocumentId, Title, PathOnClient
                             FROM ContentVersion
                             WHERE Id = :contentVersion.Id];
             System.debug(LoggingLevel.ERROR, 'DEBUG: ContentVersion queried. ContentDocumentId = ' + contentVersionQuery.ContentDocumentId);
-
+            
             System.debug(LoggingLevel.ERROR, 'DEBUG: Creating ContentDocumentLink');
             ContentDocumentLink contentDocumentLink = new ContentDocumentLink();
             contentDocumentLink.ContentDocumentId = contentVersionQuery.ContentDocumentId;
@@ -1953,14 +2026,14 @@ public without sharing class FieldServicePrinterInstallationService {
             
             System.debug(LoggingLevel.ERROR, 'DEBUG: About to insert ContentDocumentLink');
             try {
-            insert contentDocumentLink;
+                insert contentDocumentLink;
                 System.debug(LoggingLevel.ERROR, 'DEBUG: ContentDocumentLink inserted successfully');
             } catch (DmlException dmlEx) {
                 System.debug(LoggingLevel.ERROR, 'ERROR: DML Exception during ContentDocumentLink insert: ' + dmlEx.getMessage());
                 System.debug(LoggingLevel.ERROR, 'ERROR: DML Exception Fields: ' + dmlEx.getDmlFieldNames(0));
                 throw dmlEx;
             }
-
+            
             System.debug(LoggingLevel.ERROR, 'DEBUG: Returning ContentDocumentId: ' + contentVersionQuery.ContentDocumentId);
             return contentVersionQuery.ContentDocumentId;
         }
@@ -1974,18 +2047,18 @@ public without sharing class FieldServicePrinterInstallationService {
             throw new AuraHandledException(e.getMessage());
         }
     }
-
+    
     @AuraEnabled(cacheable=true)
     public static List<Map<String, String>> getConsumablePartsByMG5(String mg5Value) {
         try {
             if (String.isBlank(mg5Value)) {
                 return new List<Map<String, String>>();
             }
-
+            
             // Normalize MG5 value for case-insensitive comparison
             // Handle both "P01" and "p01" formats
             String mg5Upper = mg5Value.toUpperCase();
-
+            
             // SOQL doesn't support UPPER() in WHERE clause, so we query all and filter in Apex
             // Alternatively, we can query with case-insensitive comparison using the normalized value
             // Since MG5__c might have mixed case, we'll fetch records and filter in Apex
@@ -1995,16 +2068,16 @@ public without sharing class FieldServicePrinterInstallationService {
                 WHERE MG5__c != null
                 ORDER BY Material__c
             ];
-
+            
             List<Map<String, String>> options = new List<Map<String, String>>();
             Set<String> uniqueMaterials = new Set<String>(); // Prevent duplicates
             
             // Filter by case-insensitive MG5 match
             for (Consumable_Parts__c part : allParts) {
-                if (String.isNotBlank(part.MG5__c) && 
+                if (String.isNotBlank(part.MG5__c) &&
                     part.MG5__c.toUpperCase() == mg5Upper &&
-                    String.isNotBlank(part.Material__c) && 
-                    !uniqueMaterials.contains(part.Material__c)) {
+                    String.isNotBlank(part.Material__c) &&
+                !uniqueMaterials.contains(part.Material__c)) {
                     uniqueMaterials.add(part.Material__c);
                     options.add(new Map<String, String>{
                         'label' => part.Material__c,
@@ -2012,25 +2085,25 @@ public without sharing class FieldServicePrinterInstallationService {
                     });
                 }
             }
-
+            
             return options;
         } catch (Exception e) {
             System.debug('Error fetching consumable parts: ' + e.getMessage());
             throw new AuraHandledException('Error fetching consumable parts: ' + e.getMessage());
         }
     }
-
+    
     @AuraEnabled(cacheable=true)
     public static List<Map<String, String>> getConsumableParts(String mg5Value, String mg4Value) {
         try {
             if (String.isBlank(mg5Value) || String.isBlank(mg4Value)) {
                 return new List<Map<String, String>>();
             }
-
+            
             // Normalize MG5 value for case-insensitive comparison
             // Handle both "P01" and "p01" formats
             String mg5Upper = mg5Value.toUpperCase();
-
+            
             // SOQL doesn't support UPPER() in WHERE clause, so we query all and filter in Apex
             // Alternatively, we can query with case-insensitive comparison using the normalized value
             // Since MG5__c might have mixed case, we'll fetch records and filter in Apex
@@ -2039,14 +2112,14 @@ public without sharing class FieldServicePrinterInstallationService {
                 FROM Consumable_Parts__c
                 WHERE MG5__c = :mg5Value AND MG4__c = :mg4Value
                 ORDER BY Material__c
-            ]; */ 
-
+            ]; */
+            
             List<Product2> allParts = [select Id, Name from Product2 
                                                         where Material_Group_5__c = : mg5Value
                                                          and Material_Group_4__c = :mg4Value
                                                          ORDER BY Name];
             
-
+            
             List<Map<String, String>> options = new List<Map<String, String>>();
             Set<String> uniqueMaterials = new Set<String>(); // Prevent duplicates
             
@@ -2060,14 +2133,14 @@ public without sharing class FieldServicePrinterInstallationService {
                     uniqueMaterials.add(part.Name);
                 }
             }
-
+            
             return options;
         } catch (Exception e) {
             System.debug('Error fetching consumable parts: ' + e.getMessage());
             throw new AuraHandledException('Error fetching consumable parts: ' + e.getMessage());
         }
     }
-
+    
     /**
      * @description Wrapper class for printer parameter data structure
      *              Used to represent parameter information with parameterName, selectedOption, selectedType, and selectedValue
@@ -2153,12 +2226,12 @@ public without sharing class FieldServicePrinterInstallationService {
             return param;
         }
     }
-
+    
     @AuraEnabled(cacheable=true)
     public static Boolean hasSpareRequestRecords(String workOrderId) {
         try {
             List<Work_Order__c> workOrderList = [SELECT Id, Case__c FROM Work_Order__c WHERE Id = :workOrderId];
-
+            
             if(workOrderList.size() > 0 && workOrderList[0].Case__c != null) {
                 List<Spare_Request__c> spareRequests = [SELECT Id FROM Spare_Request__c WHERE Case__c = :workOrderList[0].Case__c];
                 return !spareRequests.isEmpty();
@@ -2169,6 +2242,6 @@ public without sharing class FieldServicePrinterInstallationService {
             return false;
         }
     }
-
+    
     public class CustomException extends Exception {}
 }

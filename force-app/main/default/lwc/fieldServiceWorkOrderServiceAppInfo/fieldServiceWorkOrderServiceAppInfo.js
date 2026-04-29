@@ -779,7 +779,7 @@ export default class FieldServiceWorkOrderServiceAppInfo extends NavigationMixin
         console.log('handleTroubleshootingClick');
         console.log('Division:', this.serviceAppointment.division);
         // navigateToLWC(this, 'fieldServiceTroubleshooting', { c__id: this.serviceAppointment.workOrderId, c__serviceAppointmentId: this.recordId });
-        if (this.serviceAppointment.division === 'MHE') {
+        if (this.serviceAppointment.division === 'MHE' || this.serviceAppointment.division === 'Printer') {
             navigateToUrl(this, 'https://nilkamal-my.sharepoint.com/:f:/p/shital_jadhav/En5WiHb6htZAjlfJvqQb1xcBhLuqBeMh-HS7bMTIcv0Iiw');
         }
     }
@@ -974,7 +974,7 @@ export default class FieldServiceWorkOrderServiceAppInfo extends NavigationMixin
                 'Installation': ['Installation & Commissioning'],
                 'Preventive Maintenance': ['Warranty PM', 'AMC PM', 'CAMC PM', 'Health Checkup'],
                 'Breakdown': ['Warranty Breakdown', 'AMC Breakdown', 'CAMC Breakdown', 'Chargeable Service'],
-                'Courtesy': ['Courtesy Breakdown', 'Quote Negotiation', 'Payment Collection', 'AMC Business', 'Spare Business', 'DEMO'],   // AMC Business added by keshav
+                'Courtesy': ['Courtesy Breakdown', 'Quote Negotiation', 'Payment Collection', 'AMC Business', 'Spare Business', 'DEMO', 'Spare installation'],   // AMC Business added by keshav
                 'Re-Installation': ['Re-installation'],
                 'Training': ['Training']
             },
@@ -982,7 +982,7 @@ export default class FieldServiceWorkOrderServiceAppInfo extends NavigationMixin
                 'Installation': ['New Installation & Commissioning'],
                 'Preventive Maintenance': ['Warranty PM', 'AMC PM', 'CAMC PM', 'Health Checkup'],
                 'Breakdown': ['Warranty Breakdown', 'AMC Breakdown', 'CAMC Breakdown', 'Chargeable Service'],
-                'Courtesy': ['Courtesy visit', 'Sales DEMO at existing HANEL place', 'Spare supply / Service invoice need to be handed over to customer plant'],
+                'Courtesy': ['Courtesy visit', 'Sales DEMO at existing HANEL place', 'Spare supply / Service invoice need to be handed over to customer plant', 'Spare installation'],
                 'Re-Installation': ['Dismantling into CKD form', 'Packaging monitoring', 'Loading & Unloading', 'Re-installation as per HANEL standard'],
                 'Training': ['Chargeable cum Refresh Training Cum usage awareness']
             },
@@ -990,7 +990,7 @@ export default class FieldServiceWorkOrderServiceAppInfo extends NavigationMixin
                 'Installation': ['Installation & Commissioning'],
                 'Preventive Maintenance': ['Warranty PM', 'AMC PM', 'CAMC PM', 'Health Checkup'],
                 'Breakdown': ['Warranty Breakdown', 'AMC Breakdown', 'CAMC Breakdown', 'Chargeable Service'],
-                'Courtesy': ['Courtesy', 'DEMO'],
+                'Courtesy': ['Courtesy', 'DEMO', 'Spare installation'],
                 'Re-Installation': ['Re-installation'],
                 'Training': ['Training']
             },
@@ -998,7 +998,7 @@ export default class FieldServiceWorkOrderServiceAppInfo extends NavigationMixin
                 'Installation': ['Own Asset', 'Dealer Asset'],
                 'Preventive Maintenance': ['Own Asset', 'Dealer Asset'],
                 'Breakdown': ['Own Asset', 'Dealer Asset'],
-                'Courtesy': [],
+                'Courtesy': ['Spare installation'],
                 'Re-Installation': [],
                 'Training': [],
                 'Demo': []

@@ -788,7 +788,7 @@ export default class FieldServiceCreateCase extends NavigationMixin(LightningEle
                             return values.map(value => ({ label: value, value: value }));
                         }
                         else if (type === 'Courtesy') {
-                            const values = ['Courtesy', 'DEMO'];
+                            const values = ['Courtesy', 'DEMO', 'Spare installation'];
                             return values.map(value => ({ label: value, value: value }));
                         }
                         else if (type === 'Re-Installation') {
@@ -810,7 +810,7 @@ export default class FieldServiceCreateCase extends NavigationMixin(LightningEle
                             return values.map(value => ({ label: value, value: value }));
                         }
                         else if (type === 'Courtesy') {
-                            const values = ['Courtesy visit', 'Sales DEMO at existing HANEL place', 'Spare supply / Service invoice need to handedover to customer plant'];
+                            const values = ['Courtesy visit', 'Sales DEMO at existing HANEL place', 'Spare supply / Service invoice need to handedover to customer plant', 'Spare installation'];
                             return values.map(value => ({ label: value, value: value }));
                         }
                         else if (type === 'Re-Installation') {
@@ -846,7 +846,7 @@ export default class FieldServiceCreateCase extends NavigationMixin(LightningEle
                             return values.map(value => ({ label: value, value: value }));
                         }
                         else if (type === 'Courtesy') {
-                            const values = ['Courtesy Breakdown', 'Quote Negotiation', 'Payment Collection', 'Spare Business', 'DEMO', 'AMC Business'];
+                            const values = ['Courtesy Breakdown', 'Quote Negotiation', 'Payment Collection', 'Spare Business', 'DEMO', 'AMC Business', 'Spare installation'];
                             return values.map(value => ({ label: value, value: value }));
                         }
                         else if (type === 'Re-Installation') {
@@ -892,7 +892,7 @@ export default class FieldServiceCreateCase extends NavigationMixin(LightningEle
                             return values.map(value => ({ label: value, value: value }));
                         }
                         else if (type === 'Courtesy') {
-                            const values = ['Courtesy Breakdown', 'Quote Negotiation', 'Payment Collection', 'Spare Business', 'DEMO', 'AMC Business'];
+                            const values = ['Courtesy Breakdown', 'Quote Negotiation', 'Payment Collection', 'Spare Business', 'DEMO', 'AMC Business', 'Spare installation'];
                             return values.map(value => ({ label: value, value: value }));
                         }
                         else if (type === 'Re-Installation') {
